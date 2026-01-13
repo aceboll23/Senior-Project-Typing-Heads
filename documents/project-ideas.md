@@ -70,6 +70,16 @@ The application is built on ASP.NET Core MVC with SQL Server storing user accoun
 
  * Campus Navigation Application: A website that allows users to search for buildings, rooms, and campus services with a visual model. Will provide directions to locations as well as draw a map and highlight the destination and starting point. Administrators will be allowed to manage service times as well as locations of services. Google maps will be used as an external API to show outdoor navigation while some approximation will be done for the indoor navigation that is created with references to campus maps. The project will start by showcasing the WOU campus with design that allows for simple implementation of future campus maps.
 
+--------------------------------------------------
+
+
+(Ian's Idea)
+
+# Main Idea
+
+ * Board Game Collection/Group play
+My thought was a website that you could upload your board game collection to keep track of what you want. You would also be able to browse board games with links to where you can get the game (start off with amazon potentially partnering with game shops that sell online to give people options). You would also be able to create playgroups with friends so that you can easily see what games everyone has and potentially create a game night in that group where you each select the games that you'd like to play that night so everyone knows what to bring. Users should also be able to review games. Potentially add in an AI that shows you games you may like based on your reviews. Would need a database for users, games that the users own, playgroups. 
+
 
 
 
