@@ -1,2 +1,3 @@
-# JUNIOR-Project-Typing-Heads
+# Senior-Project-Typing-Heads
+
 
