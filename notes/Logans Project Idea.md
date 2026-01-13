@@ -27,6 +27,7 @@ The application is built on ASP.NET Core MVC with SQL Server storing user accoun
 
 
 
+
 ## Possible Additional Features
 
 
@@ -63,7 +64,11 @@ The application is built on ASP.NET Core MVC with SQL Server storing user accoun
   This could be done using documentation on an open source project like Blender, or 
 
 
+(Adler's Idea)
 
+# Main Idea
+
+ * Campus Navigation Application: A website that allows users to search for buildings, rooms, and campus services with a visual model. Will provide directions to locations as well as draw a map and highlight the destination and starting point. Administrators will be allowed to manage service times as well as locations of services. Google maps will be used as an external API to show outdoor navigation while some approximation will be done for the indoor navigation that is created with references to campus maps. The project will start by showcasing the WOU campus with design that allows for simple implementation of future campus maps.
 
 
 
