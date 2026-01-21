@@ -32,7 +32,8 @@
 - Add games to "Wishlist"
 - Add friends
 - View friends' collections
-- Create/join playgroups
+- Create/join playgroups 
+- Secure login with session management and password recovery
 
 ## Playgroups:
 
