@@ -8,11 +8,15 @@ A senior software engineering class project repository for team "Typing Heads".
 **BoredGamers** is a web-based platform that helps users discover games, manage personal game collections, and coordinate gameplay with friends in one place. Unlike existing platforms that focus mainly on reviews or cataloging, BoredGamers emphasizes social planning and shared decision-making about what to play. It is well-suited as a two-term project because it combines core technical components—such as authentication, data modeling, and recommendation logic—with room for iterative feature expansion.
 
 
+Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP3PlUs=/)
+
+![Image of the Mindmap](./documents/Mindmap.png)
+
 ## Team Members
 
-- Logan Montgomery
-- Adler Ceboll
-- Ian Cooper
+* Logan Montgomery
+* Adler Ceboll
+* Ian Cooper
 
 ## Project Ideas
 
@@ -23,19 +27,25 @@ A senior software engineering class project repository for team "Typing Heads".
 ## Repository Structure
 
 📁 [**documents/**](./documents/)
-- 📁 [**resumes/**](./documents/resumes/) - Team member resumes
-  - 📄 [Adler_Ceboll_Resume.pdf](./documents/resumes/Adler_Ceboll_Resume.pdf)
-  - 📄 [Ian_Cooper_Resume.pdf](./documents/resumes/Ian_Cooper_Resume.pdf)
-  - 📄 [Logan_Montgomery_Resume.pdf](./documents/resumes/Logan_Montgomery_Resume.pdf)
-- 📄 [project-ideas.md](./documents/project-ideas.md) - Detailed project proposals
-- 📄 [Features and Needs.md](./documents/Features%20and%20Needs.md) - Feature requirements
-- 📄 [schedule-winter-term.md](./documents/schedule-winter-term.md) - Winter term schedule
-- 🖼️ [logo.png](./documents/logo.png) - Team logo
-- 🖼️ [letterhead.png](./documents/letterhead.png) - Team letterhead
-- 🖼️ [business-card.png](./documents/business-card.png) - Team business card design
 
-📄 [README.md](./README.md)
+* 📁 [**resumes/**](./documents/resumes/) - Team member resumes
+
+  * 📄 [Adler\_Ceboll\_Resume.pdf](./documents/resumes/Adler_Ceboll_Resume.pdf)
+  * 📄 [Ian\_Cooper\_Resume.pdf](./documents/resumes/Ian_Cooper_Resume.pdf)
+  * 📄 [Logan\_Montgomery\_Resume.pdf](./documents/resumes/Logan_Montgomery_Resume.pdf)
+
+* 📄 [project-ideas.md](./documents/project-ideas.md) - Detailed project proposals
+* 📄 [Features and Needs.md](./documents/Features%20and%20Needs.md) - Feature requirements
+* 📄 [schedule-winter-term.md](./documents/schedule-winter-term.md) - Winter term schedule
+* 🖼️ [logo.png](./documents/logo.png) - Team logo
+* 🖼️ [letterhead.png](./documents/letterhead.png) - Team letterhead
+* 🖼️ [business-card.png](./documents/business-card.png) - Team business card design
+
+## Architecture
+
+[Visual Diagram](https://miro.com/app/board/uXjVGO1p6sY=/)
 
 ## Getting Started
 
 *Project implementation coming soon - currently in planning phase.*
+
