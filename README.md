@@ -38,6 +38,8 @@ Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP
 
 [Visual Diagram](https://miro.com/app/board/uXjVGO1p6sY=/)
 
+![Image of the Architecture Diagram](./documents/architecture-diagram.png)
+
 ## Getting Started
 
 *Project implementation coming soon - currently in planning phase.*
