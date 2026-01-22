@@ -29,7 +29,7 @@ Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP
   * 📄 [Logan\_Montgomery\_Resume.pdf](./documents/resumes/Logan_Montgomery_Resume.pdf)
   
 * 📄 [Features and Needs.md](./documents/Features%20and%20Needs.md) - Feature requirements
-* 📄 [schedule-winter-term.md](./documents/schedule-winter-term.md) - Winter term schedule
+* 📄 [schedule-winter-term.md](./documents/schedule-winter-term.html) - Winter term schedule
 * 🖼️ [logo.png](./documents/logo.png) - Team logo
 * 🖼️ [letterhead.png](./documents/letterhead.png) - Team letterhead
 * 🖼️ [business-card.png](./documents/business-card.png) - Team business card design
