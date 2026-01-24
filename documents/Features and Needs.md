@@ -35,6 +35,7 @@
 * Create/join playgroups
 * Secure login with session management and password recovery
 * Message friends
+* Trade games with other users
 
 ## Playgroups:
 
