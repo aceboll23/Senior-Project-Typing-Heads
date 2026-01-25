@@ -2,9 +2,15 @@
 
 ## Elicitation
 
-1. Is the goal or outcome well defined? Does it make sense?
+### 1. Is the goal or outcome well defined? Does it make sense?
 
-2. What is not clear from the given description?
+**Yes, reasonably well defined.** The vision statement is clear: a platform for game discovery, collection management, and social coordination. The differentiator (social planning over pure cataloging) is stated.
+
+However, the *success criteria* are undefined:
+- What makes this "done" for the two-term scope?
+- What's the MVP vs. nice-to-have?
+
+### 2. What is not clear from the given description?
 
 | Area | Unclear Aspect | Why It Matters |
 |------|----------------|----------------|
@@ -16,13 +22,35 @@
 | Trading | Mindmap shows trading feature - in scope or cut? | Needs explicit decision |
 | Purchase Links | How do affiliate links work? Manual or automated? | Stretch goal needs definition |
 
-3. How about scope? Is it clear what is included and what isn't?
+### 3. How about scope? Is it clear what is included and what isn't?
 
-4. What do you not understand?
+**Partially clear.** The Features doc separates Public/Registered/Playgroup/Stretch features, which helps. But there are inconsistencies:
+
+**In Mindmap but NOT in Features doc:**
+- Message Friends
+- Feature to Trade games
+- Contact Us page
+- "Where to purchase" (shown as core, but listed as stretch in Features)
+
+**In Features doc but NOT in Mindmap:**
+- Password recovery
+- Session management details
+
+**Needs explicit scope decision:**
+- Is this web-only or also mobile?
+- Real-time features (live updates when friends add games)?
+- Notifications (email? in-app? none?)
+
+### 4. What do you not understand?
     * Technical domain knowledge
-    * Business domain knowledge
+    - What does "recommendation logic based on reviews" actually mean algorithmically?
 
-5. Is there something missing?
+    * Business domain knowledge
+    - How do board game complexity ratings work?
+    - What metadata is essential for a game entry vs. nice-to-have?
+    - How do real game nigh coordination flows work in practice? 
+
+### 5. Is there something missing?
 
 1. **Error states and edge cases**
    - What if a user tries to join a full game night?
@@ -49,7 +77,7 @@
    - Max game nights per group?
    - **LM:** Another one I'm not sure is needed. Could be set at 7 per week, or even 14 per week, if people want multiple a day? I would want to ask what the value is in limiting it as opposed to just letting people have a lot, maybe they have a reason.
 
-6. Get answers to these questions.
+### 6. Get answers to these questions.
 
 | # | Question | Impact if Unanswered |
 |---|----------|---------------------|
