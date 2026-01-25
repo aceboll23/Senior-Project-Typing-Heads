@@ -24,15 +24,17 @@ Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP
 
 * 📁 [**resumes/**](./documents/resumes/) - Team member resumes
 
-  * 📄 [Adler\_Ceboll\_Resume.pdf](./documents/resumes/Adler_Ceboll_Resume.pdf)
-  * 📄 [Ian\_Cooper\_Resume.pdf](./documents/resumes/Ian_Cooper_Resume.pdf)
-  * 📄 [Logan\_Montgomery\_Resume.pdf](./documents/resumes/Logan_Montgomery_Resume.pdf)
+  * 📄 [Adler Ceboll's Resume](./documents/resumes/Adler_Ceboll_Resume.pdf)
+  * 📄 [Ian Cooper's Resume](./documents/resumes/Ian_Cooper_Resume.pdf)
+  * 📄 [Logan Montgomery's Resume](./documents/resumes/Logan_Montgomery_Resume.pdf)
   
-* 📄 [Features and Needs.md](./documents/Features%20and%20Needs.md) - Feature requirements
-* 📄 [schedule-winter-term.md](./documents/schedule-winter-term.html) - Winter term schedule
-* 🖼️ [logo.png](./documents/logo.png) - Team logo
-* 🖼️ [letterhead.png](./documents/letterhead.png) - Team letterhead
-* 🖼️ [business-card.png](./documents/business-card.png) - Team business card design
+* 📄 [Features and Needs](./documents/Features%20and%20Needs.md) - Feature requirements
+* 📄 [Winter Term Schedule](./documents/schedule-winter-term.html) - Winter term schedule
+* 🖼️ [Logo](./documents/logo.png) - Team logo
+* 🖼️ [Letterhead](./documents/letterhead.png) - Team letterhead
+* 🖼️ [Business Card](./documents/business-card.png) - Team business card design
+* 📄 [Requirements](./documents/requirements.md)
+* 📄 [Stakeholders and Personas](./documents/stakeholders-and-personas.md)
 
 ## Architecture
 
