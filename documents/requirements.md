@@ -93,29 +93,129 @@ However, the *success criteria* are undefined:
 
 ## Analysis
 
-Go through all the information gathered during the previous round of elicitation.
+This section refines and formalizes the information gathered during the elicitation phase. Each major concept in the system is analyzed to determine its bounds, constraints, behaviors, and interactions with other components. Potential conflicts, missing requirements, and unresolved questions are also addressed.
 
-1. For each attribute, term, entity, relationship, activity... precisely determine its bounds, limitations, types and constraints in both form and function. Write them down.
+### 1. Bounds, limitations, types, and constraints
 
-2. Do they work together or are there some conflicting requirements, specifications or behaviors?
+**Users and Accounts**  
+A User represents a registered individual with an authenticated account. Each user has a unique username used for discovery and social interactions, as well as credentials used for authentication. Authentication is required for all non-public features, and password recovery is supported. Users may participate in multiple social and organizational structures simultaneously.
 
-3. Have you discovered if something is missing?
+**Friends (1–1 social connections)**  
+Friendships represent mutual, one-to-one social connections between users. A friendship must be accepted by both parties and is required for direct (non-playgroup) messaging. Duplicate or one-sided friendships are not allowed, and a user may have many friends.
 
-4. Return to Elicitation activities if unanswered questions remain.
+**Playgroups**  
+Playgroups are multi-user entities created by a user (the owner). Owners can invite and manage members. Users may belong to multiple playgroups at the same time. Playgroups are invite-only by default, with an optional public visibility toggle controlled by the owner.
+
+**Game Catalog**  
+Games are stored in a global catalog sourced from an external board game database and stored locally. The catalog is initially imported in full and periodically updated. Users cannot delete games from the global catalog; they can only associate games with their personal collections.
+
+**User Collections**  
+A user’s collection is represented as a relationship between a user and a game. Each game can appear at most once per user. Collection entries include a status (such as owned or wishlist) and optional metadata like notes or play count. Users can control collection visibility, including fully hiding their collection from all other users.
+
+**Reviews and Ratings**  
+Users may leave reviews and ratings for games. Reviews are tied to both the user and the game and may be constrained to one review per user per game. Ratings are numeric and bounded by application rules. Moderation mechanisms (such as reporting inappropriate reviews) may be required.
+
+**Game Nights**  
+Game nights are events created within a playgroup by a single organizer. Playgroup members can RSVP to game nights. Game selection follows a hybrid approach: games may be suggested, optionally voted on, and finalized by the organizer. Game nights have defined states (open, finalized, canceled).
+
+**Messaging**  
+Messaging exists in two forms:
+- Direct messaging between users, which requires an accepted friendship.
+- Playgroup messaging, which allows members to communicate within a playgroup.
+Messaging is text-only in scope for the initial implementation to limit complexity.
+
+**Trading**  
+Trading is supported as a lightweight coordination feature. Trade requests occur between users and do not involve payments, escrow, or enforcement. Trades rely on an honor system and may optionally support post-trade ratings. This feature is intentionally constrained to avoid excessive complexity.
+
+---
+
+### 2. Conflicts and inconsistencies
+
+Several inconsistencies identified during elicitation have been resolved:
+
+- Messaging and trading, which appeared in earlier brainstorming artifacts, are confirmed to be in scope but intentionally limited.
+- Purchase links remain a stretch feature and are not required for the core system.
+- Administrative and moderation features are acknowledged but deferred to later iterations unless required for basic safety.
+
+No remaining requirements directly conflict with one another.
+
+---
+
+### 3. Missing or implicit requirements
+
+The analysis phase revealed several areas requiring explicit consideration:
+
+- Privacy controls must be consistently enforced across collections, playgroups, and messaging.
+- Edge cases such as users leaving playgroups mid-planning or games becoming unavailable in the external catalog must be handled gracefully.
+- Moderation and reporting mechanisms should exist at a basic level, even if tooling is minimal.
+
+---
+
+### 4. Return to elicitation
+
+All core elicitation questions have been answered sufficiently to proceed with design and modeling. Remaining questions (such as the exact voting algorithm or recommendation logic) can be addressed during later design or implementation iterations.
 
 ---
 
 ## Design and Modeling
 
-Our first goal is to create a **data model** that will support the initial requirements.
+The goal of this section is to define an initial data model that supports the analyzed requirements and behaviors. The design focuses on clarity, extensibility, and alignment with the system’s scope.
 
-1. Identify all entities; for each entity, label its attributes; include concrete types
+### 1. Identified entities and attributes
 
-2. Identify relationships between entities. Write them out in English descriptions.
+The primary entities in the system include:
 
-3. Draw these entities and relationships in an _informal_ Entity-Relation Diagram.
+- **User**: represents an account holder with authentication credentials and profile information.
+- **Friendship**: represents a mutual social connection between two users.
+- **Playgroup**: represents a group of users organized for planning gameplay.
+- **PlaygroupMember**: represents membership and role information for users within a playgroup.
+- **Game**: represents a board game in the global catalog.
+- **UserGame**: represents a user’s relationship to a game (collection entry).
+- **Review**: represents a user’s rating and written feedback for a game.
+- **GameNight**: represents a scheduled gameplay event within a playgroup.
+- **GameNightRSVP**: represents a member’s attendance response to a game night.
+- **GameNightCandidate**: represents games proposed for a specific game night.
+- **GameNightVote**: represents a user’s vote for a proposed game.
+- **DirectMessage**: represents private messages between friends.
+- **PlaygroupMessage**: represents messages within a playgroup.
+- **TradeRequest**: represents a proposed trade between users.
+- **TradeItem**: represents individual games involved in a trade.
 
-4. If you have questions about something, return to elicitation and analysis before returning here.
+Each entity includes appropriate identifiers, timestamps, and foreign keys to enforce referential integrity.
+
+---
+
+### 2. Relationships between entities
+
+- A user may own many games through collection entries; each collection entry links one user to one game.
+- Users may be connected to other users through friendships.
+- Users may create and belong to multiple playgroups.
+- Playgroups contain members and host game nights.
+- Game nights belong to a playgroup and are created by a user.
+- Game nights have RSVPs, candidate games, and optional votes from playgroup members.
+- Users may send direct messages to friends and messages within playgroups.
+- Trade requests occur between users and reference specific games in their collections.
+
+---
+
+### 3. Informal Entity–Relationship Diagram (textual)
+
+```text
+User ──< UserGame >── Game ──< Review >── User
+
+User ──< Friendship >── User
+
+User (owner) ──< Playgroup ──< PlaygroupMember >── User
+
+Playgroup ──< GameNight ──< GameNightRSVP >── User
+                     └──< GameNightCandidate >── Game
+                     └──< GameNightVote >── (User, Game)
+
+User ──< DirectMessage >── User
+Playgroup ──< PlaygroupMessage >── User
+
+User ──< TradeRequest >── User
+TradeRequest ──< TradeItem >── UserGame
 
 ---
 
