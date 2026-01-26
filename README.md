@@ -5,7 +5,7 @@ A senior software engineering class project repository for team "Typing Heads".
 # Project Vision Statement
 
 
-**BoredGamers** is a web-based platform that helps users discover games, manage personal game collections, and coordinate gameplay with friends in one place. Unlike existing platforms that focus mainly on reviews or cataloging, BoredGamers emphasizes social planning and shared decision-making about what to play. It is well-suited as a two-term project because it combines core technical components—such as authentication, data modeling, and recommendation logic—with room for iterative feature expansion.
+**BoredGamers** is a web-based platform designed for board game players to discover new games, track and manage personal collections, and coordinate gameplay with friends in one centralized space. By making it easy to see what games friends own, decide what to play, and arrange when to play, BoredGamers reduces the friction and indecision that often prevent groups from actually getting games to the table. Unlike existing platforms that focus primarily on reviews or cataloging, BoredGamers emphasizes social planning and shared decision-making. It is well-suited as a two-term project because it combines core technical components—such as authentication, data modeling, and recommendation logic—with room for iterative feature expansion.
 
 
 Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP3PlUs=/)
