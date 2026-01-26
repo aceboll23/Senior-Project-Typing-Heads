@@ -216,15 +216,59 @@ Playgroup ──< PlaygroupMessage >── User
 
 User ──< TradeRequest >── User
 TradeRequest ──< TradeItem >── UserGame
+```
 
 ---
 
 ## Analysis of the Design
 
-The next step is to determine how well this design meets the requirements _and_ fits into the existing system.
+This section evaluates how well the proposed design satisfies the identified functional and non-functional requirements and how effectively it fits within the intended system scope.
 
-1. Does it support all requirements/features/behaviors?
-    * For each requirement, go through the steps to fulfill it. Can it be done? Correctly? Easily?
+### 1. Support for requirements, features, and behaviors
 
-2. Does it meet all non-functional requirements?
-    * May need to look up specifications of systems, components, etc. to evaluate this.
+The proposed data model and system design support all core functional requirements identified during elicitation and analysis.
+
+**Game discovery and catalog management**  
+The global `Game` entity supports centralized storage of board game data sourced from an external database. Because games are stored locally after import, users can reliably browse and search the catalog without direct runtime dependency on the external source. This design supports discovery, metadata display, and future recommendation features.
+
+**Personal collection management**  
+The `UserGame` entity enables users to track owned games, wishlists, and related metadata such as notes or play counts. Privacy constraints at the user level ensure that collections can be hidden from other users as required. The one-to-one constraint between users and games prevents duplicate collection entries and simplifies collection management.
+
+**Social connections and playgroups**  
+The separation between `Friendship` and `Playgroup` entities supports both one-to-one social connections and multi-user organizational structures. Users can be friends without sharing playgroups and can belong to multiple playgroups simultaneously. This flexibility directly supports the application’s emphasis on social coordination without forcing a single interaction model.
+
+**Game night planning and coordination**  
+The `GameNight`, `GameNightRSVP`, `GameNightCandidate`, and `GameNightVote` entities collectively support the full game night workflow: creation, RSVP tracking, game suggestion, optional voting, and finalization by an organizer. This hybrid approach allows groups to collaborate on decisions while retaining a clear ownership and resolution mechanism.
+
+**Messaging and communication**  
+Messaging requirements are met through separate entities for direct messaging and playgroup messaging. Direct messages are restricted to users with an accepted friendship, while playgroup messages are restricted to members of a playgroup. This enforces clear authorization boundaries while enabling necessary communication for coordination.
+
+**Trading functionality**  
+The lightweight trading model (`TradeRequest` and `TradeItem`) supports basic coordination of game trades without introducing payment processing or enforcement mechanisms. This approach satisfies the functional requirement while intentionally limiting scope and complexity.
+
+Overall, the design allows each requirement to be fulfilled correctly and without undue complexity. Core user flows—such as managing a collection, planning a game night, and coordinating with friends—are directly supported by the model.
+
+---
+
+### 2. Non-functional requirements
+
+**Performance**  
+The system is designed for moderate usage levels consistent with an academic or small community application. Typical operations (viewing collections, browsing games, RSVP actions) are read-heavy and supported by simple relational queries. No real-time or low-latency guarantees are required, making the design appropriate for expected workloads.
+
+**Scalability**  
+The design supports reasonable growth (hundreds to thousands of users and playgroups) without requiring architectural changes. Clear entity boundaries and normalized relationships allow the system to scale incrementally. Internet-scale or enterprise-level scalability is intentionally out of scope.
+
+**Security**  
+Standard security practices are supported by the design. Authentication relies on secure credential storage and session management. Authorization rules—such as friends-only messaging, playgroup-only access, and collection privacy—are enforced at the application level using the defined relationships. Advanced security features such as multi-factor authentication are not required for the initial scope.
+
+**Availability and reliability**  
+High availability guarantees and strict uptime requirements are not assumed. Occasional downtime is acceptable in the context of a course project. The local storage of external game data reduces runtime dependency on third-party services, improving reliability.
+
+**Usability**  
+The design prioritizes clarity and simplicity over feature density. Core user interactions are supported with minimal steps and clearly defined entities. A responsive web interface is sufficient to meet usability expectations without requiring a native mobile application.
+
+---
+
+### 3. Overall assessment
+
+The proposed design aligns well with the functional and non-functional requirements defined for the project. It balances flexibility with controlled scope, supports iterative expansion, and avoids premature complexity. The system model provides a stable foundation for implementation while allowing future enhancements—such as advanced recommendations, moderation tools, or additional social features—without requiring significant redesign.
