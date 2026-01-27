@@ -8,11 +8,11 @@
 - Role: Team member, likely maintains the upstream dev branch and handles pull requests
 - Interest: Creating a useful product, learning full-stack development, completing senior project
 
-**Logan Montgomery** - Developer
+**Logan Montgomery** - Developer / AI Ambassador
 - Role: Team member, builds and maintains the application
 - Interest: Creating a useful product, learning To train and integrate AI tools in genuinely useful and inventive ways, completing senior project
 
-**Ian Cooper** - Developer
+**Ian Cooper** - Developer / Team Lead
 - Role: Team member, builds and maintains the application
 - Interest: Creating a useful product, learning full-stack development, completing senior project
 
