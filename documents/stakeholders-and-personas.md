@@ -8,11 +8,11 @@
 - Role: Team member, likely maintains the upstream dev branch and handles pull requests
 - Interest: Creating a useful product, learning full-stack development, completing senior project
 
-**Logan Montgomery** - Developer / AI Ambassador
+**Logan Montgomery** - Developer
 - Role: Team member, builds and maintains the application
 - Interest: Creating a useful product, learning To train and integrate AI tools in genuinely useful and inventive ways, completing senior project
 
-**Ian Cooper** - Developer / Team Lead
+**Ian Cooper** - Developer
 - Role: Team member, builds and maintains the application
 - Interest: Creating a useful product, learning full-stack development, completing senior project
 
@@ -49,7 +49,7 @@
 
 ### Persona 1: Jasmine Smith
 
-![Jasmine Smith](images/JasmineSmith.jpeg)
+![Jasmine Smith](JasmineSmith.jpeg)
 
 | Attribute | Details |
 |-----------|---------|
@@ -79,7 +79,7 @@ Jasmine reluctantly went on the website because her friend uses it regularly and
 
 ### Persona 2: Amanda Murphy
 
-![Amanda Murphy](images/AmandaMurphy.jpeg)
+![Amanda Murphy](AmandaMurphy.jpeg)
 
 | Attribute | Details |
 |-----------|---------|
@@ -109,7 +109,7 @@ Amanda usually hosts for Dungeons and Dragons, but now she is looking for other 
 
 ### Persona 3: Donavan Ferguson
 
-![Donavan Ferguson](images/DonavanFerguson.jpeg)
+![Donavan Ferguson](DonavanFerguson.jpeg)
 
 | Attribute | Details |
 |-----------|---------|
@@ -140,7 +140,7 @@ Donavan used to be an avid board game player as a teenager and young adult, but 
 
 ### Persona 4: Gloria Chen
 
-![Gloria Chen](images/GloriaChen.jpeg)
+![Gloria Chen](GloriaChen.jpeg)
 
 | Attribute | Details |
 |-----------|---------|
