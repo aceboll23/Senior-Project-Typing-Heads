@@ -2,5 +2,8 @@
 
 ### First Draft
 
-![website-model-first-draft](website-modeling-first-draft.png)
+![website-model-first-draft](images/website-modeling-first-draft.png)
 
+
+
+![uilayouts](images/uilayouts.png)
