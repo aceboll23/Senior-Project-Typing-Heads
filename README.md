@@ -2,6 +2,8 @@
 
 A senior software engineering class project repository for team "Typing Heads".
 
+![business-card](./documents/images/business-card.png)
+
 # Project Vision Statement
 
 
@@ -23,13 +25,15 @@ Vision Statment: See above
 
 Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP3PlUs=/)
 
-![Image of the Mindmap](./documents/Mindmap.png)
+![Image of the Mindmap](./documents/images/Mindmap.png)
 
 ## Team Members
 
 * Logan Montgomery
 * Adler Ceboll
 * Ian Cooper
+
+![letterhead](./documents/images/letterhead.png)
 
 ## Repository Structure
 
