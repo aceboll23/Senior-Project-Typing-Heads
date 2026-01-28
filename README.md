@@ -20,7 +20,7 @@ Vision Statment: See above
 
 [Requirements](./documents/requirements.md)
 
-[Architecture Diagram](./documents/architecture-diagram.png)
+[Architecture Diagram](./documents/images/architecture-diagram.png)
 
 [Modeling outputs](./documents/website-model.md)
 
