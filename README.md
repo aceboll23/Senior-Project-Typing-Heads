@@ -2,8 +2,6 @@
 
 A senior software engineering class project repository for team "Typing Heads".
 
-![business-card](./documents/images/business-card.png)
-
 # Project Vision Statement
 
 
@@ -31,15 +29,13 @@ Vision Statment: See above
 
 Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP3PlUs=/)
 
-![Image of the Mindmap](./documents/images/Mindmap.png)
+![Image of the Mindmap](./documents/Mindmap.png)
 
 ## Team Members
 
 * Logan Montgomery
 * Adler Ceboll
 * Ian Cooper
-
-![letterhead](./documents/images/letterhead.png)
 
 ## Repository Structure
 
@@ -51,6 +47,7 @@ Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP
   * 📄 [Ian Cooper's Resume](./documents/resumes/Ian_Cooper_Resume.pdf)
   * 📄 [Logan Montgomery's Resume](./documents/resumes/Logan_Montgomery_Resume.pdf)
   
+* 📄 [Features and Needs](./documents/Features%20and%20Needs.md) - Feature requirements
 * 📄 [Winter Term Schedule](./documents/schedule-winter-term.html) - Winter term schedule
 * 🖼️ [Logo](./documents/logo.png) - Team logo
 * 🖼️ [Letterhead](./documents/letterhead.png) - Team letterhead
@@ -61,6 +58,7 @@ Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP
 
 [Visual Diagram](https://miro.com/app/board/uXjVGO1p6sY=/)
 
+![Image of the Architecture Diagram](./documents/architecture-diagram.png)
 
 ## Getting Started
 
