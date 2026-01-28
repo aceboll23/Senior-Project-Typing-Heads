@@ -16,7 +16,7 @@ Vision Statment: See above
 
 [Timeline and Release plan](./documents/schedule.html)
 
-[Features and Needs](./documents/Features%20and%20Needs.md) 
+[Features and Needs](./documents/features-and-needs.md) 
 
 [Requirements](./documents/requirements.md)
 
