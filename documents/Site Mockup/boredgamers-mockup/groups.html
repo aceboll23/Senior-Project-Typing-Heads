@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Groups - BoredGamers</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Lucide Icons (via CDN) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">BoredGamers</a>
+
+      <div class="navbar-nav">
+        <a href="games.html" class="nav-link">Games</a>
+        <a href="groups.html" class="nav-link active">Groups</a>
+        <a href="about.html" class="nav-link">About</a>
+      </div>
+
+      <div class="navbar-actions">
+        <div class="logged-out-only flex items-center gap-sm">
+          <button class="btn btn-ghost" data-action="login">Log In</button>
+          <button class="btn btn-primary" data-modal="register-modal">Sign Up</button>
+        </div>
+
+        <div class="logged-in-only flex items-center gap-sm">
+          <a href="messages.html" class="btn-icon icon-with-badge navbar-messages" title="Messages">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+            <span class="badge">3</span>
+          </a>
+
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+            <i data-lucide="sun" class="icon-sun w-5 h-5"></i>
+            <i data-lucide="moon" class="icon-moon w-5 h-5"></i>
+          </button>
+
+          <div class="user-dropdown">
+            <button class="navbar-user-btn" data-dropdown>
+              <div class="avatar avatar-sm">
+                <img src="images/PersonDonavanFerguson.jpeg" alt="John Doe">
+              </div>
+              <span class="navbar-username">boardgamer42</span>
+              <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </button>
+
+            <div class="user-dropdown-menu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name">John Doe</div>
+                <div class="user-dropdown-handle">@boardgamer42</div>
+              </div>
+              <div class="user-dropdown-body">
+                <a href="profile.html" class="user-dropdown-item">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                  My Profile
+                </a>
+                <a href="collection.html" class="user-dropdown-item">
+                  <i data-lucide="library" class="w-4 h-4"></i>
+                  My Collection
+                </a>
+                <a href="friends.html" class="user-dropdown-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  Friends
+                </a>
+                <a href="settings.html" class="user-dropdown-item">
+                  <i data-lucide="settings" class="w-4 h-4"></i>
+                  Settings
+                </a>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item danger" data-action="logout">
+                  <i data-lucide="log-out" class="w-4 h-4"></i>
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="navbar-mobile-toggle" id="mobile-nav-toggle" aria-label="Open menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <div class="mobile-nav">
+      <div class="mobile-nav-header">
+        <span class="navbar-logo">BoredGamers</span>
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="mobile-nav-body">
+        <div class="mobile-nav-links">
+          <a href="index.html" class="mobile-nav-link">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            Home
+          </a>
+          <a href="games.html" class="mobile-nav-link">
+            <i data-lucide="dice-5" class="w-5 h-5"></i>
+            Games
+          </a>
+          <a href="groups.html" class="mobile-nav-link active">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            Groups
+          </a>
+          <a href="about.html" class="mobile-nav-link">
+            <i data-lucide="info" class="w-5 h-5"></i>
+            About
+          </a>
+        </div>
+        <div class="logged-in-only">
+          <div class="mobile-nav-divider"></div>
+          <div class="mobile-nav-section-title">My Account</div>
+          <div class="mobile-nav-links">
+            <a href="profile.html" class="mobile-nav-link">
+              <i data-lucide="user" class="w-5 h-5"></i>
+              My Profile
+            </a>
+            <a href="collection.html" class="mobile-nav-link">
+              <i data-lucide="library" class="w-5 h-5"></i>
+              My Collection
+            </a>
+            <a href="friends.html" class="mobile-nav-link">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+              Friends
+            </a>
+            <a href="messages.html" class="mobile-nav-link">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+              Messages
+              <span class="badge" style="margin-left: auto;">3</span>
+            </a>
+            <a href="settings.html" class="mobile-nav-link">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+              Settings
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-nav-footer">
+        <div class="logged-out-only flex flex-col gap-sm">
+          <button class="btn btn-primary btn-lg" style="width: 100%;" data-action="login">Log In</button>
+          <button class="btn btn-secondary btn-lg" style="width: 100%;" data-modal="register-modal">Sign Up</button>
+        </div>
+        <div class="logged-in-only">
+          <button class="btn btn-ghost btn-lg" style="width: 100%;" data-action="logout">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Main Content
+       ======================================================================== -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Page Header -->
+      <div class="groups-header">
+        <div>
+          <h1 class="page-title" style="margin-bottom: 0;">Groups</h1>
+        </div>
+        <div class="flex gap-md items-center">
+          <div class="search-input-wrapper" style="width: 250px;">
+            <i data-lucide="search" class="search-icon w-5 h-5"></i>
+            <input type="text" class="form-input" placeholder="Search groups...">
+          </div>
+          <button class="btn btn-primary logged-in-only" data-modal="create-group-modal">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Create Group
+          </button>
+        </div>
+      </div>
+
+      <!-- My Groups Section (logged in only) -->
+      <section class="section logged-in-only">
+        <div class="section-header">
+          <h2 class="section-title">My Groups</h2>
+        </div>
+
+        <div class="grid grid-groups">
+          <!-- Group 1 -->
+          <a href="group-detail.html" class="card card-group">
+            <div class="card-image" style="aspect-ratio: 16/9;">
+              <img src="images/group1.png" alt="Portland Board Gamers">
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Portland Board Gamers</h3>
+              <p class="card-description">A group for board game enthusiasts in the Portland area. We meet weekly for game nights.</p>
+              <div class="card-meta">
+                <span class="card-meta-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  12 members
+                </span>
+                <span class="tag tag-public">Public</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Group 2 -->
+          <a href="group-detail.html" class="card card-group">
+            <div class="card-image" style="aspect-ratio: 16/9;">
+              <img src="images/group3.png" alt="Casual Card Games">
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Casual Card Games</h3>
+              <p class="card-description">Light card games and party games. No pressure, just fun!</p>
+              <div class="card-meta">
+                <span class="card-meta-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  15 members
+                </span>
+                <span class="tag tag-private">Invite Only</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- Public Groups Section -->
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Public Groups</h2>
+        </div>
+
+        <div class="grid grid-groups">
+          <!-- Group 1 -->
+          <a href="group-detail.html" class="card card-group">
+            <div class="card-image" style="aspect-ratio: 16/9;">
+              <img src="images/group1.png" alt="Portland Board Gamers">
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Portland Board Gamers</h3>
+              <p class="card-description">A group for board game enthusiasts in the Portland area. We meet weekly for game nights.</p>
+              <div class="card-meta">
+                <span class="card-meta-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  12 members
+                </span>
+                <span class="tag tag-public">Public</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Group 2 -->
+          <a href="group-detail.html" class="card card-group">
+            <div class="card-image" style="aspect-ratio: 16/9;">
+              <img src="images/group2.png" alt="Strategy Game Masters">
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Strategy Game Masters</h3>
+              <p class="card-description">For fans of heavy strategy games like Terraforming Mars, Brass, and Scythe.</p>
+              <div class="card-meta">
+                <span class="card-meta-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  8 members
+                </span>
+                <span class="tag tag-public">Public</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Group 3 -->
+          <a href="group-detail.html" class="card card-group">
+            <div class="card-image" style="aspect-ratio: 16/9;">
+              <img src="images/group4.png" alt="Seattle Tabletop Society">
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Seattle Tabletop Society</h3>
+              <p class="card-description">Seattle's largest board game community. Monthly meetups at local game cafes.</p>
+              <div class="card-meta">
+                <span class="card-meta-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  45 members
+                </span>
+                <span class="tag tag-public">Public</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Group 4 -->
+          <a href="group-detail.html" class="card card-group">
+            <div class="card-image" style="aspect-ratio: 16/9;">
+              <img src="images/group5.png" alt="Euro Game Enthusiasts">
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Euro Game Enthusiasts</h3>
+              <p class="card-description">Dedicated to European-style board games. Deep strategy, minimal luck.</p>
+              <div class="card-meta">
+                <span class="card-meta-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  23 members
+                </span>
+                <span class="tag tag-public">Public</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Group 5 -->
+          <a href="group-detail.html" class="card card-group">
+            <div class="card-image" style="aspect-ratio: 16/9;">
+              <img src="images/group6.png" alt="Family Game Night">
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Family Game Night</h3>
+              <p class="card-description">Kid-friendly games for the whole family. Ages 6+, all skill levels welcome!</p>
+              <div class="card-meta">
+                <span class="card-meta-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  32 members
+                </span>
+                <span class="tag tag-public">Public</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Group 6 -->
+          <a href="group-detail.html" class="card card-group">
+            <div class="card-image" style="aspect-ratio: 16/9;">
+              <img src="images/group7.png" alt="Cooperative Games Club">
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Cooperative Games Club</h3>
+              <p class="card-description">We play together, not against each other! Pandemic, Spirit Island, and more.</p>
+              <div class="card-meta">
+                <span class="card-meta-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  18 members
+                </span>
+                <span class="tag tag-public">Public</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <p class="footer-copyright">&copy; 2026 BoredGamers</p>
+        <div class="footer-links">
+          <a href="about.html" class="footer-link">About</a>
+          <span class="footer-divider">|</span>
+          <a href="about.html#contact" class="footer-link">Contact</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Privacy</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Terms</a>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" title="Twitter">
+            <i data-lucide="twitter" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="footer-social-link" title="GitHub">
+            <i data-lucide="github" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Create Group Modal -->
+  <div class="modal-overlay" id="create-group-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Create a Group</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label class="form-label" for="group-name">Group Name *</label>
+            <input type="text" id="group-name" class="form-input" placeholder="Enter group name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="group-description">Description</label>
+            <textarea id="group-description" class="form-textarea" rows="3" placeholder="What is this group about?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Privacy</label>
+            <div style="display: flex; gap: var(--space-md);">
+              <label class="form-check">
+                <input type="radio" name="privacy" class="form-check-input" checked>
+                <span class="form-check-label">Public</span>
+              </label>
+              <label class="form-check">
+                <input type="radio" name="privacy" class="form-check-input">
+                <span class="form-check-label">Invite Only</span>
+              </label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Create Group</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Log In</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email or Username</label>
+            <input type="text" id="login-email" class="form-input" placeholder="Enter your email or username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="Enter your password">
+          </div>
+          <div class="form-group">
+            <a href="reset-password.html" class="text-small">Forgot Password?</a>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Log In</button>
+        </form>
+        <div class="mt-md text-center">
+          <button class="btn btn-ghost btn-sm" data-action="quick-login">Quick Demo Login</button>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: 1px solid var(--border-color); padding-top: var(--space-md); margin-top: var(--space-md);">
+        <p class="text-small text-muted">
+          Don't have an account? <a href="#" data-action="show-register">Sign Up</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div class="modal-overlay" id="register-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Create Account</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="register-form">
+          <div class="form-group">
+            <label class="form-label" for="register-username">Username</label>
+            <input type="text" id="register-username" class="form-input" placeholder="Choose a username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-email">Email</label>
+            <input type="email" id="register-email" class="form-input" placeholder="Enter your email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-password">Password</label>
+            <input type="password" id="register-password" class="form-input" placeholder="Create a password">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-confirm">Confirm Password</label>
+            <input type="password" id="register-confirm" class="form-input" placeholder="Confirm your password">
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Create Account</button>
+        </form>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: 1px solid var(--border-color); padding-top: var(--space-md); margin-top: var(--space-md);">
+        <p class="text-small text-muted">
+          Already have an account? <a href="#" data-action="show-login">Log In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- javascript - Scripts -->
+  <script src="js/main.js"></script>
+  <script>
+    // javascript - Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>

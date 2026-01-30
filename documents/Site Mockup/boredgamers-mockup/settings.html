@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - BoredGamers</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Lucide Icons (via CDN) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body class="logged-in">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">BoredGamers</a>
+
+      <div class="navbar-nav">
+        <a href="games.html" class="nav-link">Games</a>
+        <a href="groups.html" class="nav-link">Groups</a>
+        <a href="about.html" class="nav-link">About</a>
+      </div>
+
+      <div class="navbar-actions">
+        <div class="logged-in-only flex items-center gap-sm">
+          <a href="messages.html" class="btn-icon icon-with-badge navbar-messages" title="Messages">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+            <span class="badge">3</span>
+          </a>
+
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+            <i data-lucide="sun" class="icon-sun w-5 h-5"></i>
+            <i data-lucide="moon" class="icon-moon w-5 h-5"></i>
+          </button>
+
+          <div class="user-dropdown">
+            <button class="navbar-user-btn" data-dropdown>
+              <div class="avatar avatar-sm">
+                <img src="images/PersonDonavanFerguson.jpeg" alt="John Doe">
+              </div>
+              <span class="navbar-username">boardgamer42</span>
+              <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </button>
+
+            <div class="user-dropdown-menu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name">John Doe</div>
+                <div class="user-dropdown-handle">@boardgamer42</div>
+              </div>
+              <div class="user-dropdown-body">
+                <a href="profile.html" class="user-dropdown-item">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                  My Profile
+                </a>
+                <a href="collection.html" class="user-dropdown-item">
+                  <i data-lucide="library" class="w-4 h-4"></i>
+                  My Collection
+                </a>
+                <a href="friends.html" class="user-dropdown-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  Friends
+                </a>
+                <a href="settings.html" class="user-dropdown-item">
+                  <i data-lucide="settings" class="w-4 h-4"></i>
+                  Settings
+                </a>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item danger" data-action="logout">
+                  <i data-lucide="log-out" class="w-4 h-4"></i>
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="navbar-mobile-toggle" id="mobile-nav-toggle" aria-label="Open menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <div class="mobile-nav">
+      <div class="mobile-nav-header">
+        <span class="navbar-logo">BoredGamers</span>
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="mobile-nav-body">
+        <div class="mobile-nav-links">
+          <a href="index.html" class="mobile-nav-link">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            Home
+          </a>
+          <a href="games.html" class="mobile-nav-link">
+            <i data-lucide="dice-5" class="w-5 h-5"></i>
+            Games
+          </a>
+          <a href="groups.html" class="mobile-nav-link">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            Groups
+          </a>
+          <a href="about.html" class="mobile-nav-link">
+            <i data-lucide="info" class="w-5 h-5"></i>
+            About
+          </a>
+        </div>
+        <div class="logged-in-only">
+          <div class="mobile-nav-divider"></div>
+          <div class="mobile-nav-section-title">My Account</div>
+          <div class="mobile-nav-links">
+            <a href="profile.html" class="mobile-nav-link">
+              <i data-lucide="user" class="w-5 h-5"></i>
+              My Profile
+            </a>
+            <a href="collection.html" class="mobile-nav-link">
+              <i data-lucide="library" class="w-5 h-5"></i>
+              My Collection
+            </a>
+            <a href="friends.html" class="mobile-nav-link">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+              Friends
+            </a>
+            <a href="messages.html" class="mobile-nav-link">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+              Messages
+              <span class="badge" style="margin-left: auto;">3</span>
+            </a>
+            <a href="settings.html" class="mobile-nav-link active">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+              Settings
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-nav-footer">
+        <div class="logged-in-only">
+          <button class="btn btn-ghost btn-lg" style="width: 100%;" data-action="logout">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Main Content
+       ======================================================================== -->
+  <main class="main-content">
+    <div class="container" style="max-width: 800px;">
+      <h1 class="page-title mb-xl">Settings</h1>
+
+      <!-- Account Section -->
+      <section class="settings-section">
+        <h2 class="settings-section-title">Account</h2>
+
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Email</div>
+            <div class="settings-value">john@example.com</div>
+          </div>
+          <button class="btn btn-secondary btn-sm">Change</button>
+        </div>
+
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Password</div>
+            <div class="settings-value">••••••••</div>
+          </div>
+          <button class="btn btn-secondary btn-sm">Change</button>
+        </div>
+
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Display Name</div>
+            <div class="settings-value">John Doe</div>
+          </div>
+          <button class="btn btn-secondary btn-sm">Change</button>
+        </div>
+
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Username</div>
+            <div class="settings-value">@boardgamer42</div>
+          </div>
+          <button class="btn btn-secondary btn-sm">Change</button>
+        </div>
+      </section>
+
+      <!-- Privacy Section -->
+      <section class="settings-section">
+        <h2 class="settings-section-title">Privacy</h2>
+
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Profile Visibility</div>
+            <div class="settings-value">Who can see your profile and collection</div>
+          </div>
+          <select class="form-select" style="width: auto; min-width: 150px;">
+            <option value="public" selected>Public</option>
+            <option value="friends">Friends Only</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Who can message me</div>
+            <div class="settings-value">Control who can send you direct messages</div>
+          </div>
+          <select class="form-select" style="width: auto; min-width: 150px;">
+            <option value="everyone" selected>Everyone</option>
+            <option value="friends">Friends Only</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Blocked Users Section -->
+      <section class="settings-section">
+        <h2 class="settings-section-title">Blocked Users</h2>
+
+        <div class="settings-item">
+          <div class="flex items-center gap-md">
+            <div class="avatar avatar-sm">
+              <span class="avatar-initials">BU</span>
+            </div>
+            <div>
+              <div class="settings-label" style="margin-bottom: 0;">@blockeduser1</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm">Unblock</button>
+        </div>
+
+        <div class="settings-item">
+          <div class="flex items-center gap-md">
+            <div class="avatar avatar-sm">
+              <span class="avatar-initials">BU</span>
+            </div>
+            <div>
+              <div class="settings-label" style="margin-bottom: 0;">@blockeduser2</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm">Unblock</button>
+        </div>
+      </section>
+
+      <!-- Appearance Section -->
+      <section class="settings-section">
+        <h2 class="settings-section-title">Appearance</h2>
+
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Theme</div>
+            <div class="settings-value">Choose your preferred color scheme</div>
+          </div>
+          <select class="form-select" style="width: auto; min-width: 150px;" id="theme-select">
+            <option value="dark" selected>Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Danger Zone -->
+      <section class="settings-section danger">
+        <h2 class="settings-section-title">Danger Zone</h2>
+
+        <div class="settings-item" style="border-bottom: none;">
+          <div>
+            <div class="settings-label">Delete Account</div>
+            <div class="settings-value">Permanently delete your account and all associated data</div>
+          </div>
+          <button class="btn btn-danger btn-sm" data-modal="delete-account-modal">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            Delete Account
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <p class="footer-copyright">&copy; 2026 BoredGamers</p>
+        <div class="footer-links">
+          <a href="about.html" class="footer-link">About</a>
+          <span class="footer-divider">|</span>
+          <a href="about.html#contact" class="footer-link">Contact</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Privacy</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Terms</a>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" title="Twitter">
+            <i data-lucide="twitter" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="footer-social-link" title="GitHub">
+            <i data-lucide="github" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Delete Account Confirmation Modal -->
+  <div class="modal-overlay" id="delete-account-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" style="color: var(--accent-danger);">Delete Account</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-lg">
+          Are you sure you want to delete your account? This action cannot be undone. All your data including your collection, reviews, and group memberships will be permanently deleted.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Type "DELETE" to confirm</label>
+          <input type="text" class="form-input" placeholder="DELETE">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-modal-close>Cancel</button>
+        <button class="btn btn-danger">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+          Delete Account
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- javascript - Scripts -->
+  <script src="js/main.js"></script>
+  <script>
+    // javascript - Initialize Lucide icons
+    lucide.createIcons();
+
+    // javascript - Theme select sync
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+      // Set initial value based on current theme
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      themeSelect.value = currentTheme;
+
+      // Listen for changes
+      themeSelect.addEventListener('change', function() {
+        const newTheme = this.value;
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('boredgamers-theme', newTheme);
+      });
+    }
+  </script>
+</body>
+</html>

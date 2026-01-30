@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Games - BoredGamers</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Lucide Icons (via CDN) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+  <!-- ========================================================================
+       Navbar
+       ======================================================================== -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">BoredGamers</a>
+
+      <div class="navbar-nav">
+        <a href="games.html" class="nav-link active">Games</a>
+        <a href="groups.html" class="nav-link">Groups</a>
+        <a href="about.html" class="nav-link">About</a>
+      </div>
+
+      <div class="navbar-actions">
+        <!-- Logged Out -->
+        <div class="logged-out-only flex items-center gap-sm">
+          <button class="btn btn-ghost" data-action="login">Log In</button>
+          <button class="btn btn-primary" data-modal="register-modal">Sign Up</button>
+        </div>
+
+        <!-- Logged In -->
+        <div class="logged-in-only flex items-center gap-sm">
+          <a href="messages.html" class="btn-icon icon-with-badge navbar-messages" title="Messages">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+            <span class="badge">3</span>
+          </a>
+
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+            <i data-lucide="sun" class="icon-sun w-5 h-5"></i>
+            <i data-lucide="moon" class="icon-moon w-5 h-5"></i>
+          </button>
+
+          <div class="user-dropdown">
+            <button class="navbar-user-btn" data-dropdown>
+              <div class="avatar avatar-sm">
+                <img src="images/PersonDonavanFerguson.jpeg" alt="John Doe">
+              </div>
+              <span class="navbar-username">boardgamer42</span>
+              <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </button>
+
+            <div class="user-dropdown-menu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name">John Doe</div>
+                <div class="user-dropdown-handle">@boardgamer42</div>
+              </div>
+              <div class="user-dropdown-body">
+                <a href="profile.html" class="user-dropdown-item">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                  My Profile
+                </a>
+                <a href="collection.html" class="user-dropdown-item">
+                  <i data-lucide="library" class="w-4 h-4"></i>
+                  My Collection
+                </a>
+                <a href="friends.html" class="user-dropdown-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  Friends
+                </a>
+                <a href="settings.html" class="user-dropdown-item">
+                  <i data-lucide="settings" class="w-4 h-4"></i>
+                  Settings
+                </a>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item danger" data-action="logout">
+                  <i data-lucide="log-out" class="w-4 h-4"></i>
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="navbar-mobile-toggle" id="mobile-nav-toggle" aria-label="Open menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation (same as index.html) -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <div class="mobile-nav">
+      <div class="mobile-nav-header">
+        <span class="navbar-logo">BoredGamers</span>
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="mobile-nav-body">
+        <div class="mobile-nav-links">
+          <a href="index.html" class="mobile-nav-link">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            Home
+          </a>
+          <a href="games.html" class="mobile-nav-link active">
+            <i data-lucide="dice-5" class="w-5 h-5"></i>
+            Games
+          </a>
+          <a href="groups.html" class="mobile-nav-link">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            Groups
+          </a>
+          <a href="about.html" class="mobile-nav-link">
+            <i data-lucide="info" class="w-5 h-5"></i>
+            About
+          </a>
+        </div>
+        <div class="logged-in-only">
+          <div class="mobile-nav-divider"></div>
+          <div class="mobile-nav-section-title">My Account</div>
+          <div class="mobile-nav-links">
+            <a href="profile.html" class="mobile-nav-link">
+              <i data-lucide="user" class="w-5 h-5"></i>
+              My Profile
+            </a>
+            <a href="collection.html" class="mobile-nav-link">
+              <i data-lucide="library" class="w-5 h-5"></i>
+              My Collection
+            </a>
+            <a href="friends.html" class="mobile-nav-link">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+              Friends
+            </a>
+            <a href="messages.html" class="mobile-nav-link">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+              Messages
+              <span class="badge" style="margin-left: auto;">3</span>
+            </a>
+            <a href="settings.html" class="mobile-nav-link">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+              Settings
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-nav-footer">
+        <div class="logged-out-only flex flex-col gap-sm">
+          <button class="btn btn-primary btn-lg" style="width: 100%;" data-action="login">Log In</button>
+          <button class="btn btn-secondary btn-lg" style="width: 100%;" data-modal="register-modal">Sign Up</button>
+        </div>
+        <div class="logged-in-only">
+          <button class="btn btn-ghost btn-lg" style="width: 100%;" data-action="logout">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Main Content
+       ======================================================================== -->
+  <main class="main-content">
+    <div class="container">
+      <div class="games-page">
+
+        <!-- Search Bar -->
+        <div class="games-search-bar">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon w-5 h-5"></i>
+            <input type="text" class="form-input" placeholder="Search games...">
+          </div>
+          <select class="form-select games-sort">
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="rating-desc" selected>Rating (High to Low)</option>
+            <option value="rating-asc">Rating (Low to High)</option>
+            <option value="players">Player Count</option>
+          </select>
+        </div>
+
+        <!-- Mobile Filters Toggle -->
+        <button class="btn btn-secondary filters-toggle-mobile" id="filters-toggle">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+          Filters
+        </button>
+
+        <div class="games-layout">
+          <!-- Filters Sidebar -->
+          <aside class="filters-panel" id="filters-panel">
+            <div class="filters-header">
+              <h2 class="filters-title">Filters</h2>
+              <button class="btn btn-ghost btn-sm">Clear All</button>
+            </div>
+
+            <!-- Player Count -->
+            <div class="filter-group">
+              <label class="filter-label">Player Count</label>
+              <div class="filter-options">
+                <button class="filter-chip">1</button>
+                <button class="filter-chip">2</button>
+                <button class="filter-chip active">3</button>
+                <button class="filter-chip active">4</button>
+                <button class="filter-chip">5</button>
+                <button class="filter-chip">6+</button>
+              </div>
+            </div>
+
+            <!-- Playtime -->
+            <div class="filter-group">
+              <label class="filter-label">Playtime</label>
+              <div class="filter-checkboxes">
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input">
+                  <span class="form-check-label">Under 30 min</span>
+                </label>
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input" checked>
+                  <span class="form-check-label">30-60 min</span>
+                </label>
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input" checked>
+                  <span class="form-check-label">1-2 hours</span>
+                </label>
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input">
+                  <span class="form-check-label">2+ hours</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Complexity -->
+            <div class="filter-group">
+              <label class="filter-label">Complexity</label>
+              <div class="filter-options">
+                <button class="filter-chip active">Light</button>
+                <button class="filter-chip active">Medium</button>
+                <button class="filter-chip">Heavy</button>
+              </div>
+            </div>
+
+            <!-- Age Rating -->
+            <div class="filter-group">
+              <label class="filter-label">Age Rating</label>
+              <div class="filter-checkboxes">
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input" checked>
+                  <span class="form-check-label">All Ages</span>
+                </label>
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input" checked>
+                  <span class="form-check-label">8+</span>
+                </label>
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input" checked>
+                  <span class="form-check-label">10+</span>
+                </label>
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input">
+                  <span class="form-check-label">14+</span>
+                </label>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Games Results -->
+          <div class="games-results">
+            <div class="games-results-header">
+              <span class="games-count">Showing 6 games</span>
+            </div>
+
+            <div class="grid grid-games">
+              <!-- Game Card 1: Catan -->
+              <a href="game-detail.html?id=1" class="card card-game">
+                <div class="card-image"><img src="images/game1.png" alt="Catan"></div>
+                <div class="card-body">
+                  <h3 class="card-title">Catan</h3>
+                  <div class="card-subtitle">3-4 Players • 60-120 min</div>
+                  <div class="card-meta">
+                    <div class="card-rating">
+                      <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                      <span>8.2/10</span>
+                    </div>
+                    <span class="tag">Medium</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- Game Card 2: Ticket to Ride -->
+              <a href="game-detail.html?id=2" class="card card-game">
+                <div class="card-image"><img src="images/game2.png" alt="Ticket to Ride"></div>
+                <div class="card-body">
+                  <h3 class="card-title">Ticket to Ride</h3>
+                  <div class="card-subtitle">2-5 Players • 30-60 min</div>
+                  <div class="card-meta">
+                    <div class="card-rating">
+                      <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                      <span>7.9/10</span>
+                    </div>
+                    <span class="tag">Light</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- Game Card 3: Wingspan -->
+              <a href="game-detail.html?id=3" class="card card-game">
+                <div class="card-image"><img src="images/game3.png" alt="Wingspan"></div>
+                <div class="card-body">
+                  <h3 class="card-title">Wingspan</h3>
+                  <div class="card-subtitle">1-5 Players • 40-70 min</div>
+                  <div class="card-meta">
+                    <div class="card-rating">
+                      <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                      <span>8.5/10</span>
+                    </div>
+                    <span class="tag">Medium</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- Game Card 4: Azul -->
+              <a href="game-detail.html?id=4" class="card card-game">
+                <div class="card-image"><img src="images/game4.png" alt="Azul"></div>
+                <div class="card-body">
+                  <h3 class="card-title">Azul</h3>
+                  <div class="card-subtitle">2-4 Players • 30-45 min</div>
+                  <div class="card-meta">
+                    <div class="card-rating">
+                      <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                      <span>8.1/10</span>
+                    </div>
+                    <span class="tag">Light</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- Game Card 5: Pandemic -->
+              <a href="game-detail.html?id=5" class="card card-game">
+                <div class="card-image"><img src="images/game5.png" alt="Pandemic"></div>
+                <div class="card-body">
+                  <h3 class="card-title">Pandemic</h3>
+                  <div class="card-subtitle">2-4 Players • 45-60 min</div>
+                  <div class="card-meta">
+                    <div class="card-rating">
+                      <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                      <span>7.8/10</span>
+                    </div>
+                    <span class="tag">Medium</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- Game Card 6: Splendor -->
+              <a href="game-detail.html?id=6" class="card card-game">
+                <div class="card-image"><img src="images/game6.png" alt="Splendor"></div>
+                <div class="card-body">
+                  <h3 class="card-title">Splendor</h3>
+                  <div class="card-subtitle">2-4 Players • 30 min</div>
+                  <div class="card-meta">
+                    <div class="card-rating">
+                      <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                      <span>7.7/10</span>
+                    </div>
+                    <span class="tag">Light</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       Footer
+       ======================================================================== -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <p class="footer-copyright">&copy; 2026 BoredGamers</p>
+        <div class="footer-links">
+          <a href="about.html" class="footer-link">About</a>
+          <span class="footer-divider">|</span>
+          <a href="about.html#contact" class="footer-link">Contact</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Privacy</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Terms</a>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" title="Twitter">
+            <i data-lucide="twitter" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="footer-social-link" title="GitHub">
+            <i data-lucide="github" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Log In</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email or Username</label>
+            <input type="text" id="login-email" class="form-input" placeholder="Enter your email or username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="Enter your password">
+          </div>
+          <div class="form-group">
+            <a href="reset-password.html" class="text-small">Forgot Password?</a>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Log In</button>
+        </form>
+        <div class="mt-md text-center">
+          <button class="btn btn-ghost btn-sm" data-action="quick-login">Quick Demo Login</button>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: 1px solid var(--border-color); padding-top: var(--space-md); margin-top: var(--space-md);">
+        <p class="text-small text-muted">
+          Don't have an account? <a href="#" data-action="show-register">Sign Up</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div class="modal-overlay" id="register-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Create Account</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="register-form">
+          <div class="form-group">
+            <label class="form-label" for="register-username">Username</label>
+            <input type="text" id="register-username" class="form-input" placeholder="Choose a username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-email">Email</label>
+            <input type="email" id="register-email" class="form-input" placeholder="Enter your email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-password">Password</label>
+            <input type="password" id="register-password" class="form-input" placeholder="Create a password">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-confirm">Confirm Password</label>
+            <input type="password" id="register-confirm" class="form-input" placeholder="Confirm your password">
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Create Account</button>
+        </form>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: 1px solid var(--border-color); padding-top: var(--space-md); margin-top: var(--space-md);">
+        <p class="text-small text-muted">
+          Already have an account? <a href="#" data-action="show-login">Log In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- javascript - Scripts -->
+  <script src="js/main.js"></script>
+  <script>
+    // javascript - Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>

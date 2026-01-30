@@ -1,0 +1,1043 @@
+/* ============================================================================
+   BoredGamers - Page-Specific Styles
+   Styles unique to individual pages
+   ============================================================================ */
+
+/* ============================================================================
+   Homepage - Hero Section
+   ============================================================================ */
+
+.hero {
+  padding: var(--space-2xl) 0;
+  text-align: center;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+}
+
+.hero-content {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+}
+
+.hero-search {
+  display: flex;
+  gap: var(--space-sm);
+  max-width: 500px;
+  margin: 0 auto var(--space-xl);
+}
+
+.hero-search .search-input-wrapper {
+  flex: 1;
+}
+
+.hero-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Responsive hero */
+@media (min-width: 768px) {
+  .hero {
+    padding: var(--space-2xl) 0 calc(var(--space-2xl) * 1.5);
+  }
+
+  .hero-title {
+    font-size: 3rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+  }
+}
+
+/* ============================================================================
+   Reviews List (Homepage)
+   ============================================================================ */
+
+.reviews-list {
+  max-width: 800px;
+}
+
+/* ============================================================================
+   Game Catalog Page (games.html)
+   ============================================================================ */
+
+.games-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.games-search-bar {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.games-search-bar .search-input-wrapper {
+  flex: 1;
+  min-width: 200px;
+}
+
+.games-sort {
+  min-width: 180px;
+}
+
+.games-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* Filters Sidebar */
+.filters-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.filters-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.filter-group {
+  margin-bottom: var(--space-lg);
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+  display: block;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.filter-chip {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter-chip:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.filter-chip.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+}
+
+.filter-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* Mobile filters toggle */
+.filters-toggle-mobile {
+  display: flex;
+  width: 100%;
+  margin-bottom: var(--space-md);
+}
+
+/* Games results area */
+.games-results {
+  flex: 1;
+}
+
+.games-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.games-count {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Responsive games layout */
+@media (min-width: 768px) {
+  .games-layout {
+    flex-direction: row;
+  }
+
+  .filters-panel {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: calc(var(--navbar-height) + var(--space-lg));
+    align-self: flex-start;
+    max-height: calc(100vh - var(--navbar-height) - var(--space-xl));
+    overflow-y: auto;
+  }
+
+  .filters-toggle-mobile {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .filters-panel {
+    width: 300px;
+  }
+}
+
+/* ============================================================================
+   Game Detail Page (game-detail.html)
+   ============================================================================ */
+
+.game-detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.game-image-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.game-image {
+  aspect-ratio: 1;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  overflow: hidden;
+}
+
+.game-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.game-info {
+  flex: 1;
+}
+
+.game-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.game-rating-large {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.game-rating-large .rating-stars {
+  font-size: 1.25rem;
+}
+
+.game-rating-large .rating-value {
+  font-size: 1.25rem;
+}
+
+.game-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm) var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.game-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.game-meta-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.game-meta-value {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.game-actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.game-description {
+  margin-bottom: var(--space-xl);
+}
+
+.game-description h2 {
+  font-size: 1.25rem;
+  margin-bottom: var(--space-md);
+}
+
+.game-reviews {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--space-xl);
+}
+
+.game-reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+/* Responsive game detail */
+@media (min-width: 768px) {
+  .game-detail-header {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .game-image-container {
+    width: 300px;
+    flex-shrink: 0;
+  }
+
+  .game-meta-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .game-image-container {
+    width: 350px;
+  }
+}
+
+/* ============================================================================
+   Collection Page (collection.html)
+   ============================================================================ */
+
+.collection-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.collection-search-sort {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.collection-search-sort .search-input-wrapper {
+  flex: 1;
+  min-width: 200px;
+}
+
+@media (min-width: 768px) {
+  .collection-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* ============================================================================
+   Profile Page (profile.html)
+   ============================================================================ */
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-md);
+  padding: var(--space-xl) 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--space-xl);
+}
+
+.profile-avatar {
+  position: relative;
+}
+
+.profile-avatar .avatar {
+  width: 120px;
+  height: 120px;
+  font-size: 2.5rem;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.profile-handle {
+  color: var(--text-secondary);
+}
+
+.profile-member-since {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.profile-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.profile-private-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-2xl);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.profile-private-notice i {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+@media (min-width: 768px) {
+  .profile-header {
+    flex-direction: row;
+    text-align: left;
+    gap: var(--space-lg);
+  }
+
+  .profile-info {
+    flex: 1;
+  }
+
+  .profile-actions {
+    align-self: flex-start;
+  }
+}
+
+/* ============================================================================
+   Friends Page (friends.html)
+   ============================================================================ */
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.friend-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.friend-name {
+  font-weight: 500;
+  margin-bottom: var(--space-xs);
+}
+
+.friend-meta {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.friend-actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* ============================================================================
+   Groups Page (groups.html)
+   ============================================================================ */
+
+.groups-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+@media (min-width: 768px) {
+  .groups-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* ============================================================================
+   Group Detail Page (group-detail.html)
+   ============================================================================ */
+
+.group-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--space-lg);
+}
+
+.group-image {
+  width: 100%;
+  max-width: 200px;
+  aspect-ratio: 1;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  overflow: hidden;
+}
+
+.group-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.group-info {
+  flex: 1;
+}
+
+.group-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+.group-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.group-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+.group-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+@media (min-width: 768px) {
+  .group-header {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .group-image {
+    width: 150px;
+    flex-shrink: 0;
+  }
+}
+
+/* Group Members List */
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+}
+
+.member-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.member-info {
+  flex: 1;
+}
+
+.member-name {
+  font-weight: 500;
+}
+
+.member-role {
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+}
+
+/* ============================================================================
+   Game Night Detail Page (gamenight-detail.html)
+   ============================================================================ */
+
+.gamenight-header {
+  margin-bottom: var(--space-xl);
+}
+
+.gamenight-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+}
+
+.gamenight-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  color: var(--text-secondary);
+}
+
+.gamenight-detail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.gamenight-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.gamenight-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+}
+
+/* Attendees */
+.attendees-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.attendee {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+}
+
+.attendee-status {
+  font-size: 0.75rem;
+}
+
+.attendee-status.going { color: var(--accent-secondary); }
+.attendee-status.maybe { color: var(--accent-warning); }
+.attendee-status.not-going { color: var(--accent-danger); }
+
+/* Game Suggestions */
+.game-suggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+}
+
+.game-suggestion:last-child {
+  margin-bottom: 0;
+}
+
+.game-suggestion-info {
+  flex: 1;
+}
+
+.game-suggestion-title {
+  font-weight: 500;
+  margin-bottom: var(--space-xs);
+}
+
+.game-suggestion-meta {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.game-suggestion-votes {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.game-suggestion-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* ============================================================================
+   Messages Page (messages.html)
+   ============================================================================ */
+
+.messages-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--navbar-height) - var(--space-xl));
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.conversations-list {
+  width: 100%;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+}
+
+.conversations-header {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.conversation-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.conversation-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.conversation-item.active {
+  background: var(--bg-tertiary);
+}
+
+.conversation-item.unread .conversation-name {
+  font-weight: 600;
+}
+
+.conversation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversation-name {
+  font-weight: 500;
+  margin-bottom: var(--space-xs);
+}
+
+.conversation-preview {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversation-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Active Conversation */
+.conversation-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  display: none;
+}
+
+.conversation-view.active {
+  display: flex;
+}
+
+.conversation-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.conversation-back {
+  display: block;
+}
+
+.conversation-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  font-size: 0.9375rem;
+}
+
+.message-bubble.sent {
+  align-self: flex-end;
+  background: var(--accent-primary);
+  color: white;
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.message-bubble.received {
+  align-self: flex-start;
+  background: var(--bg-tertiary);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.message-time {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
+}
+
+.message-bubble.sent .message-time {
+  color: rgba(255, 255, 255, 0.7);
+  text-align: right;
+}
+
+.conversation-input {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.conversation-input .form-input {
+  flex: 1;
+}
+
+/* Responsive messages */
+@media (min-width: 768px) {
+  .messages-layout {
+    flex-direction: row;
+  }
+
+  .conversations-list {
+    width: 320px;
+  }
+
+  .conversation-view {
+    display: flex;
+  }
+
+  .conversation-back {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   Settings Page (settings.html)
+   ============================================================================ */
+
+.settings-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.settings-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settings-item:first-of-type {
+  padding-top: 0;
+}
+
+.settings-label {
+  font-weight: 500;
+  margin-bottom: var(--space-xs);
+}
+
+.settings-value {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.settings-section.danger {
+  border-color: var(--accent-danger);
+}
+
+.settings-section.danger .settings-section-title {
+  color: var(--accent-danger);
+}
+
+/* ============================================================================
+   About Page (about.html)
+   ============================================================================ */
+
+.about-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.about-section {
+  margin-bottom: var(--space-2xl);
+}
+
+.about-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-md);
+}
+
+.about-section p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.about-team {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.about-team li {
+  color: var(--text-primary);
+  padding-left: var(--space-md);
+  position: relative;
+}
+
+.about-team li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--accent-primary);
+}
+
+.contact-form {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+}
+
+/* ============================================================================
+   Password Reset Page (reset-password.html)
+   ============================================================================ */
+
+.auth-page {
+  min-height: calc(100vh - var(--navbar-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-md);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+}
+
+.auth-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+  text-align: center;
+}
+
+.auth-subtitle {
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}

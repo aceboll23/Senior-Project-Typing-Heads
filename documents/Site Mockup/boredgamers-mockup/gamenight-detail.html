@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saturday Game Night - BoredGamers</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Lucide Icons (via CDN) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body class="logged-in">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">BoredGamers</a>
+
+      <div class="navbar-nav">
+        <a href="games.html" class="nav-link">Games</a>
+        <a href="groups.html" class="nav-link active">Groups</a>
+        <a href="about.html" class="nav-link">About</a>
+      </div>
+
+      <div class="navbar-actions">
+        <div class="logged-in-only flex items-center gap-sm">
+          <a href="messages.html" class="btn-icon icon-with-badge navbar-messages" title="Messages">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+            <span class="badge">3</span>
+          </a>
+
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+            <i data-lucide="sun" class="icon-sun w-5 h-5"></i>
+            <i data-lucide="moon" class="icon-moon w-5 h-5"></i>
+          </button>
+
+          <div class="user-dropdown">
+            <button class="navbar-user-btn" data-dropdown>
+              <div class="avatar avatar-sm">
+                <img src="images/PersonDonavanFerguson.jpeg" alt="John Doe">
+              </div>
+              <span class="navbar-username">boardgamer42</span>
+              <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </button>
+
+            <div class="user-dropdown-menu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name">John Doe</div>
+                <div class="user-dropdown-handle">@boardgamer42</div>
+              </div>
+              <div class="user-dropdown-body">
+                <a href="profile.html" class="user-dropdown-item">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                  My Profile
+                </a>
+                <a href="collection.html" class="user-dropdown-item">
+                  <i data-lucide="library" class="w-4 h-4"></i>
+                  My Collection
+                </a>
+                <a href="friends.html" class="user-dropdown-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  Friends
+                </a>
+                <a href="settings.html" class="user-dropdown-item">
+                  <i data-lucide="settings" class="w-4 h-4"></i>
+                  Settings
+                </a>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item danger" data-action="logout">
+                  <i data-lucide="log-out" class="w-4 h-4"></i>
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="navbar-mobile-toggle" id="mobile-nav-toggle" aria-label="Open menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <div class="mobile-nav">
+      <div class="mobile-nav-header">
+        <span class="navbar-logo">BoredGamers</span>
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="mobile-nav-body">
+        <div class="mobile-nav-links">
+          <a href="index.html" class="mobile-nav-link">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            Home
+          </a>
+          <a href="games.html" class="mobile-nav-link">
+            <i data-lucide="dice-5" class="w-5 h-5"></i>
+            Games
+          </a>
+          <a href="groups.html" class="mobile-nav-link active">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            Groups
+          </a>
+          <a href="about.html" class="mobile-nav-link">
+            <i data-lucide="info" class="w-5 h-5"></i>
+            About
+          </a>
+        </div>
+        <div class="logged-in-only">
+          <div class="mobile-nav-divider"></div>
+          <div class="mobile-nav-section-title">My Account</div>
+          <div class="mobile-nav-links">
+            <a href="profile.html" class="mobile-nav-link">
+              <i data-lucide="user" class="w-5 h-5"></i>
+              My Profile
+            </a>
+            <a href="collection.html" class="mobile-nav-link">
+              <i data-lucide="library" class="w-5 h-5"></i>
+              My Collection
+            </a>
+            <a href="friends.html" class="mobile-nav-link">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+              Friends
+            </a>
+            <a href="messages.html" class="mobile-nav-link">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+              Messages
+              <span class="badge" style="margin-left: auto;">3</span>
+            </a>
+            <a href="settings.html" class="mobile-nav-link">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+              Settings
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-nav-footer">
+        <div class="logged-in-only">
+          <button class="btn btn-ghost btn-lg" style="width: 100%;" data-action="logout">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Main Content
+       ======================================================================== -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <nav class="mb-lg" style="font-size: 0.875rem;">
+        <a href="groups.html" class="text-muted">Groups</a>
+        <span class="text-muted"> / </span>
+        <a href="group-detail.html" class="text-muted">Portland Board Gamers</a>
+        <span class="text-muted"> / </span>
+        <span>Game Night</span>
+      </nav>
+
+      <!-- Game Night Header -->
+      <div class="gamenight-header">
+        <div class="flex justify-between items-start flex-wrap gap-md">
+          <div>
+            <h1 class="gamenight-title">Saturday Game Night</h1>
+            <div class="gamenight-details">
+              <div class="gamenight-detail-item">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+                <span>February 1, 2026 @ 7:00 PM</span>
+              </div>
+              <div class="gamenight-detail-item">
+                <i data-lucide="map-pin" class="w-5 h-5"></i>
+                <span>John's House, 123 Main St</span>
+              </div>
+              <div class="gamenight-detail-item">
+                <i data-lucide="users" class="w-5 h-5"></i>
+                <a href="group-detail.html">Portland Board Gamers</a>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-sm">
+            <button class="btn btn-secondary btn-sm">
+              <i data-lucide="edit-2" class="w-4 h-4"></i>
+              Edit
+            </button>
+            <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger);">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSVP Section -->
+      <div class="gamenight-section">
+        <h2 class="gamenight-section-title">RSVP</h2>
+        <div class="rsvp-buttons">
+          <button class="rsvp-btn active-going">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            Going
+          </button>
+          <button class="rsvp-btn">
+            <i data-lucide="help-circle" class="w-4 h-4"></i>
+            Maybe
+          </button>
+          <button class="rsvp-btn">
+            <i data-lucide="x" class="w-4 h-4"></i>
+            Not Going
+          </button>
+        </div>
+      </div>
+
+      <!-- Who's Coming Section -->
+      <div class="gamenight-section">
+        <h2 class="gamenight-section-title">Who's Coming (5)</h2>
+        <div class="attendees-list">
+          <div class="attendee">
+            <span class="attendee-status going">
+              <i data-lucide="check" class="w-3 h-3"></i>
+            </span>
+            <a href="profile.html">@boardgamer42</a>
+          </div>
+          <div class="attendee">
+            <span class="attendee-status going">
+              <i data-lucide="check" class="w-3 h-3"></i>
+            </span>
+            <a href="profile.html">@dicequeen</a>
+          </div>
+          <div class="attendee">
+            <span class="attendee-status going">
+              <i data-lucide="check" class="w-3 h-3"></i>
+            </span>
+            <a href="profile.html">@mikiMeeple</a>
+          </div>
+          <div class="attendee">
+            <span class="attendee-status maybe">
+              <i data-lucide="help-circle" class="w-3 h-3"></i>
+            </span>
+            <a href="profile.html">@sarahplays</a>
+          </div>
+          <div class="attendee">
+            <span class="attendee-status not-going">
+              <i data-lucide="x" class="w-3 h-3"></i>
+            </span>
+            <a href="profile.html">@alexgames</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Suggestions Section -->
+      <div class="gamenight-section">
+        <div class="flex justify-between items-center mb-md">
+          <h2 class="gamenight-section-title" style="margin-bottom: 0;">Game Suggestions</h2>
+          <button class="btn btn-secondary btn-sm" data-modal="suggest-game-modal">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Suggest a Game
+          </button>
+        </div>
+
+        <!-- Game Suggestion 1 -->
+        <div class="game-suggestion">
+          <div class="card-image" style="width: 60px; height: 60px; border-radius: var(--radius-md); flex-shrink: 0;">
+            <img src="images/game1.png" alt="Catan">
+          </div>
+          <div class="game-suggestion-info">
+            <div class="game-suggestion-title">Catan</div>
+            <div class="game-suggestion-meta">
+              Suggested by <a href="profile.html">@boardgamer42</a>
+            </div>
+            <div class="game-suggestion-meta" style="color: var(--accent-secondary);">
+              <i data-lucide="package" class="w-3 h-3" style="display: inline; vertical-align: middle;"></i>
+              @boardgamer42 will bring this
+            </div>
+          </div>
+          <div class="game-suggestion-votes">
+            <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+            3 votes
+          </div>
+          <div class="game-suggestion-actions">
+            <button class="btn btn-primary btn-sm">
+              <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+              Vote
+            </button>
+          </div>
+        </div>
+
+        <!-- Game Suggestion 2 -->
+        <div class="game-suggestion">
+          <div class="card-image" style="width: 60px; height: 60px; border-radius: var(--radius-md); flex-shrink: 0;">
+            <img src="images/game2.png" alt="Ticket to Ride">
+          </div>
+          <div class="game-suggestion-info">
+            <div class="game-suggestion-title">Ticket to Ride</div>
+            <div class="game-suggestion-meta">
+              Suggested by <a href="profile.html">@dicequeen</a>
+            </div>
+          </div>
+          <div class="game-suggestion-votes">
+            <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+            2 votes
+          </div>
+          <div class="game-suggestion-actions">
+            <button class="btn btn-ghost btn-sm">
+              <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+              Vote
+            </button>
+            <button class="btn btn-secondary btn-sm">
+              <i data-lucide="package" class="w-4 h-4"></i>
+              I'll Bring
+            </button>
+          </div>
+        </div>
+
+        <!-- Game Suggestion 3 -->
+        <div class="game-suggestion">
+          <div class="card-image" style="width: 60px; height: 60px; border-radius: var(--radius-md); flex-shrink: 0;">
+            <img src="images/game3.png" alt="Wingspan">
+          </div>
+          <div class="game-suggestion-info">
+            <div class="game-suggestion-title">Wingspan</div>
+            <div class="game-suggestion-meta">
+              Suggested by <a href="profile.html">@mikiMeeple</a>
+            </div>
+          </div>
+          <div class="game-suggestion-votes">
+            <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+            1 vote
+          </div>
+          <div class="game-suggestion-actions">
+            <button class="btn btn-ghost btn-sm">
+              <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+              Vote
+            </button>
+            <button class="btn btn-secondary btn-sm">
+              <i data-lucide="package" class="w-4 h-4"></i>
+              I'll Bring
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <p class="footer-copyright">&copy; 2026 BoredGamers</p>
+        <div class="footer-links">
+          <a href="about.html" class="footer-link">About</a>
+          <span class="footer-divider">|</span>
+          <a href="about.html#contact" class="footer-link">Contact</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Privacy</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Terms</a>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" title="Twitter">
+            <i data-lucide="twitter" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="footer-social-link" title="GitHub">
+            <i data-lucide="github" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Suggest Game Modal -->
+  <div class="modal-overlay" id="suggest-game-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Suggest a Game</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label class="form-label">Search from group's games</label>
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon w-5 h-5"></i>
+              <input type="text" class="form-input" placeholder="Search games...">
+            </div>
+          </div>
+
+          <!-- Quick picks from group collection -->
+          <div class="form-group">
+            <label class="form-label">Quick picks</label>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);">
+              <button type="button" class="btn btn-secondary btn-sm">Catan</button>
+              <button type="button" class="btn btn-secondary btn-sm">Ticket to Ride</button>
+              <button type="button" class="btn btn-secondary btn-sm">Wingspan</button>
+              <button type="button" class="btn btn-secondary btn-sm">Azul</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Or enter a game name</label>
+            <input type="text" class="form-input" placeholder="Game name">
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Suggest Game</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- javascript - Scripts -->
+  <script src="js/main.js"></script>
+  <script>
+    // javascript - Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>
