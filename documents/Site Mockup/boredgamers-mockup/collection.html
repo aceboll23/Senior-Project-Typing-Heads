@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Collection - BoredGamers</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Lucide Icons (via CDN) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body class="logged-in">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">BoredGamers</a>
+
+      <div class="navbar-nav">
+        <a href="games.html" class="nav-link">Games</a>
+        <a href="groups.html" class="nav-link">Groups</a>
+        <a href="about.html" class="nav-link">About</a>
+      </div>
+
+      <div class="navbar-actions">
+        <div class="logged-out-only flex items-center gap-sm">
+          <button class="btn btn-ghost" data-action="login">Log In</button>
+          <button class="btn btn-primary" data-modal="register-modal">Sign Up</button>
+        </div>
+
+        <div class="logged-in-only flex items-center gap-sm">
+          <a href="messages.html" class="btn-icon icon-with-badge navbar-messages" title="Messages">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+            <span class="badge">3</span>
+          </a>
+
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+            <i data-lucide="sun" class="icon-sun w-5 h-5"></i>
+            <i data-lucide="moon" class="icon-moon w-5 h-5"></i>
+          </button>
+
+          <div class="user-dropdown">
+            <button class="navbar-user-btn" data-dropdown>
+              <div class="avatar avatar-sm">
+                <img src="images/PersonDonavanFerguson.jpeg" alt="John Doe">
+              </div>
+              <span class="navbar-username">boardgamer42</span>
+              <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </button>
+
+            <div class="user-dropdown-menu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name">John Doe</div>
+                <div class="user-dropdown-handle">@boardgamer42</div>
+              </div>
+              <div class="user-dropdown-body">
+                <a href="profile.html" class="user-dropdown-item">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                  My Profile
+                </a>
+                <a href="collection.html" class="user-dropdown-item">
+                  <i data-lucide="library" class="w-4 h-4"></i>
+                  My Collection
+                </a>
+                <a href="friends.html" class="user-dropdown-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  Friends
+                </a>
+                <a href="settings.html" class="user-dropdown-item">
+                  <i data-lucide="settings" class="w-4 h-4"></i>
+                  Settings
+                </a>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item danger" data-action="logout">
+                  <i data-lucide="log-out" class="w-4 h-4"></i>
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="navbar-mobile-toggle" id="mobile-nav-toggle" aria-label="Open menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <div class="mobile-nav">
+      <div class="mobile-nav-header">
+        <span class="navbar-logo">BoredGamers</span>
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="mobile-nav-body">
+        <div class="mobile-nav-links">
+          <a href="index.html" class="mobile-nav-link">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            Home
+          </a>
+          <a href="games.html" class="mobile-nav-link">
+            <i data-lucide="dice-5" class="w-5 h-5"></i>
+            Games
+          </a>
+          <a href="groups.html" class="mobile-nav-link">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            Groups
+          </a>
+          <a href="about.html" class="mobile-nav-link">
+            <i data-lucide="info" class="w-5 h-5"></i>
+            About
+          </a>
+        </div>
+        <div class="logged-in-only">
+          <div class="mobile-nav-divider"></div>
+          <div class="mobile-nav-section-title">My Account</div>
+          <div class="mobile-nav-links">
+            <a href="profile.html" class="mobile-nav-link">
+              <i data-lucide="user" class="w-5 h-5"></i>
+              My Profile
+            </a>
+            <a href="collection.html" class="mobile-nav-link active">
+              <i data-lucide="library" class="w-5 h-5"></i>
+              My Collection
+            </a>
+            <a href="friends.html" class="mobile-nav-link">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+              Friends
+            </a>
+            <a href="messages.html" class="mobile-nav-link">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+              Messages
+              <span class="badge" style="margin-left: auto;">3</span>
+            </a>
+            <a href="settings.html" class="mobile-nav-link">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+              Settings
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-nav-footer">
+        <div class="logged-in-only">
+          <button class="btn btn-ghost btn-lg" style="width: 100%;" data-action="logout">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Main Content
+       ======================================================================== -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">My Collection</h1>
+        <p class="page-subtitle">Manage your owned games and wishlist</p>
+      </div>
+
+      <!-- Tabs Container -->
+      <div class="tabs-container">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="owned-tab">
+            Owned
+            <span class="badge badge-muted" style="margin-left: var(--space-xs);">4</span>
+          </button>
+          <button class="tab-btn" data-tab="wishlist-tab">
+            Wishlist
+            <span class="badge badge-muted" style="margin-left: var(--space-xs);">2</span>
+          </button>
+        </div>
+
+        <!-- Search and Sort -->
+        <div class="collection-header">
+          <div class="collection-search-sort">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon w-5 h-5"></i>
+              <input type="text" class="form-input" placeholder="Search my games...">
+            </div>
+            <select class="form-select" style="width: auto; min-width: 150px;">
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="recent">Recently Added</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Owned Tab Content -->
+        <div class="tab-content active" id="owned-tab">
+          <div class="grid grid-games">
+            <!-- Game 1: Catan -->
+            <div class="card card-game">
+              <a href="game-detail.html" class="card-image"><img src="images/game1.png" alt="Catan"></a>
+              <div class="card-body">
+                <a href="game-detail.html"><h3 class="card-title">Catan</h3></a>
+                <div class="card-subtitle">3-4 Players • 60-120 min</div>
+                <div class="card-meta">
+                  <div class="card-rating">
+                    <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                    <span>8.2/10</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger); width: 100%;">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <!-- Game 2: Ticket to Ride -->
+            <div class="card card-game">
+              <a href="game-detail.html" class="card-image"><img src="images/game2.png" alt="Ticket to Ride"></a>
+              <div class="card-body">
+                <a href="game-detail.html"><h3 class="card-title">Ticket to Ride</h3></a>
+                <div class="card-subtitle">2-5 Players • 30-60 min</div>
+                <div class="card-meta">
+                  <div class="card-rating">
+                    <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                    <span>7.9/10</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger); width: 100%;">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <!-- Game 3: Azul -->
+            <div class="card card-game">
+              <a href="game-detail.html" class="card-image"><img src="images/game4.png" alt="Azul"></a>
+              <div class="card-body">
+                <a href="game-detail.html"><h3 class="card-title">Azul</h3></a>
+                <div class="card-subtitle">2-4 Players • 30-45 min</div>
+                <div class="card-meta">
+                  <div class="card-rating">
+                    <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                    <span>8.1/10</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger); width: 100%;">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <!-- Game 4: Splendor -->
+            <div class="card card-game">
+              <a href="game-detail.html" class="card-image"><img src="images/game6.png" alt="Splendor"></a>
+              <div class="card-body">
+                <a href="game-detail.html"><h3 class="card-title">Splendor</h3></a>
+                <div class="card-subtitle">2-4 Players • 30 min</div>
+                <div class="card-meta">
+                  <div class="card-rating">
+                    <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                    <span>7.7/10</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger); width: 100%;">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wishlist Tab Content -->
+        <div class="tab-content" id="wishlist-tab">
+          <div class="grid grid-games">
+            <!-- Game 1: Wingspan -->
+            <div class="card card-game">
+              <a href="game-detail.html" class="card-image"><img src="images/game3.png" alt="Wingspan"></a>
+              <div class="card-body">
+                <a href="game-detail.html"><h3 class="card-title">Wingspan</h3></a>
+                <div class="card-subtitle">1-5 Players • 40-70 min</div>
+                <div class="card-meta">
+                  <div class="card-rating">
+                    <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                    <span>8.5/10</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer" style="display: flex; gap: var(--space-sm);">
+                <button class="btn btn-success btn-sm" style="flex: 1;">
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                  Got It
+                </button>
+                <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger);">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Game 2: Pandemic -->
+            <div class="card card-game">
+              <a href="game-detail.html" class="card-image"><img src="images/game5.png" alt="Pandemic"></a>
+              <div class="card-body">
+                <a href="game-detail.html"><h3 class="card-title">Pandemic</h3></a>
+                <div class="card-subtitle">2-4 Players • 45-60 min</div>
+                <div class="card-meta">
+                  <div class="card-rating">
+                    <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                    <span>7.8/10</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer" style="display: flex; gap: var(--space-sm);">
+                <button class="btn btn-success btn-sm" style="flex: 1;">
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                  Got It
+                </button>
+                <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger);">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Games CTA -->
+      <div class="text-center mt-xl">
+        <a href="games.html" class="btn btn-primary btn-lg">
+          <i data-lucide="plus" class="w-5 h-5"></i>
+          Browse Games to Add
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <p class="footer-copyright">&copy; 2026 BoredGamers</p>
+        <div class="footer-links">
+          <a href="about.html" class="footer-link">About</a>
+          <span class="footer-divider">|</span>
+          <a href="about.html#contact" class="footer-link">Contact</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Privacy</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Terms</a>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" title="Twitter">
+            <i data-lucide="twitter" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="footer-social-link" title="GitHub">
+            <i data-lucide="github" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- javascript - Scripts -->
+  <script src="js/main.js"></script>
+  <script>
+    // javascript - Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>

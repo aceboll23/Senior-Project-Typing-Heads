@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catan - BoredGamers</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Lucide Icons (via CDN) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">BoredGamers</a>
+
+      <div class="navbar-nav">
+        <a href="games.html" class="nav-link active">Games</a>
+        <a href="groups.html" class="nav-link">Groups</a>
+        <a href="about.html" class="nav-link">About</a>
+      </div>
+
+      <div class="navbar-actions">
+        <div class="logged-out-only flex items-center gap-sm">
+          <button class="btn btn-ghost" data-action="login">Log In</button>
+          <button class="btn btn-primary" data-modal="register-modal">Sign Up</button>
+        </div>
+
+        <div class="logged-in-only flex items-center gap-sm">
+          <a href="messages.html" class="btn-icon icon-with-badge navbar-messages" title="Messages">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+            <span class="badge">3</span>
+          </a>
+
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+            <i data-lucide="sun" class="icon-sun w-5 h-5"></i>
+            <i data-lucide="moon" class="icon-moon w-5 h-5"></i>
+          </button>
+
+          <div class="user-dropdown">
+            <button class="navbar-user-btn" data-dropdown>
+              <div class="avatar avatar-sm">
+                <img src="images/PersonDonavanFerguson.jpeg" alt="John Doe">
+              </div>
+              <span class="navbar-username">boardgamer42</span>
+              <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </button>
+
+            <div class="user-dropdown-menu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name">John Doe</div>
+                <div class="user-dropdown-handle">@boardgamer42</div>
+              </div>
+              <div class="user-dropdown-body">
+                <a href="profile.html" class="user-dropdown-item">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                  My Profile
+                </a>
+                <a href="collection.html" class="user-dropdown-item">
+                  <i data-lucide="library" class="w-4 h-4"></i>
+                  My Collection
+                </a>
+                <a href="friends.html" class="user-dropdown-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  Friends
+                </a>
+                <a href="settings.html" class="user-dropdown-item">
+                  <i data-lucide="settings" class="w-4 h-4"></i>
+                  Settings
+                </a>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item danger" data-action="logout">
+                  <i data-lucide="log-out" class="w-4 h-4"></i>
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="navbar-mobile-toggle" id="mobile-nav-toggle" aria-label="Open menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <div class="mobile-nav">
+      <div class="mobile-nav-header">
+        <span class="navbar-logo">BoredGamers</span>
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="mobile-nav-body">
+        <div class="mobile-nav-links">
+          <a href="index.html" class="mobile-nav-link">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            Home
+          </a>
+          <a href="games.html" class="mobile-nav-link active">
+            <i data-lucide="dice-5" class="w-5 h-5"></i>
+            Games
+          </a>
+          <a href="groups.html" class="mobile-nav-link">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            Groups
+          </a>
+          <a href="about.html" class="mobile-nav-link">
+            <i data-lucide="info" class="w-5 h-5"></i>
+            About
+          </a>
+        </div>
+        <div class="logged-in-only">
+          <div class="mobile-nav-divider"></div>
+          <div class="mobile-nav-section-title">My Account</div>
+          <div class="mobile-nav-links">
+            <a href="profile.html" class="mobile-nav-link">
+              <i data-lucide="user" class="w-5 h-5"></i>
+              My Profile
+            </a>
+            <a href="collection.html" class="mobile-nav-link">
+              <i data-lucide="library" class="w-5 h-5"></i>
+              My Collection
+            </a>
+            <a href="friends.html" class="mobile-nav-link">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+              Friends
+            </a>
+            <a href="messages.html" class="mobile-nav-link">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+              Messages
+              <span class="badge" style="margin-left: auto;">3</span>
+            </a>
+            <a href="settings.html" class="mobile-nav-link">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+              Settings
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-nav-footer">
+        <div class="logged-out-only flex flex-col gap-sm">
+          <button class="btn btn-primary btn-lg" style="width: 100%;" data-action="login">Log In</button>
+          <button class="btn btn-secondary btn-lg" style="width: 100%;" data-modal="register-modal">Sign Up</button>
+        </div>
+        <div class="logged-in-only">
+          <button class="btn btn-ghost btn-lg" style="width: 100%;" data-action="logout">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Main Content
+       ======================================================================== -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <nav class="mb-lg" style="font-size: 0.875rem;">
+        <a href="games.html" class="text-muted">Games</a>
+        <span class="text-muted"> / </span>
+        <span>Catan</span>
+      </nav>
+
+      <!-- Game Header -->
+      <div class="game-detail-header">
+        <div class="game-image-container">
+          <div class="game-image">
+            <img src="images/game1.png" alt="Catan">
+          </div>
+        </div>
+
+        <div class="game-info">
+          <h1 class="game-title">Catan</h1>
+
+          <div class="game-rating-large">
+            <div class="rating-stars">
+              <i data-lucide="star" class="w-5 h-5" fill="currentColor" style="color: var(--accent-warning);"></i>
+              <i data-lucide="star" class="w-5 h-5" fill="currentColor" style="color: var(--accent-warning);"></i>
+              <i data-lucide="star" class="w-5 h-5" fill="currentColor" style="color: var(--accent-warning);"></i>
+              <i data-lucide="star" class="w-5 h-5" fill="currentColor" style="color: var(--accent-warning);"></i>
+              <i data-lucide="star" class="w-5 h-5" style="color: var(--bg-tertiary);"></i>
+            </div>
+            <span class="rating-value">8.2/10</span>
+            <span class="rating-count">(1,234 reviews)</span>
+          </div>
+
+          <div class="game-meta-grid">
+            <div class="game-meta-item">
+              <span class="game-meta-label">Players</span>
+              <span class="game-meta-value">3-4</span>
+            </div>
+            <div class="game-meta-item">
+              <span class="game-meta-label">Playtime</span>
+              <span class="game-meta-value">60-120 min</span>
+            </div>
+            <div class="game-meta-item">
+              <span class="game-meta-label">Complexity</span>
+              <span class="game-meta-value">2.3/5</span>
+            </div>
+            <div class="game-meta-item">
+              <span class="game-meta-label">Age</span>
+              <span class="game-meta-value">10+</span>
+            </div>
+            <div class="game-meta-item">
+              <span class="game-meta-label">Year</span>
+              <span class="game-meta-value">1995</span>
+            </div>
+          </div>
+
+          <!-- Actions (logged in only) -->
+          <div class="game-actions logged-in-only">
+            <div class="dropdown">
+              <button class="btn btn-primary" data-dropdown>
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Add to Collection
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </button>
+              <div class="dropdown-menu">
+                <button class="dropdown-item">
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                  I Own This
+                </button>
+                <button class="dropdown-item">
+                  <i data-lucide="heart" class="w-4 h-4"></i>
+                  Add to Wishlist
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Login prompt (logged out) -->
+          <div class="logged-out-only">
+            <p class="text-muted text-small">
+              <a href="#" data-action="login">Log in</a> to add this game to your collection.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="game-description">
+        <h2>About This Game</h2>
+        <p class="text-muted">
+          In Catan, players try to be the dominant force on the island of Catan by building settlements, cities, and roads. On each turn dice are rolled to determine what resources the island produces. Players collect these resources (cards) — wood, grain, brick, sheep, or stone — to build up their civilizations to get to 10 victory points and win the game.
+        </p>
+        <p class="text-muted">
+          Setup includes randomly placing large hexagonal tiles (each showing a resource or the desert) in a honeycomb shape and surrounding them with water tiles, some of which contain ports of exchange. Number disks, which will correspond to die rolls (two 6-sided dice are used), are게placed게on each resource tile.
+        </p>
+      </div>
+
+      <!-- Reviews Section -->
+      <section class="game-reviews">
+        <div class="game-reviews-header">
+          <h2 class="section-title">Reviews</h2>
+          <button class="btn btn-primary logged-in-only" data-modal="review-modal">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+            Write Review
+          </button>
+        </div>
+
+        <div class="reviews-list">
+          <!-- Review 1 -->
+          <div class="review-card">
+            <div class="review-header">
+              <div class="review-user">
+                <div class="avatar avatar-sm">
+                  <img src="images/PersonJasmineSmith.jpeg" alt="Jane Smith">
+                </div>
+                <div>
+                  <a href="profile.html" class="review-username">@dicequeen</a>
+                  <span class="review-date">2 days ago</span>
+                </div>
+              </div>
+              <div class="rating">
+                <div class="rating-stars" style="color: var(--accent-warning);">
+                  <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                </div>
+                <span class="rating-value">8/10</span>
+              </div>
+            </div>
+            <p class="review-text">
+              Great game for family nights! The trading mechanic keeps everyone engaged and the games are always exciting. The resource management aspect adds just enough strategy without being overwhelming for new players.
+            </p>
+          </div>
+
+          <!-- Review 2 -->
+          <div class="review-card mt-md">
+            <div class="review-header">
+              <div class="review-user">
+                <div class="avatar avatar-sm">
+                  <img src="images/PersonGloriaChen.jpeg" alt="Mike Johnson">
+                </div>
+                <div>
+                  <a href="profile.html" class="review-username">@mikiMeeple</a>
+                  <span class="review-date">1 week ago</span>
+                </div>
+              </div>
+              <div class="rating">
+                <div class="rating-stars" style="color: var(--accent-warning);">
+                  <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                </div>
+                <span class="rating-value">9/10</span>
+              </div>
+            </div>
+            <p class="review-text">
+              A classic that never gets old. We play this every week and it's still our go-to game for new players. The only downside is that games can sometimes drag on if players are evenly matched.
+            </p>
+          </div>
+
+          <!-- Review 3 (Own review - with edit/delete) -->
+          <div class="review-card mt-md logged-in-only">
+            <div class="review-header">
+              <div class="review-user">
+                <div class="avatar avatar-sm">
+                  <img src="images/PersonDonavanFerguson.jpeg" alt="John Doe">
+                </div>
+                <div>
+                  <a href="profile.html" class="review-username">@boardgamer42</a>
+                  <span class="review-date">3 days ago</span>
+                  <span class="tag" style="margin-left: var(--space-sm);">Your Review</span>
+                </div>
+              </div>
+              <div class="rating">
+                <div class="rating-stars" style="color: var(--accent-warning);">
+                  <i data-lucide="star" class="w-4 h-4" fill="currentColor"></i>
+                </div>
+                <span class="rating-value">8/10</span>
+              </div>
+            </div>
+            <p class="review-text">
+              One of the first games that got me into the hobby. Still love it after all these years, though I've moved on to heavier games. Perfect gateway game.
+            </p>
+            <div class="review-actions">
+              <button class="btn btn-ghost btn-sm">
+                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                Edit
+              </button>
+              <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger);">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <p class="footer-copyright">&copy; 2026 BoredGamers</p>
+        <div class="footer-links">
+          <a href="about.html" class="footer-link">About</a>
+          <span class="footer-divider">|</span>
+          <a href="about.html#contact" class="footer-link">Contact</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Privacy</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Terms</a>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" title="Twitter">
+            <i data-lucide="twitter" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="footer-social-link" title="GitHub">
+            <i data-lucide="github" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Write Review Modal -->
+  <div class="modal-overlay" id="review-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2 class="modal-title">Write a Review</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label class="form-label">Your Rating</label>
+            <div class="rating-stars" style="font-size: 1.5rem; color: var(--accent-warning); cursor: pointer;">
+              <i data-lucide="star" class="w-8 h-8" fill="currentColor"></i>
+              <i data-lucide="star" class="w-8 h-8" fill="currentColor"></i>
+              <i data-lucide="star" class="w-8 h-8" fill="currentColor"></i>
+              <i data-lucide="star" class="w-8 h-8" fill="currentColor"></i>
+              <i data-lucide="star" class="w-8 h-8" fill="currentColor"></i>
+              <i data-lucide="star" class="w-8 h-8"></i>
+              <i data-lucide="star" class="w-8 h-8"></i>
+              <i data-lucide="star" class="w-8 h-8"></i>
+              <i data-lucide="star" class="w-8 h-8"></i>
+              <i data-lucide="star" class="w-8 h-8"></i>
+            </div>
+            <span class="text-small text-muted">5/10</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="review-text">Your Review</label>
+            <textarea id="review-text" class="form-textarea" rows="5" placeholder="Share your thoughts about this game..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Submit Review</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Log In</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email or Username</label>
+            <input type="text" id="login-email" class="form-input" placeholder="Enter your email or username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="Enter your password">
+          </div>
+          <div class="form-group">
+            <a href="reset-password.html" class="text-small">Forgot Password?</a>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Log In</button>
+        </form>
+        <div class="mt-md text-center">
+          <button class="btn btn-ghost btn-sm" data-action="quick-login">Quick Demo Login</button>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: 1px solid var(--border-color); padding-top: var(--space-md); margin-top: var(--space-md);">
+        <p class="text-small text-muted">
+          Don't have an account? <a href="#" data-action="show-register">Sign Up</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div class="modal-overlay" id="register-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Create Account</h2>
+        <button class="modal-close" data-modal-close aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="register-form">
+          <div class="form-group">
+            <label class="form-label" for="register-username">Username</label>
+            <input type="text" id="register-username" class="form-input" placeholder="Choose a username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-email">Email</label>
+            <input type="email" id="register-email" class="form-input" placeholder="Enter your email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-password">Password</label>
+            <input type="password" id="register-password" class="form-input" placeholder="Create a password">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="register-confirm">Confirm Password</label>
+            <input type="password" id="register-confirm" class="form-input" placeholder="Confirm your password">
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Create Account</button>
+        </form>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: 1px solid var(--border-color); padding-top: var(--space-md); margin-top: var(--space-md);">
+        <p class="text-small text-muted">
+          Already have an account? <a href="#" data-action="show-login">Log In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- javascript - Scripts -->
+  <script src="js/main.js"></script>
+  <script>
+    // javascript - Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>
