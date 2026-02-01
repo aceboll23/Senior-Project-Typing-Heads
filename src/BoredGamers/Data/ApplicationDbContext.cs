@@ -29,12 +29,6 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    /*
-     * DbSet<T> properties represent database tables.
-     * Adding a DbSet here tells EF Core to include this entity in migrations.
-     *
-     * TestEntities exists only to validate EF Core setup during Sprint 0.
-     * It can be removed once real domain entities are introduced.
-     */
-    public DbSet<TestEntity> TestEntities => Set<TestEntity>();
+  
+
 }
