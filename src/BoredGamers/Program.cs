@@ -1,7 +1,23 @@
+using BoredGamers.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+/*
+    *Register ApplicationDbContext with dependency injection.
+    *The Connection string is read from appsettins.json.
+    *
+    *IMPORTANT:
+    * - Local development uses SQL Server LocalDB
+    * - Azure SQL will replace this connection string later
+*/
+builder.Services.AddDbContext<ApplicationDbContext>(options => 
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
 
 var app = builder.Build();
 
