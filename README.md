@@ -37,17 +37,17 @@ A senior software engineering class project repository for team "Typing Heads".
 
 📁 [**src/**](./src/)
 
-  📁 [**BoredGamers/**](./src/BoredGamers/)
+  * 📁 [**BoredGamers/**](./src/BoredGamers/)
 
 📁 [**tests/**](./tests/)
 
-  📁 [**BoredGamers.Tests/**](./src/BoredGamers.Tests/)
+  * 📁 [**BoredGamers.Tests/**](./src/BoredGamers.Tests/)
 
-  📁 [**BoredGamers.BDD.Tests/**](./src/BoredGamers.BDD.Tests/)
+  * 📁 [**BoredGamers.BDD.Tests/**](./src/BoredGamers.BDD.Tests/)
 
 📁 [**jestTests/**](./jestTests/)
 
-  📁 [**BoredGamersJestTests/**](./src/BoredGamersJestTests/)
+  * 📁 [**BoredGamersJestTests/**](./src/BoredGamersJestTests/)
 
 📁 [**documents/**](./documents/)
 
