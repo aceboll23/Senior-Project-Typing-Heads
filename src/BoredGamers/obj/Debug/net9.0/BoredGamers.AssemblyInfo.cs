@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BoredGamers")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8cae41646b6447ac75c7608d2746169d6df56d4a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ce8d2585f2c1fd7dfdd8fe5a4993dbf3fa02cce")]
 [assembly: System.Reflection.AssemblyProductAttribute("BoredGamers")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BoredGamers")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
