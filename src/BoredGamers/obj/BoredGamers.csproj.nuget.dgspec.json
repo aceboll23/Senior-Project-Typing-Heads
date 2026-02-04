@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan\\Senior-Project-Typing-Heads\\src\\BoredGamers\\BoredGamers.csproj": {}
+    "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan_broken\\Senior-Project-Typing-Heads\\src\\BoredGamers\\BoredGamers.csproj": {}
   },
   "projects": {
-    "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan\\Senior-Project-Typing-Heads\\src\\BoredGamers\\BoredGamers.csproj": {
+    "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan_broken\\Senior-Project-Typing-Heads\\src\\BoredGamers\\BoredGamers.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan\\Senior-Project-Typing-Heads\\src\\BoredGamers\\BoredGamers.csproj",
+        "projectUniqueName": "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan_broken\\Senior-Project-Typing-Heads\\src\\BoredGamers\\BoredGamers.csproj",
         "projectName": "BoredGamers",
-        "projectPath": "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan\\Senior-Project-Typing-Heads\\src\\BoredGamers\\BoredGamers.csproj",
+        "projectPath": "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan_broken\\Senior-Project-Typing-Heads\\src\\BoredGamers\\BoredGamers.csproj",
         "packagesPath": "C:\\Users\\iandc\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan\\Senior-Project-Typing-Heads\\src\\BoredGamers\\obj\\",
+        "outputPath": "C:\\Users\\iandc\\OneDrive\\Desktop\\School\\SeniorProjectIan_broken\\Senior-Project-Typing-Heads\\src\\BoredGamers\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -63,3 +63,5 @@ Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP
 [Modeling outputs](./documents/website-model.md)
 
 [Jira set up and Epics entered](https://mail-team-lr2a75un.atlassian.net/jira/software/projects/TYP/boards/2/)
+
+[Initial data model](./documents/SiteMockup/DDL.md)(./images/DataMOdel.png)
