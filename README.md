@@ -26,7 +26,7 @@ A senior software engineering class project repository for team "Typing Heads".
 * Bootstrap will be our front-end CSS library
 * jQuery 4 will be used
 * Branches will be start with the sprint with a short description of the feature (e.g., s1-search-bar)
-* Camel Case will also be used for db scripts, table names, and PK/FK names.
+* Camel Case will also be used for db scripts, table names, and PK/FK names
 * Eager loading will be used NOT lazy loading
 * SQL will be used to build tables
 * src contains all production code, tests contains all .NET test projects with BDD being separated from unit tests and frontend code and jest tests are separate from tests (repo structure contains this basic layout)
@@ -36,13 +36,17 @@ A senior software engineering class project repository for team "Typing Heads".
 ## Repository Structure
 
 📁 [**src/**](./src/)
+
   📁 [**BoredGamers/**](./src/BoredGamers/)
 
 📁 [**tests/**](./tests/)
+
   📁 [**BoredGamers.Tests/**](./src/BoredGamers.Tests/)
+
   📁 [**BoredGamers.BDD.Tests/**](./src/BoredGamers.BDD.Tests/)
 
 📁 [**jestTests/**](./jestTests/)
+
   📁 [**BoredGamersJestTests/**](./src/BoredGamersJestTests/)
 
 📁 [**documents/**](./documents/)
