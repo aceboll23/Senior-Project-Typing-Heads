@@ -1,0 +1,430 @@
+/* ============================================================================
+   BoredGamers - Main Styles
+   Global variables, reset, typography, and layout utilities
+   ============================================================================ */
+
+/* ============================================================================
+   CSS Variables - Design System
+   ============================================================================ */
+
+/* Dark Mode (Default) */
+:root {
+  /* Backgrounds */
+  --bg-primary: #1a1a1d;
+  --bg-secondary: #2a2a2d;
+  --bg-tertiary: #3a3a3d;
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-muted: #707070;
+
+  /* Accent Colors */
+  --accent-primary: #5865f2;
+  --accent-secondary: #3ba55c;
+  --accent-danger: #ed4245;
+  --accent-warning: #faa61a;
+
+  /* Borders & Shadows */
+  --border-color: #40444b;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --shadow-light: rgba(0, 0, 0, 0.2);
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;   /* 4px */
+  --space-sm: 0.5rem;    /* 8px */
+  --space-md: 1rem;      /* 16px */
+  --space-lg: 1.5rem;    /* 24px */
+  --space-xl: 2rem;      /* 32px */
+  --space-2xl: 3rem;     /* 48px */
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 50%;
+
+  /* Layout */
+  --navbar-height: 60px;
+  --container-max-width: 1280px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+/* Light Mode */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f2f3f5;
+  --bg-tertiary: #e3e5e8;
+  --text-primary: #1a1a1d;
+  --text-secondary: #4f5660;
+  --text-muted: #747f8d;
+  --accent-primary: #5865f2;
+  --accent-secondary: #3ba55c;
+  --accent-danger: #ed4245;
+  --accent-warning: #faa61a;
+  --border-color: #d4d7dc;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-light: rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================================================
+   CSS Reset
+   ============================================================================ */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================================
+   Typography
+   ============================================================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.2;
+  margin-bottom: var(--space-sm);
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+p {
+  margin-bottom: var(--space-md);
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--text-primary);
+}
+
+/* Text Utilities */
+.text-small {
+  font-size: 0.875rem;
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* ============================================================================
+   Images
+   ============================================================================ */
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ============================================================================
+   Lists
+   ============================================================================ */
+
+ul, ol {
+  list-style: none;
+}
+
+/* ============================================================================
+   Layout Containers
+   ============================================================================ */
+
+.container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+}
+
+.main-content {
+  flex: 1;
+  padding-top: var(--navbar-height);
+}
+
+/* Section spacing */
+.section {
+  padding: var(--space-2xl) 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.section-link {
+  font-size: 0.875rem;
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.section-link:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================================================
+   Grid System
+   ============================================================================ */
+
+.grid {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+/* Game grid - 4 columns on desktop */
+.grid-games {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+/* Group grid - 3 columns on desktop */
+.grid-groups {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+/* ============================================================================
+   Flexbox Utilities
+   ============================================================================ */
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-xs { gap: var(--space-xs); }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+
+/* ============================================================================
+   Spacing Utilities
+   ============================================================================ */
+
+.mt-xs { margin-top: var(--space-xs); }
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mt-xl { margin-top: var(--space-xl); }
+
+.mb-xs { margin-bottom: var(--space-xs); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mb-xl { margin-bottom: var(--space-xl); }
+
+/* ============================================================================
+   Visibility Utilities
+   ============================================================================ */
+
+.hidden {
+  display: none !important;
+}
+
+/* Show only when logged in */
+.logged-in-only {
+  display: none;
+}
+
+body.logged-in .logged-in-only {
+  display: block;
+}
+
+body.logged-in .logged-in-only.flex {
+  display: flex;
+}
+
+/* Show only when logged out */
+.logged-out-only {
+  display: block;
+}
+
+body.logged-in .logged-out-only {
+  display: none !important;
+}
+
+/* ============================================================================
+   Scrollbar Styling
+   ============================================================================ */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-tertiary) transparent;
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color);
+}
+
+/* ============================================================================
+   Focus States (Accessibility)
+   ============================================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   Selection
+   ============================================================================ */
+
+::selection {
+  background: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+/* ============================================================================
+   Horizontal Scroll Container (for card carousels)
+   ============================================================================ */
+
+.horizontal-scroll {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: var(--space-sm);
+  scroll-snap-type: x mandatory;
+}
+
+.horizontal-scroll > * {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+/* ============================================================================
+   Responsive Breakpoints
+   ============================================================================ */
+
+/* Tablet: 768px+ */
+@media (min-width: 768px) {
+  .container {
+    padding: 0 var(--space-lg);
+  }
+
+  .grid-games {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-groups {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+  .grid-games {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grid-groups {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Large Desktop: 1280px+ */
+@media (min-width: 1280px) {
+  .grid-games {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

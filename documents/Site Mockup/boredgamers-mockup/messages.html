@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages - BoredGamers</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Lucide Icons (via CDN) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body class="logged-in">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">BoredGamers</a>
+
+      <div class="navbar-nav">
+        <a href="games.html" class="nav-link">Games</a>
+        <a href="groups.html" class="nav-link">Groups</a>
+        <a href="about.html" class="nav-link">About</a>
+      </div>
+
+      <div class="navbar-actions">
+        <div class="logged-in-only flex items-center gap-sm">
+          <a href="messages.html" class="btn-icon icon-with-badge navbar-messages" title="Messages">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+            <span class="badge">3</span>
+          </a>
+
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+            <i data-lucide="sun" class="icon-sun w-5 h-5"></i>
+            <i data-lucide="moon" class="icon-moon w-5 h-5"></i>
+          </button>
+
+          <div class="user-dropdown">
+            <button class="navbar-user-btn" data-dropdown>
+              <div class="avatar avatar-sm">
+                <img src="images/PersonDonavanFerguson.jpeg" alt="John Doe">
+              </div>
+              <span class="navbar-username">boardgamer42</span>
+              <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </button>
+
+            <div class="user-dropdown-menu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name">John Doe</div>
+                <div class="user-dropdown-handle">@boardgamer42</div>
+              </div>
+              <div class="user-dropdown-body">
+                <a href="profile.html" class="user-dropdown-item">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                  My Profile
+                </a>
+                <a href="collection.html" class="user-dropdown-item">
+                  <i data-lucide="library" class="w-4 h-4"></i>
+                  My Collection
+                </a>
+                <a href="friends.html" class="user-dropdown-item">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  Friends
+                </a>
+                <a href="settings.html" class="user-dropdown-item">
+                  <i data-lucide="settings" class="w-4 h-4"></i>
+                  Settings
+                </a>
+                <div class="user-dropdown-divider"></div>
+                <button class="user-dropdown-item danger" data-action="logout">
+                  <i data-lucide="log-out" class="w-4 h-4"></i>
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="navbar-mobile-toggle" id="mobile-nav-toggle" aria-label="Open menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <div class="mobile-nav">
+      <div class="mobile-nav-header">
+        <span class="navbar-logo">BoredGamers</span>
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="mobile-nav-body">
+        <div class="mobile-nav-links">
+          <a href="index.html" class="mobile-nav-link">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            Home
+          </a>
+          <a href="games.html" class="mobile-nav-link">
+            <i data-lucide="dice-5" class="w-5 h-5"></i>
+            Games
+          </a>
+          <a href="groups.html" class="mobile-nav-link">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            Groups
+          </a>
+          <a href="about.html" class="mobile-nav-link">
+            <i data-lucide="info" class="w-5 h-5"></i>
+            About
+          </a>
+        </div>
+        <div class="logged-in-only">
+          <div class="mobile-nav-divider"></div>
+          <div class="mobile-nav-section-title">My Account</div>
+          <div class="mobile-nav-links">
+            <a href="profile.html" class="mobile-nav-link">
+              <i data-lucide="user" class="w-5 h-5"></i>
+              My Profile
+            </a>
+            <a href="collection.html" class="mobile-nav-link">
+              <i data-lucide="library" class="w-5 h-5"></i>
+              My Collection
+            </a>
+            <a href="friends.html" class="mobile-nav-link">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+              Friends
+            </a>
+            <a href="messages.html" class="mobile-nav-link active">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+              Messages
+              <span class="badge" style="margin-left: auto;">3</span>
+            </a>
+            <a href="settings.html" class="mobile-nav-link">
+              <i data-lucide="settings" class="w-5 h-5"></i>
+              Settings
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-nav-footer">
+        <div class="logged-in-only">
+          <button class="btn btn-ghost btn-lg" style="width: 100%;" data-action="logout">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Main Content
+       ======================================================================== -->
+  <main class="main-content">
+    <div class="container">
+      <h1 class="page-title mb-lg">Messages</h1>
+
+      <div class="messages-layout">
+        <!-- Conversations List -->
+        <div class="conversations-list">
+          <div class="conversations-header">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-icon w-5 h-5"></i>
+              <input type="text" class="form-input" placeholder="Search conversations...">
+            </div>
+          </div>
+
+          <!-- Conversation 1 (unread) -->
+          <div class="conversation-item active unread">
+            <div class="avatar">
+              <img src="images/PersonJasmineSmith.jpeg" alt="Jane Smith">
+            </div>
+            <div class="conversation-info">
+              <div class="conversation-name">Jane Smith</div>
+              <div class="conversation-preview">I have Ticket to Ride</div>
+            </div>
+            <div class="conversation-time">2 min</div>
+          </div>
+
+          <!-- Conversation 2 -->
+          <div class="conversation-item">
+            <div class="avatar">
+              <img src="images/PersonGloriaChen.jpeg" alt="Mike Johnson">
+            </div>
+            <div class="conversation-info">
+              <div class="conversation-name">Mike Johnson</div>
+              <div class="conversation-preview">Yes! I'll bring Catan</div>
+            </div>
+            <div class="conversation-time">1 hr</div>
+          </div>
+
+          <!-- Conversation 3 -->
+          <div class="conversation-item">
+            <div class="avatar">
+              <img src="images/PersonAmandaMurphy.jpeg" alt="Sarah Wilson">
+            </div>
+            <div class="conversation-info">
+              <div class="conversation-name">Sarah Wilson</div>
+              <div class="conversation-preview">Thanks for the invite!</div>
+            </div>
+            <div class="conversation-time">2 days</div>
+          </div>
+        </div>
+
+        <!-- Active Conversation -->
+        <div class="conversation-view active">
+          <div class="conversation-header">
+            <button class="btn btn-icon conversation-back">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <div class="avatar">
+              <img src="images/PersonJasmineSmith.jpeg" alt="Jane Smith">
+            </div>
+            <div style="flex: 1;">
+              <div style="font-weight: 500;">Jane Smith</div>
+              <div class="text-small text-muted">@dicequeen</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger);">
+              <i data-lucide="ban" class="w-4 h-4"></i>
+              Block
+            </button>
+          </div>
+
+          <div class="conversation-messages">
+            <!-- Their message -->
+            <div class="message-bubble received">
+              <p>Hey, want to trade Catan?</p>
+              <div class="message-time">Jan 25, 3:00 PM</div>
+            </div>
+
+            <!-- Your message -->
+            <div class="message-bubble sent">
+              <p>Sure! What do you have?</p>
+              <div class="message-time">Jan 25, 3:05 PM</div>
+            </div>
+
+            <!-- Their message -->
+            <div class="message-bubble received">
+              <p>I have Ticket to Ride</p>
+              <div class="message-time">Jan 25, 3:10 PM</div>
+            </div>
+          </div>
+
+          <div class="conversation-input">
+            <input type="text" class="form-input" placeholder="Type a message...">
+            <button class="btn btn-primary">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <p class="footer-copyright">&copy; 2026 BoredGamers</p>
+        <div class="footer-links">
+          <a href="about.html" class="footer-link">About</a>
+          <span class="footer-divider">|</span>
+          <a href="about.html#contact" class="footer-link">Contact</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Privacy</a>
+          <span class="footer-divider">|</span>
+          <a href="#" class="footer-link">Terms</a>
+        </div>
+        <div class="footer-social">
+          <a href="#" class="footer-social-link" title="Twitter">
+            <i data-lucide="twitter" class="w-5 h-5"></i>
+          </a>
+          <a href="#" class="footer-social-link" title="GitHub">
+            <i data-lucide="github" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- javascript - Scripts -->
+  <script src="js/main.js"></script>
+  <script>
+    // javascript - Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>

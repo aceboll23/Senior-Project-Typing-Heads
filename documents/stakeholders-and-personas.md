@@ -49,7 +49,7 @@
 
 ### Persona 1: Jasmine Smith
 
-![Jasmine Smith](images/JasmineSmith.jpeg)
+<img src="images/JasmineSmith.jpeg" alt="Jasmine Smith" height="100">
 
 | Attribute | Details |
 |-----------|---------|
@@ -79,7 +79,7 @@ Jasmine reluctantly went on the website because her friend uses it regularly and
 
 ### Persona 2: Amanda Murphy
 
-![Amanda Murphy](images/AmandaMurphy.jpeg)
+<img src="images/AmandaMurphy.jpeg" alt="Amanda Murphy" height="100">
 
 | Attribute | Details |
 |-----------|---------|
@@ -109,7 +109,7 @@ Amanda usually hosts for Dungeons and Dragons, but now she is looking for other 
 
 ### Persona 3: Donavan Ferguson
 
-![Donavan Ferguson](images/DonavanFerguson.jpeg)
+<img src="images/DonavanFerguson.jpeg" alt="Donavan Ferguson" height="100">
 
 | Attribute | Details |
 |-----------|---------|
@@ -140,7 +140,7 @@ Donavan used to be an avid board game player as a teenager and young adult, but 
 
 ### Persona 4: Gloria Chen
 
-![Gloria Chen](images/GloriaChen.jpeg)
+<img src="images/GloriaChen.jpeg" alt="Gloria Chen" height="100">
 
 | Attribute | Details |
 |-----------|---------|

@@ -1,0 +1,51 @@
+BoredGamers - Required Images
+==============================
+
+GAME BOX ART
+------------
+All game images should be square or near-square, optimized for card display.
+Recommended resolution: 300x300px minimum, 600x600px ideal.
+Format: PNG or JPG (PNG preferred for cleaner edges)
+
+game1.png : Catan box art (300x300 minimum)
+game2.png : Ticket to Ride box art (300x300 minimum)
+game3.png : Wingspan box art (300x300 minimum)
+game4.png : Azul box art (300x300 minimum)
+game5.png : Pandemic box art (300x300 minimum)
+game6.png : Splendor box art (300x300 minimum)
+
+
+USER AVATARS
+------------
+Square images, will be displayed in circles via CSS.
+Recommended resolution: 150x150px minimum, 300x300px ideal.
+Format: PNG or JPG
+
+avatar1.png : User avatar for "boardgamer42" / John Doe (150x150 minimum)
+avatar2.png : User avatar for "dicequeen" / Jane Smith (150x150 minimum)
+avatar3.png : User avatar for "mikiMeeple" / Mike Johnson (150x150 minimum)
+avatar4.png : User avatar for "sarahplays" / Sarah Wilson (150x150 minimum)
+
+
+GROUP IMAGES (OPTIONAL)
+-----------------------
+Square images for group headers/cards.
+Recommended resolution: 300x300px minimum.
+Format: PNG or JPG
+
+group1.png : Portland Board Gamers group image (optional)
+group2.png : Strategy Game Masters group image (optional)
+group3.png : Casual Card Games group image (optional)
+
+
+SITE BRANDING (OPTIONAL)
+------------------------
+logo.png : Site logo if desired (transparent PNG recommended, ~200px height)
+favicon.ico : Browser tab icon (32x32 or 16x16)
+
+
+NOTES
+-----
+- If images are not provided, the site will display colored placeholder boxes with the item name
+- Images will be lazy-loaded where possible for performance
+- All images should be web-optimized (compressed) for faster load times
