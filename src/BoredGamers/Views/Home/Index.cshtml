@@ -1,8 +1,99 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Hero Section -->
+<section class="bg-dark text-white py-5">
+    <div class="container text-center py-5">
+        <h1 class="display-4 fw-bold mb-3">Find Your Next Game Night</h1>
+        <p class="lead mb-4">Discover games, build your collection, and coordinate with friends</p>
+
+        <!-- Search Bar -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-6">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Search games...">
+                    <a asp-controller="Games" asp-action="Index" class="btn btn-primary">Search</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Button -->
+        <div class="d-flex justify-content-center">
+            <button class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</button>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Games Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 mb-0">Featured Games</h2>
+            <a asp-controller="Games" asp-action="Index" class="text-decoration-none">Explore All Games <i class="bi bi-arrow-right"></i></a>
+        </div>
+
+        <div class="row row-cols-2 row-cols-md-4 g-4">
+            <!-- Game Card 1 -->
+            <div class="col">
+                <a asp-controller="Games" asp-action="Details" asp-route-id="1" class="card bg-dark text-white text-decoration-none h-100">
+                    <img src="~/images/game1.png" class="card-img-top" alt="Catan">
+                    <div class="card-body">
+                        <h6 class="card-title">Catan</h6>
+                        <small class="text-muted">3-4 Players | 60-120 min</small>
+                        <div class="mt-2">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <span>8.2/10</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Game Card 2 -->
+            <div class="col">
+                <a asp-controller="Games" asp-action="Details" asp-route-id="2" class="card bg-dark text-white text-decoration-none h-100">
+                    <img src="~/images/game2.png" class="card-img-top" alt="Ticket to Ride">
+                    <div class="card-body">
+                        <h6 class="card-title">Ticket to Ride</h6>
+                        <small class="text-muted">2-5 Players | 30-60 min</small>
+                        <div class="mt-2">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <span>7.9/10</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Game Card 3 -->
+            <div class="col">
+                <a asp-controller="Games" asp-action="Details" asp-route-id="3" class="card bg-dark text-white text-decoration-none h-100">
+                    <img src="~/images/game3.png" class="card-img-top" alt="Wingspan">
+                    <div class="card-body">
+                        <h6 class="card-title">Wingspan</h6>
+                        <small class="text-muted">1-5 Players | 40-70 min</small>
+                        <div class="mt-2">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <span>8.5/10</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Game Card 4 -->
+            <div class="col">
+                <a asp-controller="Games" asp-action="Details" asp-route-id="4" class="card bg-dark text-white text-decoration-none h-100">
+                    <img src="~/images/game4.png" class="card-img-top" alt="Azul">
+                    <div class="card-body">
+                        <h6 class="card-title">Azul</h6>
+                        <small class="text-muted">2-4 Players | 30-45 min</small>
+                        <div class="mt-2">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <span>8.1/10</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
