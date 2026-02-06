@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using BoredGamers.Models;
 
 namespace BoredGamers.Data;
 
@@ -13,8 +14,37 @@ namespace BoredGamers.Data;
  */
 public class ApplicationDbContext : IdentityDbContext
 {
+
+    //Domain-level user profile table.
+    //Authentication and registration login are handled sepearately by Identity.
+    public DbSet<User> Users { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        //IMPORTANT: Always call base first so Identity can configure its tables corrrectly.
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            //Enforce unique usernames at the database level
+            entity.HasIndex(u => u.Username)
+                .IsUnique();
+            
+            //Enforce unique emails at the database level
+            entity.HasIndex(u => u.Email)
+                .IsUnique();
+            
+            //Automatically set timestamps (UTC)
+            entity.Property(u => u.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            entity.Property(u => u.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
     }
 }
