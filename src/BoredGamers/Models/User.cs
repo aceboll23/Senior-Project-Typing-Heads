@@ -21,6 +21,10 @@ namespace BoredGamers.Models
     [Required, MaxLength(30)]
     public string Username { get; set; } = string.Empty;
 
+    //Email used for contact and future authentication
+    [Required, MaxLength(256)]
+    public string Email { get; set; } = string.Empty;
+
     //Hashed password only
     [Required, MaxLength(256)]
     public string PasswordHash { get; set; } = string.Empty;
@@ -30,6 +34,6 @@ namespace BoredGamers.Models
 
     //Audit fields
     public DateTime CreatedAt { get; set; }
-    public DateTime UpdateAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
   }
 }
