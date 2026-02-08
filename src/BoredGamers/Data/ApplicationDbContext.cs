@@ -61,6 +61,9 @@ public class ApplicationDbContext : IdentityDbContext
             //Ensure rank is positive when present
             entity.Property(g => g.BggRank)
                 .IsRequired();
+
+            entity.Property(g => g.AverageRating)
+                .HasPrecision(4, 2);
         });
 
     }
