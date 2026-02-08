@@ -18,6 +18,9 @@ public class ApplicationDbContext : IdentityDbContext
     //Domain-level user profile table.
     //Authentication and registration login are handled sepearately by Identity.
     public DbSet<User> Users { get; set; }
+
+    //Locally cached board games sourced from BGG for fast homepage loading.
+    public DbSet<Game> Games { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
@@ -44,6 +47,20 @@ public class ApplicationDbContext : IdentityDbContext
 
             entity.Property(u => u.UpdatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        modelBuilder.Entity<Game>(entity =>
+        {
+            //Prevent duplicate games across syncs
+            entity.HasIndex(g => g.BggGameId)
+                .IsUnique();
+
+            //Fast ordering for Top lists
+            entity.HasIndex(g => g.BggRank);
+
+            //Ensure rank is positive when present
+            entity.Property(g => g.BggRank)
+                .IsRequired();
         });
 
     }
