@@ -1,11 +1,15 @@
 /* ============================================================================
    BoredGamers - Main Styles
-   Global variables, reset, typography, and layout utilities
+   Global variables, Bootstrap overrides, and base element styling
    ============================================================================ */
 
 /* ============================================================================
    CSS Variables - Design System
    ============================================================================ */
+/*
+Root is the default theme. (dark theme). [data-theme="light"] notes what the
+light theme colors will be if the toggle is switched on.
+*/
 
 /* Dark Mode (Default) */
 :root {
@@ -46,7 +50,6 @@
 
   /* Layout */
   --navbar-height: 60px;
-  --container-max-width: 1280px;
 
   /* Transitions */
   --transition-fast: 0.15s ease;
@@ -72,68 +75,101 @@
 }
 
 /* ============================================================================
-   CSS Reset
+   Bootstrap Overrides
+   Forces Bootstrap utility classes to use our custom CSS variables instead of
+   Bootstrap's built-in defaults. This is loaded AFTER bootstrap.min.css in
+   _Layout.cshtml so these rules take precedence via the CSS cascade.
    ============================================================================ */
 
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* --- Background Overrides --- */
+.bg-dark {
+  background-color: var(--bg-secondary) !important;
 }
 
-html {
-  font-size: 16px;
-  scroll-behavior: smooth;
+.bg-light {
+  background-color: var(--bg-tertiary) !important;
 }
+
+/* --- Text Color Overrides ---
+   Bootstrap's .text-white is pure #fff and .text-muted is #6c757d.
+   We map these to our design system text variables for consistency. */
+.text-white {
+  color: var(--text-primary) !important;
+}
+
+.text-muted {
+  color: var(--text-secondary) !important;
+}
+
+/* --- Button Overrides ---
+   Bootstrap's .btn-primary defaults to Bootstrap blue (#0d6efd).
+   We override it to use our accent color so buttons match our theme. */
+.btn-primary {
+  background-color: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.btn-primary:hover {
+  /* Slightly brighter on hover for visual feedback */
+  background-color: #6c78f4 !important;
+  border-color: #6c78f4 !important;
+  color: var(--text-primary) !important;
+}
+
+/* --- Form Control Overrides --- */
+.form-control {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.form-control:focus {
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
+}
+
+/* --- Modal Overrides --- */
+.modal-content {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.modal-header {
+  border-bottom-color: var(--border-color);
+}
+
+.modal-footer {
+  border-top-color: var(--border-color);
+}
+
+/* --- Navbar Overrides ---
+   Ensures Bootstrap navbar classes respect our theme variables. */
+.navbar {
+  background-color: var(--bg-secondary) !important;
+}
+
+.navbar-nav .nav-link {
+  color: var(--text-secondary) !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--text-primary) !important;
+}
+
+/* ============================================================================
+   Base Element Styling
+   ============================================================================ */
 
 body {
-  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 1rem;
-  line-height: 1.5;
   color: var(--text-primary);
   background-color: var(--bg-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-/* ============================================================================
-   Typography
-   ============================================================================ */
-
-h1, h2, h3, h4, h5, h6 {
-  line-height: 1.2;
-  margin-bottom: var(--space-sm);
-}
-
-h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-}
-
-h2 {
-  font-size: 2rem;
-  font-weight: 600;
-}
-
-h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-h4 {
-  font-size: 1.25rem;
-  font-weight: 500;
-}
-
-p {
-  margin-bottom: var(--space-md);
-}
-
-p:last-child {
-  margin-bottom: 0;
 }
 
 a {
@@ -144,188 +180,6 @@ a {
 
 a:hover {
   color: var(--text-primary);
-}
-
-/* Text Utilities */
-.text-small {
-  font-size: 0.875rem;
-}
-
-.text-muted {
-  color: var(--text-secondary);
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-right {
-  text-align: right;
-}
-
-/* ============================================================================
-   Images
-   ============================================================================ */
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* ============================================================================
-   Lists
-   ============================================================================ */
-
-ul, ol {
-  list-style: none;
-}
-
-/* ============================================================================
-   Layout Containers
-   ============================================================================ */
-
-.container {
-  width: 100%;
-  max-width: var(--container-max-width);
-  margin: 0 auto;
-  padding: 0 var(--space-md);
-}
-
-.main-content {
-  flex: 1;
-  padding-top: var(--navbar-height);
-}
-
-/* Section spacing */
-.section {
-  padding: var(--space-2xl) 0;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-lg);
-}
-
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.section-link {
-  font-size: 0.875rem;
-  color: var(--accent-primary);
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-}
-
-.section-link:hover {
-  color: var(--text-primary);
-}
-
-/* ============================================================================
-   Grid System
-   ============================================================================ */
-
-.grid {
-  display: grid;
-  gap: var(--space-lg);
-}
-
-/* Game grid - 4 columns on desktop */
-.grid-games {
-  grid-template-columns: repeat(1, 1fr);
-}
-
-/* Group grid - 3 columns on desktop */
-.grid-groups {
-  grid-template-columns: repeat(1, 1fr);
-}
-
-/* ============================================================================
-   Flexbox Utilities
-   ============================================================================ */
-
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.flex-wrap {
-  flex-wrap: wrap;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.items-start {
-  align-items: flex-start;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.gap-xs { gap: var(--space-xs); }
-.gap-sm { gap: var(--space-sm); }
-.gap-md { gap: var(--space-md); }
-.gap-lg { gap: var(--space-lg); }
-
-/* ============================================================================
-   Spacing Utilities
-   ============================================================================ */
-
-.mt-xs { margin-top: var(--space-xs); }
-.mt-sm { margin-top: var(--space-sm); }
-.mt-md { margin-top: var(--space-md); }
-.mt-lg { margin-top: var(--space-lg); }
-.mt-xl { margin-top: var(--space-xl); }
-
-.mb-xs { margin-bottom: var(--space-xs); }
-.mb-sm { margin-bottom: var(--space-sm); }
-.mb-md { margin-bottom: var(--space-md); }
-.mb-lg { margin-bottom: var(--space-lg); }
-.mb-xl { margin-bottom: var(--space-xl); }
-
-/* ============================================================================
-   Visibility Utilities
-   ============================================================================ */
-
-.hidden {
-  display: none !important;
-}
-
-/* Show only when logged in */
-.logged-in-only {
-  display: none;
-}
-
-body.logged-in .logged-in-only {
-  display: block;
-}
-
-body.logged-in .logged-in-only.flex {
-  display: flex;
-}
-
-/* Show only when logged out */
-.logged-out-only {
-  display: block;
-}
-
-body.logged-in .logged-out-only {
-  display: none !important;
 }
 
 /* ============================================================================
@@ -373,58 +227,4 @@ body.logged-in .logged-out-only {
 ::selection {
   background: var(--accent-primary);
   color: var(--text-primary);
-}
-
-/* ============================================================================
-   Horizontal Scroll Container (for card carousels)
-   ============================================================================ */
-
-.horizontal-scroll {
-  display: flex;
-  gap: var(--space-md);
-  overflow-x: auto;
-  padding-bottom: var(--space-sm);
-  scroll-snap-type: x mandatory;
-}
-
-.horizontal-scroll > * {
-  flex-shrink: 0;
-  scroll-snap-align: start;
-}
-
-/* ============================================================================
-   Responsive Breakpoints
-   ============================================================================ */
-
-/* Tablet: 768px+ */
-@media (min-width: 768px) {
-  .container {
-    padding: 0 var(--space-lg);
-  }
-
-  .grid-games {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .grid-groups {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Desktop: 1024px+ */
-@media (min-width: 1024px) {
-  .grid-games {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .grid-groups {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Large Desktop: 1280px+ */
-@media (min-width: 1280px) {
-  .grid-games {
-    grid-template-columns: repeat(4, 1fr);
-  }
 }
