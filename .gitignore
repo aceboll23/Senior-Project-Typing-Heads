@@ -1,5 +1,11 @@
-﻿
+
 # Build results
+
+src/BoredGamers/bin/
+src/BoredGamers/obj/
+
+bin/
+obj/
 **/bin/
 **/obj/
 
@@ -68,4 +74,3 @@ build/
 # Coverage
 coverage/
 
-obj/
