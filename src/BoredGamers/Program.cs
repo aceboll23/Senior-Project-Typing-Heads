@@ -1,12 +1,15 @@
 using BoredGamers.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using BoredGamers.Services.Bgg;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Register BGG client for Top games sync (HTTP-based)
+builder.Services.AddHttpClient<IBggClient, BggClient>();
 /*
  * Register ApplicationDbContext with dependency injection.
  * The connection string is read from appsettings.json (or user-secrets).
