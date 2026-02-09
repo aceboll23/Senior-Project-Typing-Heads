@@ -1,21 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
+using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace BoredGamers.Services.Bgg
 {
-  // Fetches BGG Top ranked games by parsing the BGG browse ranking page.
-  // IMPORTANT: This is used during sync/import only (never during page render).
+  //Uses BGG XML API2 "hot" endpoint as our ranked source for now
+  //No API key required
   public class BggClient : IBggClient
   {
     private readonly HttpClient _http;
     private readonly ILogger<BggClient> _logger;
 
-    private const string TopBrowseUrl = "https://boardgamegeek.com/browse/boardgame";
+    private const string HotUrl = "https://api.geekdo.com/xmlapi2/hot?type=boardgame";
 
     public BggClient(HttpClient http, ILogger<BggClient> logger)
     {
@@ -29,87 +30,63 @@ namespace BoredGamers.Services.Bgg
     public async Task<IReadOnlyList<BggTopGame>> GetTopRankedGamesAsync(int limit = 100, CancellationToken ct = default)
     {
       if (limit <= 0) return Array.Empty<BggTopGame>();
-      if (limit > 100) limit = 100;
+      if (limit > 100) limit = 100; 
 
-      string html;
+      string xml;
       try
       {
-        html = await _http.GetStringAsync(TopBrowseUrl, ct);
-        _logger.LogInformation("Downloaded BGG browse HTML. Length={Length}", html.Length);
+        xml = await _http.GetStringAsync(HotUrl, ct);
+        _logger.LogInformation("Downloaded BGG hot XML. Length={Length}", xml.Length);
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Failed to fetch BGG browse page for top ranked games.");
-          return Array.Empty<BggTopGame>();
-      }
-
-      var doc = new HtmlDocument();
-      doc.LoadHtml(html);
-
-      var title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText ?? "(no title)";
-      _logger.LogInformation("BGG page title: {Title}", title);
-
-      var h1 = doc.DocumentNode.SelectSingleNode("//h1")?.InnerText?.Trim() ?? "(no h1)";
-      _logger.LogInformation("BGG page h1: {H1}", h1);
-
-      _logger.LogInformation("BGG html starts with: {Start}", html.Substring(0, Math.Min(200, html.Length)));
-
-      var results = new List<BggTopGame>(capacity: limit);
-
-      // Each game row contains:
-      // - <td class="collection_rank"> ... rank ...
-      // - <a href="/boardgame/{id}/...">Name</a>
-      //
-      // We'll iterate rows and extract both pieces.
-      var rows = doc.DocumentNode.SelectNodes("//tr");
-      if (rows == null)
-      {
-        _logger.LogWarning("No <tr> rows found in BGG browse HTML.");
+        _logger.LogError(ex, "Failed to fetch BGG hot list (XML API).");
         return Array.Empty<BggTopGame>();
       }
 
-      foreach (var row in rows)
+      try
       {
-        // Rank: grab the td with class containing 'collection_rank'
-        var rankNode = row.SelectSingleNode(".//td[contains(@class,'collection_rank')]");
-        if (rankNode == null) continue;
+        var doc = XDocument.Parse(xml);
 
-        var rankText = HtmlEntity.DeEntitize(rankNode.InnerText).Trim();
-        if (!int.TryParse(rankText, out var rank)) continue;
-        if (rank < 1 || rank > limit) continue;
+        //Structure:
+        //<items>
+        //  <item id="174430" rank="1">
+        //    <name value="Gloomhaven" />
+        //   ...
+        //  </items>
+        //</items>
+        var items = doc.Descendants("item")
+          .Select(x =>
+          {
+            var idAttr = x.Attribute("id")?.Value;
+            var rankAttr = x.Attribute("rank")?.Value;
+            var nameVal = x.Element("name")?.Attribute("value")?.Value;
 
-        // Link: first boardgame link in the row
-        var linkNode = row.SelectSingleNode(".//a[contains(@href,'/boardgame/')]");
-        if (linkNode == null) continue;
+            if (!int.TryParse(idAttr, out var id)) return null;
+            if (!int.TryParse(rankAttr, out var rank)) return null;
+            if (string.IsNullOrWhiteSpace(nameVal)) nameVal = "(unknown)";
 
-        var href = linkNode.GetAttributeValue("href", "");
-        var name = HtmlEntity.DeEntitize(linkNode.InnerText).Trim();
-
-        if (string.IsNullOrWhiteSpace(href) || string.IsNullOrWhiteSpace(name)) continue;
-
-        // href looks like /boardgame/174430/gloomhaven
-        var parts = href.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        // parts: ["boardgame", "{id}", "{slug}"]
-        if (parts.Length < 2) continue;
-        if (!string.Equals(parts[0], "boardgame", StringComparison.OrdinalIgnoreCase)) continue;
-        if (!int.TryParse(parts[1], out var bggId)) continue;
-
-        results.Add(new BggTopGame
-        {
-          Rank = rank,
-          BggGameId = bggId,
-          Name = name
-        });
-
-        if (results.Count >= limit) break;
+            return new BggTopGame
+            {
+              BggGameId = id,
+              Rank = rank,
+              Name = nameVal.Trim()
+            };
+          })
+          .Where(x => x != null)
+          .Cast<BggTopGame>()
+          .OrderBy(x => x.Rank)
+          .Take(limit)
+          .ToList();
+        
+        _logger.LogInformation("Parsed {Count} games from BGG hot XML.", items.Count);
+        return items;
       }
-
-      if (results.Count == 0)
-      _logger.LogWarning("Parsed 0 top games from BGG browse page. HTML format may have changed.");
-
-      _logger.LogInformation("Parsed {Count} games from BGG browse HTML.", results.Count);
-
-      return results;
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Failed to parse BGG hot XML response.");
+        return Array.Empty<BggTopGame>();
+      }
     }
   }
 }
