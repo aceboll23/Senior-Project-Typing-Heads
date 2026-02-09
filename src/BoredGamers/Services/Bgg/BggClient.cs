@@ -46,6 +46,14 @@ namespace BoredGamers.Services.Bgg
       var doc = new HtmlDocument();
       doc.LoadHtml(html);
 
+      var title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText ?? "(no title)";
+      _logger.LogInformation("BGG page title: {Title}", title);
+
+      var h1 = doc.DocumentNode.SelectSingleNode("//h1")?.InnerText?.Trim() ?? "(no h1)";
+      _logger.LogInformation("BGG page h1: {H1}", h1);
+
+      _logger.LogInformation("BGG html starts with: {Start}", html.Substring(0, Math.Min(200, html.Length)));
+
       var results = new List<BggTopGame>(capacity: limit);
 
       // Each game row contains:
