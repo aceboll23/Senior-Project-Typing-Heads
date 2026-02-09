@@ -37,6 +37,7 @@ namespace BoredGamers.Services.Bgg
       try
       {
         html = await _http.GetStringAsync(TopBrowseUrl, ct);
+        _logger.LogInformation("Downloaded BGG browse HTML. Length={Length}", html.Length);
       }
       catch (Exception ex)
       {
@@ -94,6 +95,8 @@ namespace BoredGamers.Services.Bgg
       {
         _logger.LogWarning("Parse 0 top games from BGG browse page. HTML format may have change.");
       }
+
+       _logger.LogInformation("Parsed {Count} games from BGG browse HTML.", results.Count);
 
       return results;
     }
