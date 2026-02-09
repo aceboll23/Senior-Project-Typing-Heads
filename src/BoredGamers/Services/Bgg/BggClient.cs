@@ -25,6 +25,7 @@ namespace BoredGamers.Services.Bgg
 
       _http.Timeout = TimeSpan.FromSeconds(30);
       _http.DefaultRequestHeaders.UserAgent.ParseAdd("BoredGamers/1.0 (Senior Project)");
+      _http.DefaultRequestHeaders.Accept.ParseAdd("application/xml");
     }
 
     public async Task<IReadOnlyList<BggTopGame>> GetTopRankedGamesAsync(int limit = 100, CancellationToken ct = default)
