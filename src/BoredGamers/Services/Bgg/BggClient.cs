@@ -57,9 +57,15 @@ namespace BoredGamers.Services.Bgg
 
       //Find row-level chunks to reduce accidental matches.
       var rowRegex = new Regex(@"<tr[^>]*>.*?</tr>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-      var rankRegex = new Regex(@"collection_rank[^>]*>\s*(\d+)\s*<", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-      var linkRegex = new Regex(@"href=""/boardgame/(\d+)/[^""]*""[^>]*>\s*([^<]+)\s*<",
-        RegexOptions.Singleline | RegexOptions.IgnoreCase);
+      var rankRegex = new Regex(
+        @"collection_rank[\s\S]*?<span[^>]*>\s*(\d+)\s*</span>",
+        RegexOptions.IgnoreCase);
+  
+      var linkRegex = new Regex(
+        @"href=""/boardgame/(\d+)/[^""]*""[^>]*class=""primary""[^>]*>\s*([^<]+)\s*</a>",
+        RegexOptions.IgnoreCase);
+
+      
       
       foreach (Match rowMatch in rowRegex.Matches(html))
       {
