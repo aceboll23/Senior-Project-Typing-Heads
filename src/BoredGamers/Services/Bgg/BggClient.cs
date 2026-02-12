@@ -2,23 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace BoredGamers.Services.Bgg
 {
   //Uses BGG XML API2 "hot" endpoint as our ranked source for now
-  //No API key required
+  //Token-based access (stored in user secrets)
   public class BggClient : IBggClient
   {
     private readonly HttpClient _http;
     private readonly ILogger<BggClient> _logger;
 
-    private const string HotUrl = "https://api.geekdo.com/xmlapi2/hot?type=boardgame";
+    private const string HotUrl = 
+      "https://api.geekdo.com/xmlapi2/hot?type=boardgame";
 
-    public BggClient(HttpClient http, ILogger<BggClient> logger)
+    public BggClient(HttpClient http, ILogger<BggClient> logger, IConfiguration config)
     {
       _http = http;
       _logger = logger;
@@ -26,8 +29,20 @@ namespace BoredGamers.Services.Bgg
       _http.Timeout = TimeSpan.FromSeconds(30);
       _http.DefaultRequestHeaders.UserAgent.ParseAdd("BoredGamers/1.0 (Senior Project)");
       _http.DefaultRequestHeaders.Accept.ParseAdd("application/xml");
-    }
 
+      var token = config["Bgg:ApiToken"];
+
+      if (!string.IsNullOrWhiteSpace(token))
+      {
+        _http.DefaultRequestHeaders.Authorization =
+          new AuthenticationHeaderValue("Bearer", token);
+      }
+      else
+      {
+        _logger.LogWarning(
+          "BGG API token missing. Set Bgg:ApiToken in User Secrets.");
+      }
+    }
     public async Task<IReadOnlyList<BggTopGame>> GetTopRankedGamesAsync(int limit = 100, CancellationToken ct = default)
     {
       if (limit <= 0) return Array.Empty<BggTopGame>();
