@@ -1,10 +1,11 @@
 using System.Linq;
 using System.Threading.Tasks;
 using BoredGamers.Data;
+using BoredGamers.Services.Games;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace BoredGamers.Controllersa
+namespace BoredGamers.Controllers
 {
   //GamesController (API)
   //Provides read-only endpoints that the UI can call to display and search games.
@@ -13,11 +14,11 @@ namespace BoredGamers.Controllersa
   [Route("api/games")]
   public class GamesController : ControllerBase
   {
-    private readonly ApplicationDbContext _db;
+    private readonly IGameService _games;
 
-    public GamesController(ApplicationDbContext db)
+    public GamesController(IGameService games)
     {
-      _db = db;
+      _games = games;
     }
 
     //GET /api/games/top?limit=10
@@ -27,22 +28,19 @@ namespace BoredGamers.Controllersa
       if (limit <= 1) limit = 1;
       if (limit > 100) limit = 100;
 
-      var games = await _db.Games
-        .OrderBy(g => g.BggRank)
-        .Take(limit)
-        .Select(g => new
-        {
-          g.Id,
-          g.Name,
-          g.YearPublished,
-          g.ThumbnailUrl,
-          g.ImageUrl,
-          g.BggRank,
-          g.AverageRating
-        })
-        .ToListAsync();
-
-      return Ok(games);
+      var games = await _games.GetTopGamesAsync(limit);
+      
+      return Ok(games.Select(g => new
+      {
+        g.Id,
+        g.BggGameId,
+        g.Name,
+        g.YearPublished,
+        g.ThumbnailUrl,
+        g.ImageUrl,
+        g.BggRank,
+        g.AverageRating
+      }));
     }
   }
 }
