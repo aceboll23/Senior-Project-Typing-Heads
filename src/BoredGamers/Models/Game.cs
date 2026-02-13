@@ -22,7 +22,7 @@ namespace BoredGamers.Models
     public string? ThumbnailUrl { get; set; }
 
     [MaxLength(500)]
-    public string? ImgageUrl { get; set; }
+    public string? ImageUrl { get; set; }
 
     //1...100 from BGG's ranked list
     public int BggRank { get; set; }
