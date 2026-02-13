@@ -47,7 +47,7 @@ namespace BoredGamers.Services.Games
       //Later we can upgrade to full-text search or ranking logic
       return await _db.Games
         .AsNoTracking()
-        .Where(g => g.Name.Contains(query))
+        .Where(g => g.Name.ToLower().Contains(query.ToLower()))
         .OrderBy(g => g.BggRank)
         .Take(limit)
         .ToListAsync();
