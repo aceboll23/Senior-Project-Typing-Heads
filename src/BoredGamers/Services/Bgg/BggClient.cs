@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -19,9 +20,9 @@ namespace BoredGamers.Services.Bgg
     private readonly ILogger<BggClient> _logger;
 
     private const string HotUrl = 
-      "https://api.geekdo.com/xmlapi2/hot?type=boardgame";
+      "https://boardgamegeek.com/xmlapi2/hot?type=boardgame";
 
-    public BggClient(HttpClient http, ILogger<BggClient> logger, IConfiguration config)
+    public BggClient(HttpClient http, ILogger<BggClient> logger)
     {
       _http = http;
       _logger = logger;
@@ -30,18 +31,6 @@ namespace BoredGamers.Services.Bgg
       _http.DefaultRequestHeaders.UserAgent.ParseAdd("BoredGamers/1.0 (Senior Project)");
       _http.DefaultRequestHeaders.Accept.ParseAdd("application/xml");
 
-      var token = config["Bgg:ApiToken"];
-
-      if (!string.IsNullOrWhiteSpace(token))
-      {
-        _http.DefaultRequestHeaders.Authorization =
-          new AuthenticationHeaderValue("Bearer", token);
-      }
-      else
-      {
-        _logger.LogWarning(
-          "BGG API token missing. Set Bgg:ApiToken in User Secrets.");
-      }
     }
     public async Task<IReadOnlyList<BggTopGame>> GetTopRankedGamesAsync(int limit = 100, CancellationToken ct = default)
     {
@@ -103,6 +92,90 @@ namespace BoredGamers.Services.Bgg
         _logger.LogError(ex, "Failed to parse BGG hot XML response.");
         return Array.Empty<BggTopGame>();
       }
+    }
+
+    private const string ThingUrlBase = "https://boardgamegeek.com/xmlapi2/thing?type=boardgame&stats=1&id=";
+
+    public async Task<IReadOnlyDictionary<int, BggGameDetails>> GetGameDetailsAsync(IEnumerable<int> bggGameIds, CancellationToken ct = default)
+    {
+      var ids = bggGameIds?.Distinct().ToList() ?? new List<int>();
+      if (ids.Count == 0) return new Dictionary<int, BggGameDetails>();
+
+      //Avoid giant URLs;
+      const int batchSize = 25;
+
+      var results = new Dictionary<int, BggGameDetails>();
+
+      for(int i = 0; i < ids.Count; i += batchSize)
+      {
+        var batch = ids.Skip(i).Take(batchSize).ToList();
+        var url = ThingUrlBase + string.Join(",", batch);
+
+        _logger.LogInformation("Bgg thing URL: {Url}", url);
+
+        string xml;
+        try
+        {
+          xml = await _http.GetStringAsync(url, ct);
+          _logger.LogInformation("Downloaded BGG thing XML batch. Count={Count} Length={Length}", batch.Count, xml.Length);
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Failed to fetch BGG thing details batch.");
+          continue; // keep partial results
+        }
+
+        try
+        {
+          var doc = XDocument.Parse(xml);
+
+          foreach (var item in doc.Descendants("item"))
+          {
+            var idAttr = item.Attribute("id")?.Value;
+            if (!int.TryParse(idAttr, out var id)) continue;
+
+            //yearpublished: <yearpublished value="" />
+            int? year = null;
+            var yearStr = item.Element("yearpublished")?.Attribute("value")?.Value;
+            if (int.TryParse(yearStr, out var yearParsed)) year = yearParsed;
+
+            //thumbnail/image are elements with text content in SML API2:
+            //<thumbnail>https://...</thumbnail>
+            //<image>https://...</image>
+            var thumb = item.Element("thumbnail")?.Value?.Trim();
+            var image = item.Element("image")?.Value?.Trim();
+
+            //average rating: <statistics><ratings><average value="8.5" />
+            decimal? avg = null;
+
+            var avgStr = item
+              .Descendants("ratings")
+              .Descendants("average")
+              .FirstOrDefault()
+              ?.Attribute("value")
+              ?.Value;
+            
+            if (decimal.TryParse(avgStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var avgParsed))
+              avg = avgParsed;
+
+            results[id] = new BggGameDetails
+            {
+              BggGameId = id,
+              YearPublished = year,
+              ThumbnailUrl = string.IsNullOrWhiteSpace(thumb) ? null : thumb,
+              ImageUrl = string.IsNullOrWhiteSpace(image) ? null : image,
+              AverageRating = avg
+            };
+          }
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Failed to parse BGG thing XML batch.");
+        }
+      }
+
+      _logger.LogInformation("Parsed details for {Count} games via BGG thing endpoint.", results.Count);
+      return results;
     }
   }
 }
