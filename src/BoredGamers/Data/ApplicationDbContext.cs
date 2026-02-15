@@ -17,7 +17,7 @@ public class ApplicationDbContext : IdentityDbContext
 
     //Domain-level user profile table.
     //Authentication and registration login are handled sepearately by Identity.
-    public DbSet<User> Users { get; set; }
+    // Removed the Users DbSet - Identity manages this automatically
 
     //Locally cached board games sourced from BGG for fast homepage loading.
     public DbSet<Game> Games { get; set; }
@@ -33,13 +33,8 @@ public class ApplicationDbContext : IdentityDbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            //Enforce unique usernames at the database level
-            entity.HasIndex(u => u.Username)
-                .IsUnique();
-            
-            //Enforce unique emails at the database level
-            entity.HasIndex(u => u.Email)
-                .IsUnique();
+            // Username uniqueness is already handled by Identity
+            // Email uniqueness is already handled by Identity
             
             //Automatically set timestamps (UTC)
             entity.Property(u => u.CreatedAt)

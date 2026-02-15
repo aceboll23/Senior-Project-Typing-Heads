@@ -3,6 +3,7 @@ using BoredGamers.Services.Bgg;
 using BoredGamers.Services.Games;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using BoredGamers.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -37,13 +38,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // ASP.NET Core Identity (uses EF Core + ApplicationDbContext)
 builder.Services
-    .AddDefaultIdentity<IdentityUser>(options =>
+    .AddDefaultIdentity<User>(options =>  // Changed from IdentityUser to User
     {
-        // Sprint 0: keep simple; tighten policy later if needed
         options.SignIn.RequireConfirmedAccount = false;
+        
+        // Configure password requirements
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 8;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
-
 //
 //HTTP Clients
 //
