@@ -228,3 +228,26 @@ a:hover {
   background: var(--accent-primary);
   color: var(--text-primary);
 }
+
+
+/* ============================================================================
+   Search Results - Game Cards
+   ============================================================================ */
+
+#searchResults .card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    overflow: hidden;
+}
+
+#searchResults .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+#searchResults .card-img-top {
+    height: 180px;
+    object-fit: cover;
+    background-color: var(--bg-tertiary);
+}
