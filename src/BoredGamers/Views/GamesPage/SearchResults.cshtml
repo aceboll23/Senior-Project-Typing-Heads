@@ -1,0 +1,50 @@
+@{
+    ViewData["Title"] = "Search Results";
+    var query = ViewData["SearchQuery"] as string;
+}
+
+<!-- Search Section -->
+<section class="bg-dark text-white py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form action="/Games/SearchResults" method="get">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" class="form-control" placeholder="Search games..."
+                               value="@query">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Results Section -->
+<section class="py-4">
+    <div class="container">
+        @if (!string.IsNullOrEmpty(query))
+        {
+            <h2 class="h4 mb-4">Results for "@query"</h2>
+        }
+        else
+        {
+            <h2 class="h4 mb-4">Browse Games</h2>
+        }
+
+        <!-- JS will populate this -->
+        <div id="searchResults">
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-search" style="font-size: 2rem;"></i>
+                <p class="mt-2">Search for a game to see results</p>
+            </div>
+        </div>
+
+        <!-- No results message (hidden by default, shown by JS) -->
+        <div id="noResults" class="text-center py-5" style="display: none;">
+            <i class="bi bi-emoji-frown" style="font-size: 2rem;"></i>
+            <p class="mt-2 text-muted">No games found. Try a different search term.</p>
+        </div>
+    </div>
+</section>

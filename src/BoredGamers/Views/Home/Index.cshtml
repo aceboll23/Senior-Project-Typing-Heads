@@ -13,11 +13,16 @@
         <!-- Search Bar -->
         <div class="row justify-content-center mb-4">
             <div class="col-md-6">
-                <div class="input-group input-group-lg">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Search games...">
-                    <a asp-controller="Games" asp-action="Index" class="btn btn-primary">Search</a>
-                </div>
+                
+                @*"when this form submits, go to /Games/SearchResults and 
+                put the input values in the URL."*@
+                <form action="/Games/SearchResults" method="get">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" class="form-control" placeholder="Search games...">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </form>
             </div>
         </div>
 
