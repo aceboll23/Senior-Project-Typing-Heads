@@ -21,7 +21,7 @@ public class HomeController : Controller
     public async Task<IActionResult> Index()
     {
         //Featured list for the landing page (DB-only; no live BGG calls)
-        var featured = await _games.GetTopGamesAsync(limit: 10);
+        var featured = await _games.GetTopGamesAsync(limit: 4);
 
         _logger.LogInformation("Home FeaturedGames count = {Count}", featured.Count);
 
