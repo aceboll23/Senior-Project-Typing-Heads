@@ -45,7 +45,7 @@ namespace BoredGamers.Controllers
 
     //GET /api/games/search?q=catan&limit=10
     [HttpGet("search")]
-    public async Task<IActionResult> Serch([FromQuery] string q, [FromQuery] int limit = 10)
+    public async Task<IActionResult> Search([FromQuery] string q, [FromQuery] int limit = 10)
     {
       //Keep inputs sane
       q = (q ?? string.Empty).Trim();

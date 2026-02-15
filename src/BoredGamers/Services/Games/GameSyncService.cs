@@ -37,6 +37,8 @@ namespace BoredGamers.Services.Games
       }
        //Load exisiting games that match the incoming IDs
        var incomingIds = top.Select(t => t.BggGameId).ToList();
+        //Fetch extra metadata in batches (year/thumb/image/rating)
+       var detailsById = await _bgg.GetGameDetailsAsync(incomingIds, ct);
 
        var existing = await _db.Games
         .Where(g => incomingIds.Contains(g.BggGameId))
@@ -52,16 +54,31 @@ namespace BoredGamers.Services.Games
           game.Name = item.Name;
           game.BggRank = item.Rank;
           game.LastSyncedAt = now;
+
+          if (detailsById.TryGetValue(item.BggGameId, out var d))
+          {
+            game.YearPublished = d.YearPublished;
+            game.ThumbnailUrl = d.ThumbnailUrl;
+            game.ImageUrl = d.ImageUrl;
+            game.AverageRating = d.AverageRating;
+          }
           changes ++;
         }
         else
         {
           //Insert new row
+
+          detailsById.TryGetValue(item.BggGameId, out var d);
+
           _db.Games.Add(new Game
           {
             BggGameId = item.BggGameId,
             Name = item.Name,
             BggRank = item.Rank,
+            YearPublished = d?.YearPublished,
+            ThumbnailUrl = d?.ThumbnailUrl,
+            ImageUrl = d?.ImageUrl,
+            AverageRating = d?.AverageRating,
             LastSyncedAt = now
           });
           changes++;

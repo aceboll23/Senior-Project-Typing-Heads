@@ -1,21 +1,36 @@
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using BoredGamers.Models;
+using BoredGamers.Models.ViewModels;
+using BoredGamers.Services.Games;
 
 namespace BoredGamers.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly IGameService _games;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, IGameService games)
     {
         _logger = logger;
+        _games = games;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
+        //Featured list for the landing page (DB-only; no live BGG calls)
+        var featured = await _games.GetTopGamesAsync(limit: 4);
+
+        _logger.LogInformation("Home FeaturedGames count = {Count}", featured.Count);
+
+        var vm = new HomeIndexViewModel
+        {
+            FeaturedGames = featured
+        };
+
+        return View(vm);
     }
 
     public IActionResult Privacy()
