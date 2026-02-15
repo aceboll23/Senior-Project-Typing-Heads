@@ -1,3 +1,5 @@
+@model BoredGamers.Models.ViewModels.HomeIndexViewModel
+
 @{
     ViewData["Title"] = "Home";
 }
@@ -33,67 +35,56 @@
             <h2 class="h3 mb-0">Featured Games</h2>
             <a asp-controller="Games" asp-action="Index" class="text-decoration-none">Explore All Games <i class="bi bi-arrow-right"></i></a>
         </div>
-
-        <div class="row row-cols-2 row-cols-md-4 g-4">
-            <!-- Game Card 1 -->
-            <div class="col">
-                <a asp-controller="Games" asp-action="Details" asp-route-id="1" class="card bg-dark text-white text-decoration-none h-100">
-                    <img src="~/images/game1.png" class="card-img-top" alt="Catan">
-                    <div class="card-body">
-                        <h6 class="card-title">Catan</h6>
-                        <small class="text-muted">3-4 Players | 60-120 min</small>
-                        <div class="mt-2">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <span>8.2/10</span>
-                        </div>
-                    </div>
-                </a>
+        @if (Model?.FeaturedGames == null || !Model.FeaturedGames.Any())
+        {
+            <!--Empty State (no crash if sync hasn't run yet) -->
+            <div class ="alert alert-secondary" role="alert">
+                No Games available yet.  Check back soon!
             </div>
+        }
+        else
+        {
+            <div class="row row-cols -2 row-cols-md-4 g-4">
+                @foreach (var game in Model.FeaturedGames)
+                {
+                    <div class="col">
+                        <a asp-controller="Games"
+                           asp-action="Details"
+                           asp-route-id="@game.Id"
+                           class="card bg-dark text-white text decoration-none h-100">
+                           
+                           @{
+                               //Prefer thumbnail if available; fallback to a local placeholder
+                               var img = string.IsNullOrWhiteSpace(game.ThumbnailUrl)
+                                  ? Url.Content("~/images/game-placeholder.png")
+                                  : game.ThumbnailUrl;
+                           }
 
-            <!-- Game Card 2 -->
-            <div class="col">
-                <a asp-controller="Games" asp-action="Details" asp-route-id="2" class="card bg-dark text-white text-decoration-none h-100">
-                    <img src="~/images/game2.png" class="card-img-top" alt="Ticket to Ride">
-                    <div class="card-body">
-                        <h6 class="card-title">Ticket to Ride</h6>
-                        <small class="text-muted">2-5 Players | 30-60 min</small>
-                        <div class="mt-2">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <span>7.9/10</span>
-                        </div>
-                    </div>
-                </a>
-            </div>
+                           <img src="@img" class="card-img-top" alt="@game.Name" />
 
-            <!-- Game Card 3 -->
-            <div class="col">
-                <a asp-controller="Games" asp-action="Details" asp-route-id="3" class="card bg-dark text-white text-decoration-none h-100">
-                    <img src="~/images/game3.png" class="card-img-top" alt="Wingspan">
-                    <div class="card-body">
-                        <h6 class="card-title">Wingspan</h6>
-                        <small class="text-muted">1-5 Players | 40-70 min</small>
-                        <div class="mt-2">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <span>8.5/10</span>
-                        </div>
-                    </div>
-                </a>
-            </div>
+                           <div class ="card-body">
+                                <h6 class="card-title">@game.Name</h6>
 
-            <!-- Game Card 4 -->
-            <div class="col">
-                <a asp-controller="Games" asp-action="Details" asp-route-id="4" class="card bg-dark text-white text-decoration-none h-100">
-                    <img src="~/images/game4.png" class="card-img-top" alt="Azul">
-                    <div class="card-body">
-                        <h6 class="card-title">Azul</h6>
-                        <small class="text-muted">2-4 Players | 30-45 min</small>
-                        <div class="mt-2">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            <span>8.1/10</span>
-                        </div>
+                                <small class="text-muted">
+                                    Rank #@game.BggRank
+                                    @if (game.YearPublished.HasValue)
+                                    {
+                                        <span> | @game.YearPublished</span>
+                                    }
+                                </small>
+
+                                @if (game.AverageRating.HasValue)
+                                {
+                                    <div class="mt-2">
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <span>@game.AverageRating.Value.ToString("0.0")/10</span>
+                                    </div>
+                                }
+                           </div>
+                        </a>
                     </div>
-                </a>
+                }
             </div>
-        </div>
+        }
     </div>
 </section>

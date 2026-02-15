@@ -9,5 +9,6 @@ namespace BoredGamers.Services.Bgg
   public interface IBggClient
   {
     Task<IReadOnlyList<BggTopGame>> GetTopRankedGamesAsync(int limit = 100, CancellationToken ct = default);
+    Task<IReadOnlyDictionary<int, BggGameDetails>> GetGameDetailsAsync(IEnumerable<int> bggGameIds, CancellationToken ct = default);
   }
 }
