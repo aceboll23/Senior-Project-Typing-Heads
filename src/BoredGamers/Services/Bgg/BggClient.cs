@@ -12,7 +12,9 @@ using Microsoft.Extensions.Logging;
 
 namespace BoredGamers.Services.Bgg
 {
-  //Uses BGG XML API2 "hot" endpoint as our ranked source for now
+  //Uses BGG XML API2 
+  //-hot (ranked-ish list)
+  //-thing (details: year, images, rating)
   //Token-based access (stored in user secrets)
   public class BggClient : IBggClient
   {
@@ -22,12 +24,22 @@ namespace BoredGamers.Services.Bgg
     private const string HotUrl = 
       "https://boardgamegeek.com/xmlapi2/hot?type=boardgame";
 
+    private const string ThingUrlBase = 
+      "Https://boardgamegeek.com/xmlapi2/thing?id="; 
+
+    private const string ThingUrlSuffix = 
+      "&stats=1";
+    //Keep a consistent UA that works well with cloudflare.
+    private const string BrowserUserAgent = "Mozilla/5.0";
+
     public BggClient(HttpClient http, ILogger<BggClient> logger, IConfiguration config)
     {
       _http = http;
       _logger = logger;
 
       _http.Timeout = TimeSpan.FromSeconds(30);
+
+      // Default headers for ALL requests made by this HttpClient
       _http.DefaultRequestHeaders.UserAgent.ParseAdd("BoredGamers/1.0 (Senior Project)");
       _http.DefaultRequestHeaders.Accept.ParseAdd("application/xml");
 
@@ -53,8 +65,7 @@ namespace BoredGamers.Services.Bgg
       try
       {
         var request = new HttpRequestMessage(HttpMethod.Get, HotUrl);
-
-        request.Headers.UserAgent.ParseAdd("Mozilla/5.0");
+        request.Headers.UserAgent.ParseAdd(BrowserUserAgent);
         request.Headers.Accept.ParseAdd("application/xml");
 
         var response = await _http.SendAsync(request, ct);
@@ -113,30 +124,42 @@ namespace BoredGamers.Services.Bgg
       }
     }
 
-    private const string ThingUrlBase = 
-      "https://boardgamegeek.com/xmlapi2/thing?stats=1&id=";
-
     public async Task<IReadOnlyDictionary<int, BggGameDetails>> GetGameDetailsAsync(IEnumerable<int> bggGameIds, CancellationToken ct = default)
     {
       var ids = bggGameIds?.Distinct().ToList() ?? new List<int>();
       if (ids.Count == 0) return new Dictionary<int, BggGameDetails>();
 
       //Avoid giant URLs;
-      const int batchSize = 25;
+      const int batchSize = 10;
 
       var results = new Dictionary<int, BggGameDetails>();
 
       for(int i = 0; i < ids.Count; i += batchSize)
       {
         var batch = ids.Skip(i).Take(batchSize).ToList();
-        var url = ThingUrlBase + string.Join(",", batch);
+        var url = ThingUrlBase + string.Join(",", batch) + ThingUrlSuffix;
 
         _logger.LogInformation("Bgg thing URL: {Url}", url);
 
         string xml;
         try
         {
-          xml = await _http.GetStringAsync(url, ct);
+          var request = new HttpRequestMessage(HttpMethod.Get, url);
+          request.Headers.UserAgent.ParseAdd(BrowserUserAgent);
+          request.Headers.Accept.ParseAdd("application/xml");
+
+          var response = await _http.SendAsync(request, ct);
+
+          if (!response.IsSuccessStatusCode)
+          {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            _logger.LogError("BGG thing request failed. Status={Status}. BodyStart={BodyStart}",
+              (int)response.StatusCode,
+              body.Length > 300 ? body.Substring(0,300) : body);
+            continue;
+          }
+
+          xml = await response.Content.ReadAsStringAsync(ct);
           _logger.LogInformation("Downloaded BGG thing XML batch. Count={Count} Length={Length}", batch.Count, xml.Length);
         }
         catch (Exception ex)
