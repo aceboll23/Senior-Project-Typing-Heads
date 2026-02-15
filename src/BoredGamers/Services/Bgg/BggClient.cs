@@ -22,7 +22,7 @@ namespace BoredGamers.Services.Bgg
     private const string HotUrl = 
       "https://boardgamegeek.com/xmlapi2/hot?type=boardgame";
 
-    public BggClient(HttpClient http, ILogger<BggClient> logger)
+    public BggClient(HttpClient http, ILogger<BggClient> logger, IConfiguration config)
     {
       _http = http;
       _logger = logger;
@@ -30,6 +30,18 @@ namespace BoredGamers.Services.Bgg
       _http.Timeout = TimeSpan.FromSeconds(30);
       _http.DefaultRequestHeaders.UserAgent.ParseAdd("BoredGamers/1.0 (Senior Project)");
       _http.DefaultRequestHeaders.Accept.ParseAdd("application/xml");
+
+      //Add BGG XML API Authorization token
+      var token = config["Bgg:ApiToken"];
+      if (!string.IsNullOrWhiteSpace(token))
+      {
+        _http.DefaultRequestHeaders.Authorization =
+          new AuthenticationHeaderValue("Bearer", token);
+      }
+      else
+      {
+        _logger.LogWarning("BGG API token not found. Set 'Bgg:ApiToken' in user-secrets.");
+      }
 
     }
     public async Task<IReadOnlyList<BggTopGame>> GetTopRankedGamesAsync(int limit = 100, CancellationToken ct = default)
@@ -40,8 +52,15 @@ namespace BoredGamers.Services.Bgg
       string xml;
       try
       {
-        xml = await _http.GetStringAsync(HotUrl, ct);
-        _logger.LogInformation("Downloaded BGG hot XML. Length={Length}", xml.Length);
+        var request = new HttpRequestMessage(HttpMethod.Get, HotUrl);
+
+        request.Headers.UserAgent.ParseAdd("Mozilla/5.0");
+        request.Headers.Accept.ParseAdd("application/xml");
+
+        var response = await _http.SendAsync(request, ct);
+        response.EnsureSuccessStatusCode();
+
+        xml = await response. Content.ReadAsStringAsync(ct);
       }
       catch (Exception ex)
       {
@@ -94,7 +113,8 @@ namespace BoredGamers.Services.Bgg
       }
     }
 
-    private const string ThingUrlBase = "https://boardgamegeek.com/xmlapi2/thing?type=boardgame&stats=1&id=";
+    private const string ThingUrlBase = 
+      "https://boardgamegeek.com/xmlapi2/thing?stats=1&id=";
 
     public async Task<IReadOnlyDictionary<int, BggGameDetails>> GetGameDetailsAsync(IEnumerable<int> bggGameIds, CancellationToken ct = default)
     {
