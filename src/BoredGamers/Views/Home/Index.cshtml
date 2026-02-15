@@ -35,7 +35,6 @@
             <h2 class="h3 mb-0">Featured Games</h2>
             <a asp-controller="Games" asp-action="Index" class="text-decoration-none">Explore All Games <i class="bi bi-arrow-right"></i></a>
         </div>
-        <p> DEBUG: FeaturedGames = @(Model?.FeaturedGames?.Count ?? -1)</p>
         @if (Model?.FeaturedGames == null || !Model.FeaturedGames.Any())
         {
             <!--Empty State (no crash if sync hasn't run yet) -->
