@@ -17,6 +17,8 @@ public class AccountController : Controller
         _signInManager = signInManager;
     }
 
+
+    //GET for /Account/Register
     [HttpGet]
     public IActionResult Register()
     {
@@ -64,5 +66,53 @@ public class AccountController : Controller
             }
         }
         return View(model);
+    }
+
+    //GET and POST for /Account/Login
+    [HttpGet]
+    public IActionResult Login()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Login(LoginViewModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            var user = await _userManager.FindByNameAsync(model.UsernameOrEmail);
+
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(model.UsernameOrEmail);
+            }
+
+            if (user != null)
+            {
+                var result = await _signInManager.PasswordSignInAsync(
+                    user.UserName,
+                    model.Password,
+                    isPersistent: false,
+                    lockoutOnFailure: false);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+        }
+
+        return View(model);
+    }
+
+    // Account/Logout
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Logout()
+    {
+        await _signInManager.SignOutAsync();
+        return RedirectToAction("Index", "Home");
     }
 }
