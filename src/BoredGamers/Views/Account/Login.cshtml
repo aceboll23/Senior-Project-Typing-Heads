@@ -2,37 +2,50 @@
 
 <h2>@ViewData["Title"]</h2>
 
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Login" method="post">
-            <h4>Use a local account to log in.</h4>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            
-            <div class="form-group">
-                <label asp-for="UsernameOrEmail"></label>
-                <input asp-for="UsernameOrEmail" class="form-control" />
-                <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+<section class="bg-dark text-white py-5">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="text-center mb-4">
+                    <h1 class="display-5 fw-bold mb-3">Welcome Back</h1>
+                    <p class="lead">Log in to your BoredGamers account</p>
+                </div>
+
+                <div class="card bg-dark border-secondary">
+                    <div class="card-body p-4">
+                        <form asp-action="Login" method="post">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="UsernameOrEmail" class="form-label">Email or Username</label>
+                                <input asp-for="UsernameOrEmail" class="form-control form-control-lg" placeholder="Enter your email or username" />
+                                <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label">Password</label>
+                                <input asp-for="Password" class="form-control form-control-lg" placeholder="Enter your password" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                                       
+                            
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">Log In</button>
+                            </div>
+                            
+                            <div class="text-center pt-3 border-top">
+                                <p class="text-muted mb-0">
+                                    Don't have an account?
+                                    <a asp-action="Register" class="text-decoration-none">Sign Up</a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label asp-for="Password"></label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Log in</button>
-            </div>
-            
-            <div class="form-group">
-                <p>
-                    <a asp-action="Register">Register as a new user</a>
-                </p>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
+</section>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
