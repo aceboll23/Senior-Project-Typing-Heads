@@ -1,0 +1,60 @@
+@model BoredGamers.Models.Game
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<!-- Game Details -->
+<section class="py-4">
+    <div class="container">
+
+        <!-- Back link -->
+        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm mb-4">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+
+        <div class="row g-4">
+            <!-- Game Image -->
+            <div class="col-md-4">
+                @{
+                    var image = !string.IsNullOrWhiteSpace(Model.ImageUrl)
+                        ? Model.ImageUrl
+                        : !string.IsNullOrWhiteSpace(Model.ThumbnailUrl)
+                            ? Model.ThumbnailUrl
+                            : Url.Content("~/images/game-placeholder.png");
+                }
+                <img src="@image" alt="@Model.Name" class="img-fluid rounded" />
+            </div>
+
+            <!-- Game Info -->
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    @Model.Name
+                    @if (Model.YearPublished.HasValue)
+                    {
+                        <small class="text-muted">(@Model.YearPublished)</small>
+                    }
+                </h1>
+
+                <div class="d-flex gap-3 mb-4">
+                    @if (Model.BggRank > 0)
+                    {
+                        <span class="badge bg-primary fs-6">
+                            <i class="bi bi-trophy me-1"></i>Rank #@Model.BggRank
+                        </span>
+                    }
+                    @if (Model.AverageRating.HasValue)
+                    {
+                        <span class="badge bg-secondary fs-6">
+                            <i class="bi bi-star-fill me-1"></i>@Model.AverageRating.Value.ToString("0.0") / 10
+                        </span>
+                    }
+                </div>
+
+                <!-- Ian I think you will add stuff probably here and can delete this comment then. (Description, Players, PlayTime) -->
+                
+            </div>
+        </div>
+
+    </div>
+</section>

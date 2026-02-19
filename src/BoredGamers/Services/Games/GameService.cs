@@ -52,5 +52,13 @@ namespace BoredGamers.Services.Games
         .Take(limit)
         .ToListAsync();
     }
+
+     public async Task<Game?> GetGameByIdAsync(int id)
+    {
+      return await _db.Games
+        .AsNoTracking() //we're just reading, not editing
+        .FirstOrDefaultAsync(g => g.Id == id);
+    }
+
   }
 }

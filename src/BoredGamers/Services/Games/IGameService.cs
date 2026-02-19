@@ -8,5 +8,6 @@ namespace BoredGamers.Services.Games
   {
     Task<IReadOnlyList<Game>> GetTopGamesAsync(int limit = 100);
     Task<IReadOnlyList<Game>> SearchGamesAsync(string query, int limit);
+    Task<Game?> GetGameByIdAsync(int id);
   }
 }
