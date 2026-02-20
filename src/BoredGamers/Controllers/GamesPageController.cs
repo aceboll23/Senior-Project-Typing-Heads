@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using BoredGamers.Services.Games;
 
 namespace BoredGamers.Controllers
 {
@@ -8,6 +9,14 @@ namespace BoredGamers.Controllers
     // change how model binding/error handling work for the existing API endpoints.
     public class GamesPageController : Controller
     {
+        private readonly IGameService _gameService;
+        //dependency injection
+        public GamesPageController(IGameService gameService)
+        {
+            _gameService = gameService;
+        }
+
+
         // Example: GET /Games/SearchResults?q=dewan
         [Route("Games/SearchResults")]
         public IActionResult SearchResults(string q)
@@ -18,6 +27,22 @@ namespace BoredGamers.Controllers
             // it takes GamesPageController, strips off "Controller" and 
             // looks for Views/{GamesPage}/{SearchResults}.cshtml
             return View(); 
+        }
+
+        // Example: GET /Games/Details/5 (5 being a game id)
+        [Route("Games/Details/{id}")]
+        public async Task<IActionResult> Details(int id)
+        {
+            // Fetch the game from the database by its Id
+            var game = await _gameService.GetGameByIdAsync(id);
+
+            if (game == null)
+            {
+                return View("NotFound");
+            }
+
+            // Pass the game to Views/GamesPage/Details.cshtml
+            return View(game);
         }
     }
 }
