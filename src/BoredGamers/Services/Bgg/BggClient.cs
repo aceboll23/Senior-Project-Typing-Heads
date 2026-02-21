@@ -78,9 +78,17 @@ namespace BoredGamers.Services.Bgg
         string html;
         try
         {
+
+          if (page > 1)
+          {
+            await Task.Delay(1000, ct);
+          }
           var request = new HttpRequestMessage(HttpMethod.Get, url);
           request.Headers.UserAgent.ParseAdd(BrowserUserAgent);
           request.Headers.Accept.ParseAdd("text/html");
+
+          request.Headers.Referrer = new Uri("https://boardgamegeek.com/browse/boardgame");
+          request.Headers.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
 
           var response = await _http.SendAsync(request, ct);
           response.EnsureSuccessStatusCode();
