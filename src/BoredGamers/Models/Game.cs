@@ -29,6 +29,16 @@ namespace BoredGamers.Models
 
     public decimal? AverageRating { get; set; }
 
+    //Game description pulled from BGG
+    public string? Description { get; set; }
+
+    //Player count from BGG
+    public int? MinPlayers { get; set; }
+    public int? MaxPlayers { get; set; }
+
+    //Play time in minutes
+    public int? PlayTime { get; set; }
+
     //When this record was last refreshed from BGG data
     public DateTime LastSyncedAt { get; set;}
 
