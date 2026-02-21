@@ -59,8 +59,88 @@ namespace BoredGamers.Services.Bgg
     public async Task<IReadOnlyList<BggTopGame>> GetTopRankedGamesAsync(int limit = 100, CancellationToken ct = default)
     {
       if (limit <= 0) return Array.Empty<BggTopGame>();
-      if (limit > 100) limit = 100; 
+      if (limit > 150) limit = 150; 
 
+      const string BrowseUrlTemplete = "https://boardgamegeek.com/browse/boardgame/page/{0}";
+
+      var pagesNeeded = (int)Math.Ceiling(limit / 100.0);
+      if (pagesNeeded < 1) pagesNeeded = 1;
+
+      var results = new List<BggTopGame>(limit);
+
+      for (int page = 1; page <= pagesNeeded; page++)
+      {
+        ct.ThrowIfCancellationRequested();
+
+        var url = string.Format(BrowseUrlTemplete, page);
+        _logger.LogInformation("BGG browse URL: {Url}", url);
+
+        string html;
+        try
+        {
+          var request = new HttpRequestMessage(HttpMethod.Get, url);
+          request.Headers.UserAgent.ParseAdd(BrowserUserAgent);
+          request.Headers.Accept.ParseAdd("text/html");
+
+          var response = await _http.SendAsync(request, ct);
+          response.EnsureSuccessStatusCode();
+
+          html = await response.Content.ReadAsStringAsync(ct);
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Failed to fetch BGG browse page {Page}.", page);
+          continue; // keep partial results
+        }
+
+        try
+        {
+          var rowRegex = new System.Text.RegularExpressions.Regex(
+            @"collection_rank[^>]*>\s*(\d+)\s*<.*?href=""/boardgame/(\d+)/[^""]*""[^>]*>\s*([^<]+)\s*<",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase |
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+
+          var matches = rowRegex.Matches(html);
+
+          foreach(System.Text.RegularExpressions.Match m in matches)
+          {
+            if (!m.Success) continue;
+            
+            if (!int.TryParse(m.Groups[1].Value, out var rank)) continue;
+            if (!int.TryParse(m.Groups[2].Value, out var id)) continue;
+
+            var name = m.Groups[3].Value?.Trim();
+            if (string.IsNullOrWhiteSpace(name)) name = "(unknown)";
+
+            //Avoid duplicates across pages
+            if (results.Any(r => r.BggGameId == id)) continue;
+
+            results.Add(new BggTopGame
+            {
+              BggGameId = id,
+              Rank = rank,
+              Name = name
+            });
+
+            if (results.Count >= limit) break;
+          }
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Failed to parse BGG browse HTML for page {Page}.", page);
+        }
+
+        if(results.Count >= limit) break;
+      }
+
+      var finalList = results
+        .OrderBy(x => x.Rank)
+        .Take(limit)
+        .ToList();
+
+      _logger.LogInformation("Parsed {Count} games from BGG browse pages.", finalList.Count);
+      return finalList;
+/*
       string xml;
       try
       {
@@ -122,6 +202,7 @@ namespace BoredGamers.Services.Bgg
         _logger.LogError(ex, "Failed to parse BGG hot XML response.");
         return Array.Empty<BggTopGame>();
       }
+*/
     }
 
     public async Task<IReadOnlyDictionary<int, BggGameDetails>> GetGameDetailsAsync(IEnumerable<int> bggGameIds, CancellationToken ct = default)
