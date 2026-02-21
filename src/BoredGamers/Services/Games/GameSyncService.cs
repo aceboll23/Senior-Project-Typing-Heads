@@ -61,6 +61,10 @@ namespace BoredGamers.Services.Games
             game.ThumbnailUrl = d.ThumbnailUrl;
             game.ImageUrl = d.ImageUrl;
             game.AverageRating = d.AverageRating;
+            game.Description = d.Description;
+            game.MinPlayers = d.MinPlayers;
+            game.MaxPlayers = d.MaxPlayers;
+            game.PlayTime = d.PlayTime;
           }
           changes ++;
         }
@@ -79,6 +83,10 @@ namespace BoredGamers.Services.Games
             ThumbnailUrl = d?.ThumbnailUrl,
             ImageUrl = d?.ImageUrl,
             AverageRating = d?.AverageRating,
+            Description = d?.Description,
+            MinPlayers = d?.MinPlayers,
+            MaxPlayers = d?.MaxPlayers,
+            PlayTime = d?.PlayTime,
             LastSyncedAt = now
           });
           changes++;

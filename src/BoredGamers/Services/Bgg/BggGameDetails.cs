@@ -8,5 +8,9 @@ namespace BoredGamers.Services.Bgg
     public string? ThumbnailUrl { get; set; }
     public string? ImageUrl { get; set; }
     public decimal? AverageRating { get; set; }
+    public string? Description { get; set; }
+    public int? MinPlayers { get; set; }
+    public int? MaxPlayers { get; set; }
+    public int? PlayTime { get; set; }
   }
 }
