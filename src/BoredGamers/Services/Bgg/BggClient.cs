@@ -201,13 +201,42 @@ namespace BoredGamers.Services.Bgg
             if (decimal.TryParse(avgStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var avgParsed))
               avg = avgParsed;
 
+            //MinPlayers
+            int? minPlayers = null;
+            var minPlayersStr = item.Element("minplayers")?.Attribute("value")?.Value;
+            if (int.TryParse(minPlayersStr, out var minPlayersParsed))
+              minPlayers = minPlayersParsed;
+
+            //MaxPlayers
+            int? maxPlayers = null;
+            var maxPlayersStr = item.Element("maxplayers")?.Attribute("value")?.Value;
+            if (int.TryParse(maxPlayersStr, out var maxPlayersParsed))
+              maxPlayers = maxPlayersParsed;
+
+            //PlayTime
+            int? playTime = null;
+            var playTimeStr = item.Element("playingtime")?.Attribute("value")?.Value;
+            if (int.TryParse(playTimeStr, out var playTimeParsed))
+              playTime = playTimeParsed;
+
+            //Description
+            var description = item.Element("description")?.Value;
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+              description = System.Net.WebUtility.HtmlDecode(description.Trim());
+            }
+
             results[id] = new BggGameDetails
             {
               BggGameId = id,
               YearPublished = year,
               ThumbnailUrl = string.IsNullOrWhiteSpace(thumb) ? null : thumb,
               ImageUrl = string.IsNullOrWhiteSpace(image) ? null : image,
-              AverageRating = avg
+              AverageRating = avg,
+              Description = string.IsNullOrWhiteSpace(description) ? null : description,
+              MinPlayers = minPlayers,
+              MaxPlayers = maxPlayers,
+              PlayTime = playTime
             };
           }
         }
