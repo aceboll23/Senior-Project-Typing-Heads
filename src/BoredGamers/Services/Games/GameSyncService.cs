@@ -61,6 +61,10 @@ namespace BoredGamers.Services.Games
             game.ThumbnailUrl = d.ThumbnailUrl;
             game.ImageUrl = d.ImageUrl;
             game.AverageRating = d.AverageRating;
+            game.Description = d.Description;
+            game.MinPlayers = d.MinPlayers;
+            game.MaxPlayers = d.MaxPlayers;
+            game.PlayTime = d.PlayTime;
           }
           changes ++;
         }
@@ -79,6 +83,10 @@ namespace BoredGamers.Services.Games
             ThumbnailUrl = d?.ThumbnailUrl,
             ImageUrl = d?.ImageUrl,
             AverageRating = d?.AverageRating,
+            Description = d?.Description,
+            MinPlayers = d?.MinPlayers,
+            MaxPlayers = d?.MaxPlayers,
+            PlayTime = d?.PlayTime,
             LastSyncedAt = now
           });
           changes++;
@@ -97,6 +105,83 @@ namespace BoredGamers.Services.Games
         _logger.LogError(ex, "BGG Top sync failed while saving to DB. Keeping existing cached Games data.");
         return 0;
       }
+    }
+
+    public async Task<int> SyncByIdsAsync(IEnumerable<int> bggIds, CancellationToken ct = default)
+    {
+      var now = DateTime.UtcNow;
+
+      var ids = bggIds?
+        .Where(id => id > 0)
+        .Distinct()
+        .ToList() ?? new List<int>();
+
+      if (ids.Count == 0) return 0;
+
+      //Fetch details for all requested IDs (batched inside the BggClient)
+      var detailsById = await _bgg.GetGameDetailsAsync(ids, ct);
+
+      //Load existing rows for these IDs
+      var existing = await _db.Games
+        .Where(g => ids.Contains(g.BggGameId))
+        .ToDictionaryAsync(g => g.BggGameId, ct);
+
+      int changes = 0;
+
+      foreach (var id in ids)
+      {
+        //if BGG didn't return details for this id, skip it
+        if (!detailsById.TryGetValue(id, out var d)) continue;
+
+        if (existing.TryGetValue(id, out var game))
+        {
+          //Update existing row
+          if (!string.IsNullOrWhiteSpace(d.Name))
+            game.Name = d.Name;
+          game.YearPublished = d.YearPublished;
+          game.ThumbnailUrl = d.ThumbnailUrl;
+          game.ImageUrl = d.ImageUrl;
+          game.AverageRating = d.AverageRating;
+
+          game.Description = d.Description;
+          game.MinPlayers = d.MinPlayers;
+          game.MaxPlayers = d.MaxPlayers;
+          game.PlayTime = d.PlayTime;
+
+          game.LastSyncedAt = now;
+
+          changes ++;
+        }
+        else
+        {
+          //Insert new row
+          _db.Games.Add(new Game
+          {
+            BggGameId = id,
+            Name = d.Name ?? $"BGG Game {id}",
+            BggRank = null, //Seeded games aren't "hot ranked"
+            YearPublished = d.YearPublished,
+            ThumbnailUrl = d.ThumbnailUrl,
+            ImageUrl = d.ImageUrl,
+            AverageRating = d.AverageRating,
+
+            Description = d.Description,
+            MinPlayers = d.MinPlayers,
+            MaxPlayers = d.MaxPlayers,
+            PlayTime = d.PlayTime,
+
+            LastSyncedAt = now
+          });
+          changes++;
+        }
+      }
+
+      await _db.SaveChangesAsync(ct);
+
+      _logger.LogInformation("BGG ID sync saved/updated {Count} games at {UtcNow}. Requested={Requested} DetailsReturned={Returned}.",
+        changes, now, ids.Count, detailsById.Count);
+
+      return changes;
     }
   }
 }

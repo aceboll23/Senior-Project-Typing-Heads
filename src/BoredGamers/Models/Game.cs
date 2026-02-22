@@ -25,9 +25,19 @@ namespace BoredGamers.Models
     public string? ImageUrl { get; set; }
 
     //1...100 from BGG's ranked list
-    public int BggRank { get; set; }
+    public int? BggRank { get; set; }
 
     public decimal? AverageRating { get; set; }
+
+    //Game description pulled from BGG
+    public string? Description { get; set; }
+
+    //Player count from BGG
+    public int? MinPlayers { get; set; }
+    public int? MaxPlayers { get; set; }
+
+    //Play time in minutes
+    public int? PlayTime { get; set; }
 
     //When this record was last refreshed from BGG data
     public DateTime LastSyncedAt { get; set;}

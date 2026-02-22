@@ -4,6 +4,7 @@ using BoredGamers.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoredGamers.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260221184608_AddGameMetaDataFields")]
+    partial class AddGameMetaDataFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -140,7 +143,7 @@ namespace BoredGamers.Migrations
                     b.Property<int>("BggGameId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("BggRank")
+                    b.Property<int>("BggRank")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -181,10 +184,7 @@ namespace BoredGamers.Migrations
 
                     b.HasIndex("BggRank");
 
-                    b.ToTable("Games", t =>
-                        {
-                            t.HasCheckConstraint("CK_Games_BggRank_Positive", "[BggRank] IS NULL OR [BggRank] > 0");
-                        });
+                    b.ToTable("Games");
                 });
 
             modelBuilder.Entity("BoredGamers.Models.Notification", b =>

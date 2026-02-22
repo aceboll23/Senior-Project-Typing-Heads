@@ -23,6 +23,10 @@ public class HomeController : Controller
         //Featured list for the landing page (DB-only; no live BGG calls)
         var featured = await _games.GetTopGamesAsync(limit: 4);
 
+        _logger.LogInformation("Featured ranks = {Ranks}",
+            string.Join(",", featured.Select(g => g.BggRank?.ToString() ?? "null")));
+
+
         _logger.LogInformation("Home FeaturedGames count = {Count}", featured.Count);
 
         var vm = new HomeIndexViewModel

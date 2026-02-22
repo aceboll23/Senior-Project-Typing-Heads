@@ -22,11 +22,13 @@ namespace BoredGamers.Services.Games
     public async Task<IReadOnlyList<Game>> GetTopGamesAsync(int limit = 100)
     {
       if (limit < 1) limit = 1;
-      if (limit > 100) limit = 100;
+      if (limit > 50) limit = 50;
 
       return await _db.Games
         .AsNoTracking()
+        .Where(g => g.BggRank != null)
         .OrderBy(g => g.BggRank)
+        .ThenBy(g => g.Id)
         .Take(limit)
         .ToListAsync();
     }
@@ -48,7 +50,8 @@ namespace BoredGamers.Services.Games
       return await _db.Games
         .AsNoTracking()
         .Where(g => g.Name.ToLower().Contains(query.ToLower()))
-        .OrderBy(g => g.BggRank)
+        .OrderBy(g => !g.BggRank.HasValue)
+        .ThenBy(g => g.BggRank)
         .Take(limit)
         .ToListAsync();
     }

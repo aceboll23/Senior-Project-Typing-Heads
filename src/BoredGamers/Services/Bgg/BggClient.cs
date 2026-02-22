@@ -59,69 +59,101 @@ namespace BoredGamers.Services.Bgg
     public async Task<IReadOnlyList<BggTopGame>> GetTopRankedGamesAsync(int limit = 100, CancellationToken ct = default)
     {
       if (limit <= 0) return Array.Empty<BggTopGame>();
-      if (limit > 100) limit = 100; 
+      if (limit > 150) limit = 150; 
 
-      string xml;
-      try
+      const int maxAttempts = 6;
+      const int delayMsBetween = 1500;
+      var unique = new Dictionary<int, BggTopGame>();
+      for (int attempt = 1; attempt <= maxAttempts; attempt++)
       {
-        var request = new HttpRequestMessage(HttpMethod.Get, HotUrl);
-        request.Headers.UserAgent.ParseAdd(BrowserUserAgent);
-        request.Headers.Accept.ParseAdd("application/xml");
+        ct.ThrowIfCancellationRequested();
+        string xml;
+        try
+        {
+          var request = new HttpRequestMessage(HttpMethod.Get, HotUrl);
+          request.Headers.UserAgent.ParseAdd(BrowserUserAgent);
+          request.Headers.Accept.ParseAdd("application/xml");
 
-        var response = await _http.SendAsync(request, ct);
-        response.EnsureSuccessStatusCode();
+          var response = await _http.SendAsync(request, ct);
+          response.EnsureSuccessStatusCode();
 
-        xml = await response. Content.ReadAsStringAsync(ct);
-      }
-      catch (Exception ex)
-      {
-        _logger.LogError(ex, "Failed to fetch BGG hot list (XML API).");
-        return Array.Empty<BggTopGame>();
-      }
+          xml = await response. Content.ReadAsStringAsync(ct);
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Failed to fetch BGG hot list (XML API). Attempt {Attempt}/{Max}", attempt, maxAttempts);;
+          break; // don't spam retries if something is wrong
+        }
 
-      try
-      {
-        var doc = XDocument.Parse(xml);
+        try
+        {
+          var doc = XDocument.Parse(xml);
 
-        //Structure:
-        //<items>
-        //  <item id="174430" rank="1">
-        //    <name value="Gloomhaven" />
-        //   ...
-        //  </items>
-        //</items>
-        var items = doc.Descendants("item")
-          .Select(x =>
-          {
-            var idAttr = x.Attribute("id")?.Value;
-            var rankAttr = x.Attribute("rank")?.Value;
-            var nameVal = x.Element("name")?.Attribute("value")?.Value;
-
-            if (!int.TryParse(idAttr, out var id)) return null;
-            if (!int.TryParse(rankAttr, out var rank)) return null;
-            if (string.IsNullOrWhiteSpace(nameVal)) nameVal = "(unknown)";
-
-            return new BggTopGame
+          //Structure:
+          //<items>
+          //  <item id="174430" rank="1">
+          //    <name value="Gloomhaven" />
+          //   ...
+          //  </items>
+          //</items>
+          var items = doc.Descendants("item")
+            .Select(x =>
             {
-              BggGameId = id,
-              Rank = rank,
-              Name = nameVal.Trim()
-            };
-          })
-          .Where(x => x != null)
-          .Cast<BggTopGame>()
-          .OrderBy(x => x.Rank)
-          .Take(limit)
-          .ToList();
-        
-        _logger.LogInformation("Parsed {Count} games from BGG hot XML.", items.Count);
-        return items;
+              var idAttr = x.Attribute("id")?.Value;
+              var rankAttr = x.Attribute("rank")?.Value;
+              var nameVal = x.Element("name")?.Attribute("value")?.Value;
+
+              if (!int.TryParse(idAttr, out var id)) return null;
+              if (!int.TryParse(rankAttr, out var rank)) return null;
+              if (string.IsNullOrWhiteSpace(nameVal)) nameVal = "(unknown)";
+
+              return new BggTopGame
+              {
+                BggGameId = id,
+                Rank = rank,
+                Name = nameVal.Trim()
+              };
+            })
+            .Where(x => x != null)
+            .Cast<BggTopGame>()
+            //.OrderBy(x => x.Rank)
+            //.Take(limit)
+            .ToList();
+            foreach (var g in items)
+            {
+              //keep the lowest rank if the same game appears again
+              if (unique.TryGetValue(g.BggGameId, out var existing))
+              {
+                if (g.Rank < existing.Rank) unique[g.BggGameId] = g;
+              }
+              else
+              {
+                unique[g.BggGameId] = g;
+              }
+            }
+
+          _logger.LogInformation(
+            "Parsed {BatchCount} hot games on attempt {Attempt}/{Max}. Unique so far: {UniqueCount}/{Limit}.",
+            items.Count, attempt, maxAttempts, unique.Count, limit);
+          if (unique.Count >= limit) break;
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Failed to parse BGG hot XML response on attempt {Attempt}/{Max}.", attempt, maxAttempts);
+          break;
+        }
+
+        if (attempt < maxAttempts)
+          await Task.Delay(delayMsBetween, ct);
       }
-      catch (Exception ex)
-      {
-        _logger.LogError(ex, "Failed to parse BGG hot XML response.");
-        return Array.Empty<BggTopGame>();
-      }
+
+      var finalList = unique.Values
+        .OrderBy(x => x.Rank)
+        .Take(limit)
+        .ToList();
+
+      _logger.LogInformation("Returning {Count} unique games from BGG hot list aggregation (limit={Limit}).", finalList.Count, limit);
+      return finalList;
     }
 
     public async Task<IReadOnlyDictionary<int, BggGameDetails>> GetGameDetailsAsync(IEnumerable<int> bggGameIds, CancellationToken ct = default)
@@ -177,6 +209,17 @@ namespace BoredGamers.Services.Bgg
             var idAttr = item.Attribute("id")?.Value;
             if (!int.TryParse(idAttr, out var id)) continue;
 
+            string? primaryName = item
+              .Elements("name")
+              .FirstOrDefault(n =>
+                string.Equals(
+                  (string?)n.Attribute("type"),
+                  "primary",
+                  StringComparison.OrdinalIgnoreCase))
+              ?.Attribute("value")
+              ?.Value
+              ?.Trim();
+
             //yearpublished: <yearpublished value="" />
             int? year = null;
             var yearStr = item.Element("yearpublished")?.Attribute("value")?.Value;
@@ -201,13 +244,43 @@ namespace BoredGamers.Services.Bgg
             if (decimal.TryParse(avgStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var avgParsed))
               avg = avgParsed;
 
+            //MinPlayers
+            int? minPlayers = null;
+            var minPlayersStr = item.Element("minplayers")?.Attribute("value")?.Value;
+            if (int.TryParse(minPlayersStr, out var minPlayersParsed))
+              minPlayers = minPlayersParsed;
+
+            //MaxPlayers
+            int? maxPlayers = null;
+            var maxPlayersStr = item.Element("maxplayers")?.Attribute("value")?.Value;
+            if (int.TryParse(maxPlayersStr, out var maxPlayersParsed))
+              maxPlayers = maxPlayersParsed;
+
+            //PlayTime
+            int? playTime = null;
+            var playTimeStr = item.Element("playingtime")?.Attribute("value")?.Value;
+            if (int.TryParse(playTimeStr, out var playTimeParsed))
+              playTime = playTimeParsed;
+
+            //Description
+            var description = item.Element("description")?.Value;
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+              description = System.Net.WebUtility.HtmlDecode(description.Trim());
+            }
+
             results[id] = new BggGameDetails
             {
+              Name = string.IsNullOrWhiteSpace(primaryName) ? null : primaryName,
               BggGameId = id,
               YearPublished = year,
               ThumbnailUrl = string.IsNullOrWhiteSpace(thumb) ? null : thumb,
               ImageUrl = string.IsNullOrWhiteSpace(image) ? null : image,
-              AverageRating = avg
+              AverageRating = avg,
+              Description = string.IsNullOrWhiteSpace(description) ? null : description,
+              MinPlayers = minPlayers,
+              MaxPlayers = maxPlayers,
+              PlayTime = playTime
             };
           }
         }
