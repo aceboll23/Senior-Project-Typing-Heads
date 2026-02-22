@@ -136,7 +136,8 @@ namespace BoredGamers.Services.Games
         if (existing.TryGetValue(id, out var game))
         {
           //Update existing row
-          //Name + Rank are not guaranteed from "details"; keep existing Name Unless you add it to details later
+          if (!string.IsNullOrWhiteSpace(d.Name))
+            game.Name = d.Name;
           game.YearPublished = d.YearPublished;
           game.ThumbnailUrl = d.ThumbnailUrl;
           game.ImageUrl = d.ImageUrl;
@@ -157,7 +158,7 @@ namespace BoredGamers.Services.Games
           _db.Games.Add(new Game
           {
             BggGameId = id,
-            Name = $"BGG Game {id}",
+            Name = d.Name ?? $"BGG Game {id}",
             BggRank = 0, //Seeded games aren't "hot ranked"
             YearPublished = d.YearPublished,
             ThumbnailUrl = d.ThumbnailUrl,

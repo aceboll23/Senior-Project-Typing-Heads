@@ -209,6 +209,17 @@ namespace BoredGamers.Services.Bgg
             var idAttr = item.Attribute("id")?.Value;
             if (!int.TryParse(idAttr, out var id)) continue;
 
+            string? primaryName = item
+              .Elements("name")
+              .FirstOrDefault(n =>
+                string.Equals(
+                  (string?)n.Attribute("type"),
+                  "primary",
+                  StringComparison.OrdinalIgnoreCase))
+              ?.Attribute("value")
+              ?.Value
+              ?.Trim();
+
             //yearpublished: <yearpublished value="" />
             int? year = null;
             var yearStr = item.Element("yearpublished")?.Attribute("value")?.Value;
@@ -260,6 +271,7 @@ namespace BoredGamers.Services.Bgg
 
             results[id] = new BggGameDetails
             {
+              Name = string.IsNullOrWhiteSpace(primaryName) ? null : primaryName,
               BggGameId = id,
               YearPublished = year,
               ThumbnailUrl = string.IsNullOrWhiteSpace(thumb) ? null : thumb,
