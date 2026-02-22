@@ -159,7 +159,7 @@ namespace BoredGamers.Services.Games
           {
             BggGameId = id,
             Name = d.Name ?? $"BGG Game {id}",
-            BggRank = 0, //Seeded games aren't "hot ranked"
+            BggRank = null, //Seeded games aren't "hot ranked"
             YearPublished = d.YearPublished,
             ThumbnailUrl = d.ThumbnailUrl,
             ImageUrl = d.ImageUrl,
