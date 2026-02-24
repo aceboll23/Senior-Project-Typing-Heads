@@ -26,8 +26,8 @@ namespace BoredGamers.Services.Games
 
       return await _db.Games
         .AsNoTracking()
-        .Where(g => g.BggRank != null)
-        .OrderBy(g => g.BggRank)
+        .Where(g => g.BggNumVoters.HasValue && g.BggNumVoters.Value >= 100)
+        .OrderByDescending(g => g.AverageRating)
         .ThenBy(g => g.Id)
         .Take(limit)
         .ToListAsync();
@@ -50,8 +50,8 @@ namespace BoredGamers.Services.Games
       return await _db.Games
         .AsNoTracking()
         .Where(g => g.Name.ToLower().Contains(query.ToLower()))
-        .OrderBy(g => !g.BggRank.HasValue)
-        .ThenBy(g => g.BggRank)
+        .OrderByDescending(g => g.AverageRating)
+        .ThenBy(g => g.Name)
         .Take(limit)
         .ToListAsync();
     }
