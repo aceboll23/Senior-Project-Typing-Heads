@@ -242,11 +242,15 @@ namespace BoredGamers.Services.Bgg
 
             int? usersRated = null;
             var usersRatedStr = item
+              .Descendants("statistics")
               .Descendants("ratings")
-              .Descendants("usersrated")
+              .Elements("usersrated")
               .FirstOrDefault()
               ?.Attribute("value")
               ?.Value;
+
+            if (int.TryParse(usersRatedStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var usersRatedParsed))
+              usersRated = usersRatedParsed;
 
             //MinPlayers
             int? minPlayers = null;

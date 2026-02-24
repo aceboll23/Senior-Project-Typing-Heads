@@ -109,4 +109,12 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/dev/dbinfo", async (ApplicationDbContext db) =>
+    {
+        var conn = db.Database.GetDbConnection().ConnectionString;
+        return Results.Ok(new { ConnectionString = conn });
+    });
+}
 app.Run();
