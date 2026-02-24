@@ -4,6 +4,7 @@ using BoredGamers.Services.Games;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
+using BoredGamers.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -50,6 +51,7 @@ builder.Services
         options.Password.RequiredLength = 8;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
+        
 //
 //HTTP Clients
 //
@@ -90,5 +92,11 @@ app.MapControllerRoute(
 
 // Map Identity endpoints (Razor Pages)
 app.MapRazorPages();
+
+// registers a custom url route
+app.MapControllerRoute(
+    name: "profile",
+    pattern: "Profile/{username}",
+    defaults: new { controller = "Profile", action = "Index" });
 
 app.Run();

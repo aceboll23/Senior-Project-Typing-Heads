@@ -1,45 +1,59 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
+using BoredGamers.Data;
 using BoredGamers.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace BoredGamers.Controllers
+namespace BoredGamers.Controllers;
+
+[Authorize]
+public class ProfileController : Controller
 {
-    // Serves user profile pages at /Profile/{username}
-    public class ProfileController : Controller
+    private readonly ApplicationDbContext _db;
+    private readonly UserManager<User> _userManager;
+
+    public ProfileController(ApplicationDbContext db, UserManager<User> userManager)
     {
-        private readonly UserManager<User> _userManager;
+        _db = db;
+        _userManager = userManager;
+    }
 
-        // Dependency injection - ASP.NET provides UserManager
-        // which lets us look up users in the Identity database
-        public ProfileController(UserManager<User> userManager)
+    // GET /Profile/{username}
+    public async Task<IActionResult> Index(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            return NotFound();
+
+        var profileUser = await _userManager.Users
+            .Include(u => u.Profile)
+            .FirstOrDefaultAsync(u => u.UserName == username && !u.IsBanned && !u.IsDeactivated);
+
+        if (profileUser == null)
+            return NotFound();
+
+        var currentUser = await _userManager.GetUserAsync(User);
+        var isOwnProfile = currentUser?.Id == profileUser.Id;
+
+        // Block access to private profiles (currently commented out because there is no setting to turn on/off private profile)
+        /**
+        if (!isOwnProfile && (profileUser.Profile == null || !profileUser.Profile.IsProfilePublic))
         {
-            _userManager = userManager;
-        }
+            ViewData["Username"] = profileUser.UserName;
+            //returns to private view
+            return View("PrivateProfile");
+        }*/
 
-        // GET /Profile/{username}
-        [Route("Profile/{username}")]
-        public async Task<IActionResult> Index(string username)
-        {
-            // Look up the user by their username
-            var profileUser = await _userManager.FindByNameAsync(username);
+        ViewData["IsOwnProfile"] = isOwnProfile;
+        ViewData["ProfileUsername"] = profileUser.UserName;
+        ViewData["Email"] = profileUser.Email;
+        ViewData["FirstName"] = profileUser.FirstName;
+        ViewData["LastName"] = profileUser.LastName;
+        ViewData["MemberSince"] = profileUser.CreatedAt.ToString("MMMM yyyy");
+        ViewData["AvatarUrl"] = profileUser.Profile?.AvatarUrl;
+        ViewData["ShowEmail"] = profileUser.Profile?.ShowEmail ?? false;
+        ViewData["ShowRealName"] = profileUser.Profile?.ShowRealName ?? true;
 
-            if (profileUser == null)
-            {
-                return View("NotFound");
-            }
-
-            // Check if the logged-in user is viewing their own profile
-            var currentUser = await _userManager.GetUserAsync(User);
-            var isOwnProfile = currentUser != null && currentUser.Id == profileUser.Id;
-
-            ViewData["IsOwnProfile"] = isOwnProfile;
-            ViewData["ProfileUsername"] = profileUser.UserName;
-            ViewData["MemberSince"] = profileUser.CreatedAt.ToString("MMMM yyyy");
-            ViewData["Email"] = isOwnProfile ? profileUser.Email : null;
-            ViewData["FirstName"] = profileUser.FirstName;
-            ViewData["LastName"] = profileUser.LastName;
-
-            return View(profileUser);
-        }
+        return View();
     }
 }

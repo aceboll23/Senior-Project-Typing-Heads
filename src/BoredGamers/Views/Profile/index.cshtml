@@ -6,21 +6,34 @@
     var lastName = ViewData["LastName"] as string;
     var memberSince = ViewData["MemberSince"] as string;
     var username = ViewData["ProfileUsername"] as string;
+    var avatarUrl = ViewData["AvatarUrl"] as string;
+    var showEmail = ViewData["ShowEmail"] as bool? ?? false;  
+    var showRealName = ViewData["ShowRealName"] as bool? ?? true;
 }
 
 <!-- Profile Header -->
 <section class="py-4">
     <div class="container">
         <div class="row g-4">
-
             <!-- Avatar and Name -->
             <div class="col-md-4 text-center">
-                <!-- Placeholder avatar using Bootstrap icon -->
+                <!-- Avatar - Use uploaded image if available, otherwise placeholder -->
                 <div class="mb-3">
-                    <i class="bi bi-person-circle" style="font-size: 6rem;"></i>
+                    @if (!string.IsNullOrEmpty(avatarUrl))
+                    {
+                        <img src="@avatarUrl" alt="@username" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <!-- Placeholder avatar using first letter of username -->
+                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                             style="width: 150px; height: 150px; font-size: 4rem;">
+                            @username?.Substring(0, 1).ToUpper()
+                        </div>
+                    }
                 </div>
                 <h2>@username</h2>
-                @if (!string.IsNullOrEmpty(firstName) || !string.IsNullOrEmpty(lastName))
+                @if (showRealName && (!string.IsNullOrEmpty(firstName) || !string.IsNullOrEmpty(lastName)))
                 {
                     <p class="text-muted">@firstName @lastName</p>
                 }
@@ -31,13 +44,12 @@
                 <div class="card bg-dark">
                     <div class="card-body">
                         <h4 class="card-title mb-3">Profile Info</h4>
-
                         <div class="mb-2">
                             <strong>Member Since:</strong>
                             <span class="text-muted">@memberSince</span>
                         </div>
-
-                        @if (isOwnProfile && !string.IsNullOrEmpty(email))
+                        @* Show email if it's own profile OR if user allows showing email *@
+                        @if ((isOwnProfile || showEmail) && !string.IsNullOrEmpty(email))
                         {
                             <div class="mb-2">
                                 <strong>Email:</strong>

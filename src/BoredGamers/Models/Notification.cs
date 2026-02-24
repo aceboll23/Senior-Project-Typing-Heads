@@ -32,11 +32,11 @@ namespace BoredGamers.Models
         [MaxLength(500)]
         public string Message { get; set; } = string.Empty;
         
-        // Optional: Link to relevant page
+        // Link to relevant page
         [MaxLength(500)]
         public string? ActionUrl { get; set; }
         
-        // Optional: Related entity ID
+        // Related entity ID
         public int? RelatedEntityId { get; set; }
         
         // Whether the notification has been read
