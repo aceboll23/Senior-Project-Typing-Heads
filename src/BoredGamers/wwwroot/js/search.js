@@ -1,4 +1,5 @@
 $(document).ready(function () {
+        // 'games' is default for search
         let searchMode = 'games'; 
         let searchTimeout = null;
         const isAuthenticated = $('#gameSearchForm').data('authenticated');
@@ -25,7 +26,7 @@ $(document).ready(function () {
             if (searchMode === 'users') {
                 $('#searchInput').attr('placeholder', 'Search users...');
                 $('#gameSearchForm').attr('action', '#'); // prevent form submit for user search
-                $('#searchBtn').hide(); // hide submit button; results are live
+                $('#searchBtn').hide(); // hide submit button
             } else {
                 $('#searchInput').attr('placeholder', 'Search games...');
                 $('#gameSearchForm').attr('action', '/Games/SearchResults');
@@ -36,7 +37,7 @@ $(document).ready(function () {
             $('#searchInput').val('').focus();
         });
 
-        // --- Live user search (fires after 2+ chars) ---
+        // --- Live user search (activates after 2 chars) ---
         $('#searchInput').on('input', function () {
             if (searchMode !== 'users') return;
 
@@ -48,7 +49,7 @@ $(document).ready(function () {
                 return;
             }
 
-            // Small debounce so as to not fire on every keystroke
+            // Small debounce to not fire on every keystroke
             searchTimeout = setTimeout(function () {
                 fetchUsers(q);
             }, 250);
@@ -70,34 +71,33 @@ $(document).ready(function () {
             $.getJSON('/UserSearch/Search', { q: q }, function (data) {
                 renderUserResults(data, q);
             }).fail(function () {
-                // If request fails (e.g. unauthenticated), redirect to login
+                // If request fails (unauthenticated), redirect to login
                 window.location.href = '/Account/Login';
             });
         }
-
+        
+        // Builds and displays the search results dropdown from the returned user list
         function renderUserResults(users, q) {
             const $container = $('#userSearchResults');
             $container.empty();
-
+            
+            // Show a "no results" message if the server returned an empty list
             if (users.length === 0) {
                 $container.append(
                     '<span class="dropdown-item text-muted">No users found</span>'
                 );
             } else {
+                // Loop through each returned user and build a dropdown item for them
                 users.forEach(function (user) {
                     const avatar = user.avatarUrl
                         ? `<img src="${user.avatarUrl}" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover;">`
                         : `<div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;font-size:1rem;">${user.username.charAt(0).toUpperCase()}</div>`;
 
-                    const lockIcon = !user.isPublic
-                        ? `<i class="bi bi-lock-fill text-muted ms-auto" title="Private profile"></i>`
-                        : '';
 
                     const $item = $(`
                         <a class="dropdown-item d-flex align-items-center py-2" href="/Profile/${encodeURIComponent(user.username)}">
                             ${avatar}
                             <span>${escapeHtml(user.username)}</span>
-                            ${lockIcon}
                         </a>
                     `);
 
@@ -108,6 +108,7 @@ $(document).ready(function () {
             $container.show();
         }
 
+        // Hides and empties the results dropdown
         function clearUserResults() {
             $('#userSearchResults').hide().empty();
         }
