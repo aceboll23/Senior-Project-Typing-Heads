@@ -24,9 +24,6 @@ namespace BoredGamers.Models
     [MaxLength(500)]
     public string? ImageUrl { get; set; }
 
-    //1...100 from BGG's ranked list
-    public int? BggRank { get; set; }
-
     public decimal? AverageRating { get; set; }
 
     //Number of voters from Bgg

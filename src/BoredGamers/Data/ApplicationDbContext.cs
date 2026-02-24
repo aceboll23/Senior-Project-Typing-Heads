@@ -151,15 +151,6 @@ public class ApplicationDbContext : IdentityDbContext
             entity.HasIndex(g => g.BggGameId)
                 .IsUnique();
 
-            //Fast ordering for Top lists
-            entity.HasIndex(g => g.BggRank);
-
-            //Ensure rank is positive when present
-            entity.Property(g => g.BggRank)
-                .IsRequired(false);
-
-            entity.ToTable(t => t.HasCheckConstraint("CK_Games_BggRank_Positive", "[BggRank] IS NULL OR [BggRank] > 0"));
-
             entity.Property(g => g.AverageRating)
                 .HasPrecision(4, 2);
         });
