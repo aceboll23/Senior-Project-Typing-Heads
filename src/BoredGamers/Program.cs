@@ -99,22 +99,19 @@ app.MapControllerRoute(
     pattern: "Profile/{username}",
     defaults: new { controller = "Profile", action = "Index" });
 
-//Development-only endpoint to backfill BGG voters for all existing games.
 if (app.Environment.IsDevelopment())
 {
-    app.MapGet("/dev/backfill-bgg-voters",async (IGameSyncService sync, CancellationToken ct) =>
+    app.MapGet("/dev/backfill-bgg-voters", async (IGameSyncService sync, IConfiguration config, string? key, CancellationToken ct) =>
     {
+        //Read expected key from configuration
+        var expectedKey = config["DevBackfillKey"];
+
+        //If a key is configured and it doesn't match, reject
+        if (!string.IsNullOrWhiteSpace(expectedKey) && key != expectedKey)
+            return Results.Unauthorized();
+
         var updated = await sync.BackfillBggNumVotersAsync(ct);
         return Results.Ok(new { Updated = updated });
-    });
-}
-
-if (app.Environment.IsDevelopment())
-{
-    app.MapGet("/dev/dbinfo", async (ApplicationDbContext db) =>
-    {
-        var conn = db.Database.GetDbConnection().ConnectionString;
-        return Results.Ok(new { ConnectionString = conn });
     });
 }
 app.Run();
