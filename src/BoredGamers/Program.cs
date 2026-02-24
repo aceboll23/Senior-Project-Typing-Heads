@@ -99,4 +99,14 @@ app.MapControllerRoute(
     pattern: "Profile/{username}",
     defaults: new { controller = "Profile", action = "Index" });
 
+//Development-only endpoint to backfill BGG voters for all existing games.
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/dev/backfill-bgg-voters",async (IGameSyncService sync, CancellationToken ct) =>
+    {
+        var updated = await sync.BackfillBggNumVotersAsync(ct);
+        return Results.Ok(new { Updated = updated });
+    });
+}
+
 app.Run();
