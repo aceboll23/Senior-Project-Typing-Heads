@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,7 +53,6 @@ namespace BoredGamers.Services.Games
         {
           //Update exisiting row (rank/name can change)
           game.Name = item.Name;
-          game.BggRank = item.Rank;
           game.LastSyncedAt = now;
 
           if (detailsById.TryGetValue(item.BggGameId, out var d))
@@ -65,6 +65,7 @@ namespace BoredGamers.Services.Games
             game.MinPlayers = d.MinPlayers;
             game.MaxPlayers = d.MaxPlayers;
             game.PlayTime = d.PlayTime;
+            game.BggNumVoters = d.UsersRated;
           }
           changes ++;
         }
@@ -78,7 +79,6 @@ namespace BoredGamers.Services.Games
           {
             BggGameId = item.BggGameId,
             Name = item.Name,
-            BggRank = item.Rank,
             YearPublished = d?.YearPublished,
             ThumbnailUrl = d?.ThumbnailUrl,
             ImageUrl = d?.ImageUrl,
@@ -87,6 +87,7 @@ namespace BoredGamers.Services.Games
             MinPlayers = d?.MinPlayers,
             MaxPlayers = d?.MaxPlayers,
             PlayTime = d?.PlayTime,
+            BggNumVoters = d?.UsersRated,
             LastSyncedAt = now
           });
           changes++;
@@ -147,6 +148,7 @@ namespace BoredGamers.Services.Games
           game.MinPlayers = d.MinPlayers;
           game.MaxPlayers = d.MaxPlayers;
           game.PlayTime = d.PlayTime;
+          game.BggNumVoters = d.UsersRated;
 
           game.LastSyncedAt = now;
 
@@ -159,7 +161,6 @@ namespace BoredGamers.Services.Games
           {
             BggGameId = id,
             Name = d.Name ?? $"BGG Game {id}",
-            BggRank = null, //Seeded games aren't "hot ranked"
             YearPublished = d.YearPublished,
             ThumbnailUrl = d.ThumbnailUrl,
             ImageUrl = d.ImageUrl,
@@ -169,6 +170,7 @@ namespace BoredGamers.Services.Games
             MinPlayers = d.MinPlayers,
             MaxPlayers = d.MaxPlayers,
             PlayTime = d.PlayTime,
+            BggNumVoters = d.UsersRated,
 
             LastSyncedAt = now
           });
@@ -182,6 +184,46 @@ namespace BoredGamers.Services.Games
         changes, now, ids.Count, detailsById.Count);
 
       return changes;
+    }
+
+    //Backfill Bgg voters for all games currently in the DB
+    public async Task<int> BackfillBggNumVotersAsync(CancellationToken ct = default)
+    {
+      var now = DateTime.UtcNow;
+
+      //Grab all BGG IDs we currently have stored
+      var ids = await _db.Games
+        .AsNoTracking()
+        .Where(g => g.BggGameId > 0)
+        .Select(g => g.BggGameId)
+        .Distinct()
+        .ToListAsync(ct);
+
+      if (ids.Count == 0) return 0;
+
+      var detailsById = await _bgg.GetGameDetailsAsync(ids, ct);
+
+      //Load tracked entities to update
+      var games = await _db.Games
+        .Where(g => ids.Contains(g.BggGameId))
+        .ToListAsync(ct);
+
+      int updates = 0;
+
+      foreach (var game in games)
+      {
+        if (!detailsById.TryGetValue(game.BggGameId, out var d)) continue;
+
+        game.BggNumVoters = d.UsersRated;
+        game.LastSyncedAt = now;
+        updates++;
+      }
+
+      await _db.SaveChangesAsync(ct);
+
+      _logger.LogInformation("Backfilled BggNumVoters for {Count} games at {UtcNow}.", updates, now);
+
+      return updates;
     }
   }
 }
