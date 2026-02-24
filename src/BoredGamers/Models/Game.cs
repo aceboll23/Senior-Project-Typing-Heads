@@ -29,6 +29,9 @@ namespace BoredGamers.Models
 
     public decimal? AverageRating { get; set; }
 
+    //Number of voters from Bgg
+    public int? BggNumVoters { get; set; }
+
     //Game description pulled from BGG
     public string? Description { get; set; }
 
