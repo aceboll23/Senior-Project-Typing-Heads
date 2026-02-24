@@ -38,7 +38,7 @@ namespace BoredGamers.Controllers
         g.YearPublished,
         g.ThumbnailUrl,
         g.ImageUrl,
-        g.BggRank,
+        g.BggNumVoters,
         g.AverageRating
       }));
     }
@@ -62,7 +62,7 @@ namespace BoredGamers.Controllers
         g.Name,
         g.YearPublished,
         g.ThumbnailUrl,
-        g.BggRank
+        g.BggNumVoters
       }));
     }
   }

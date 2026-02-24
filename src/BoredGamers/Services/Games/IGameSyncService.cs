@@ -7,5 +7,6 @@ namespace BoredGamers.Services.Games
   {
     Task<int> SyncTopRankedAsync(int limit = 100, CancellationToken ct = default);
     Task<int> SyncByIdsAsync(IEnumerable<int> bggIds, CancellationToken ct = default);
+    Task<int> BackfillBggNumVotersAsync(CancellationToken ct = default);
   }
 }

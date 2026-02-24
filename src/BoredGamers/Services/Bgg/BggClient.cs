@@ -64,10 +64,12 @@ namespace BoredGamers.Services.Bgg
       const int maxAttempts = 6;
       const int delayMsBetween = 1500;
       var unique = new Dictionary<int, BggTopGame>();
+
       for (int attempt = 1; attempt <= maxAttempts; attempt++)
       {
         ct.ThrowIfCancellationRequested();
         string xml;
+
         try
         {
           var request = new HttpRequestMessage(HttpMethod.Get, HotUrl);
@@ -89,13 +91,6 @@ namespace BoredGamers.Services.Bgg
         {
           var doc = XDocument.Parse(xml);
 
-          //Structure:
-          //<items>
-          //  <item id="174430" rank="1">
-          //    <name value="Gloomhaven" />
-          //   ...
-          //  </items>
-          //</items>
           var items = doc.Descendants("item")
             .Select(x =>
             {
@@ -119,6 +114,7 @@ namespace BoredGamers.Services.Bgg
             //.OrderBy(x => x.Rank)
             //.Take(limit)
             .ToList();
+
             foreach (var g in items)
             {
               //keep the lowest rank if the same game appears again
@@ -244,6 +240,18 @@ namespace BoredGamers.Services.Bgg
             if (decimal.TryParse(avgStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var avgParsed))
               avg = avgParsed;
 
+            int? usersRated = null;
+            var usersRatedStr = item
+              .Descendants("statistics")
+              .Descendants("ratings")
+              .Elements("usersrated")
+              .FirstOrDefault()
+              ?.Attribute("value")
+              ?.Value;
+
+            if (int.TryParse(usersRatedStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var usersRatedParsed))
+              usersRated = usersRatedParsed;
+
             //MinPlayers
             int? minPlayers = null;
             var minPlayersStr = item.Element("minplayers")?.Attribute("value")?.Value;
@@ -277,6 +285,7 @@ namespace BoredGamers.Services.Bgg
               ThumbnailUrl = string.IsNullOrWhiteSpace(thumb) ? null : thumb,
               ImageUrl = string.IsNullOrWhiteSpace(image) ? null : image,
               AverageRating = avg,
+              UsersRated = usersRated,
               Description = string.IsNullOrWhiteSpace(description) ? null : description,
               MinPlayers = minPlayers,
               MaxPlayers = maxPlayers,

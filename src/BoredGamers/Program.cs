@@ -99,4 +99,19 @@ app.MapControllerRoute(
     pattern: "Profile/{username}",
     defaults: new { controller = "Profile", action = "Index" });
 
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/dev/backfill-bgg-voters", async (IGameSyncService sync, IConfiguration config, string? key, CancellationToken ct) =>
+    {
+        //Read expected key from configuration
+        var expectedKey = config["DevBackfillKey"];
+
+        //If a key is configured and it doesn't match, reject
+        if (!string.IsNullOrWhiteSpace(expectedKey) && key != expectedKey)
+            return Results.Unauthorized();
+
+        var updated = await sync.BackfillBggNumVotersAsync(ct);
+        return Results.Ok(new { Updated = updated });
+    });
+}
 app.Run();

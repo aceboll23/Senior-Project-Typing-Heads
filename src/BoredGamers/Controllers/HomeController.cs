@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using BoredGamers.Models;
 using BoredGamers.Models.ViewModels;
 using BoredGamers.Services.Games;
@@ -23,8 +25,8 @@ public class HomeController : Controller
         //Featured list for the landing page (DB-only; no live BGG calls)
         var featured = await _games.GetTopGamesAsync(limit: 4);
 
-        _logger.LogInformation("Featured ranks = {Ranks}",
-            string.Join(",", featured.Select(g => g.BggRank?.ToString() ?? "null")));
+        _logger.LogInformation("Featured games = {Games}",
+            string.Join(",", featured.Select(g => "${g.Name} (Avg: {g.AverageRating}, Voters: {g.BggNumVoters})")));
 
 
         _logger.LogInformation("Home FeaturedGames count = {Count}", featured.Count);
