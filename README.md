@@ -94,3 +94,5 @@ Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP
 [Jira set up and Epics entered](https://mail-team-lr2a75un.atlassian.net/jira/software/projects/TYP/boards/2/)
 
 [DDL](./documents/DDL.md) and [Initial Data Model](./documents/images/DataModel.png)
+
+[Sprint 1 Retrospective](./documents/sprint1Retrospctive.md)
