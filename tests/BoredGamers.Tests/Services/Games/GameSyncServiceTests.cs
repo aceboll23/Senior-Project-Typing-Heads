@@ -231,5 +231,26 @@ namespace BoredGamers.Tests.Services.Games
       Assert.That(games.Count, Is.EqualTo(1));
       Assert.That(games[0].Name, Is.EqualTo("Existing Game"));
     }
+
+    [Test]
+    public async Task SyncByIdsAsync_WhenGivenOnlyInvalidIds_Returns0_AndDoesNotCallBgg()
+    {
+      // Arrange
+      await using var db = CreateDb();
+
+      var bgg = new Mock<IBggClient>(MockBehavior.Strict);
+      var logger = new Mock<ILogger<GameSyncService>>();
+      var svc = new GameSyncService(db, bgg.Object, logger.Object);
+
+      // Act
+      var result = await svc.SyncByIdsAsync(new[] { 0, -1, -50 });
+
+      // Assert
+      Assert.That(result, Is.EqualTo(0));
+      Assert.That(await db.Games.CountAsync(), Is.EqualTo(0));
+
+      // No BGG calls should happen
+      bgg.VerifyNoOtherCalls();
+    }
   }
 }
