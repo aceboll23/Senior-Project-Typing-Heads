@@ -1,6 +1,7 @@
 using BoredGamers.Data;
 using BoredGamers.Services.Bgg;
 using BoredGamers.Services.Games;
+using BoredGamers.Services.Collections;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
@@ -61,6 +62,8 @@ builder.Services.AddHttpClient<IBggClient, BggClient>();
 //
 //Application Services
 //
+
+builder.Services.AddScoped<IUserCollectionService, UserCollectionService>();
 
 //Register GameService
 builder.Services.AddScoped<IGameService, GameService>();
