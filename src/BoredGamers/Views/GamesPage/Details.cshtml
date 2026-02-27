@@ -73,6 +73,31 @@
                         </div>
                     </div>
 
+                    <!-- Add to Collection -->
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        var inCollection = (bool)(ViewBag.IsInCollection ?? false);
+
+                        <div class="mt-3">
+                            @if (inCollection)
+                            {
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="bi bi-check-circle me-1"></i>In Collection
+                                </button>
+                            }
+                            else
+                            {
+                                <form asp-controller="Collection" asp-action="Add" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="gameId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-plus-circle me-1"></i>Add to Collection
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    }
+
                     <!-- Quick Stats -->
                     <div class="row g-3">
                         <div class="col-12 col-sm-6 col-lg-3">

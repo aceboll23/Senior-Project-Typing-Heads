@@ -28,8 +28,7 @@ namespace BoredGamers.Controllers
 
       var added = await _collections.AddToCollectionAsync(userId, gameId, ct);
 
-      // For now: simple JSON response
-      return Json(new { added });
+      return RedirectToAction("Details", "GamesPage", new { id = gameId });
     }
   }
 }
