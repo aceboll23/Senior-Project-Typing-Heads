@@ -23,7 +23,12 @@ public class ProfileController : Controller
     public async Task<IActionResult> Index(string username)
     {
         if (string.IsNullOrWhiteSpace(username))
-            return NotFound();
+        {
+            var me = await _userManager.GetUserAsync(User);
+            if (me == null) return Challenge();
+            username = me.UserName;
+        }
+ //           return NotFound();
 
         var profileUser = await _userManager.Users
             .Include(u => u.Profile)
@@ -53,6 +58,21 @@ public class ProfileController : Controller
         ViewData["AvatarUrl"] = profileUser.Profile?.AvatarUrl;
         ViewData["ShowEmail"] = profileUser.Profile?.ShowEmail ?? false;
         ViewData["ShowRealName"] = profileUser.Profile?.ShowRealName ?? true;
+
+        var ownerUserId = isOwnProfile
+            ? currentUser!.Id
+            : profileUser.Id;
+
+        //Load user's game collection (basic list)
+        var collection = await _db.UserGameCollections
+            .AsNoTracking()
+            .Where(c => c.UserId == profileUser.Id)
+            .Include(c => c.Game)
+            .OrderByDescending(c => c.DateAdded)
+            .Select(c => c.Game)
+            .ToListAsync();
+
+        ViewData["Collection"] = collection;
 
         return View();
     }
