@@ -1,7 +1,9 @@
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 using BoredGamers.Data;
 using BoredGamers.Services.Games;
+using BoredGamers.Services.Collections;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

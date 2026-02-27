@@ -1,0 +1,72 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using BoredGamers.Services.Collections;
+using BoredGamers.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.Linq;
+
+namespace BoredGamers.Controllers
+{
+  [Authorize]
+  [Route("collection")]
+  public class CollectionController : Controller
+  {
+    private readonly ApplicationDbContext _db;
+    private readonly IUserCollectionService _collections;
+
+    public CollectionController(ApplicationDbContext db, IUserCollectionService collections)
+    {
+      _db = db;
+      _collections = collections;
+    }
+
+    [HttpPost("add")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Add(int gameId, CancellationToken ct)
+    {
+      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      if (string.IsNullOrWhiteSpace(userId))
+        return Unauthorized();
+
+      var added = await _collections.AddToCollectionAsync(userId, gameId, ct);
+
+      return RedirectToAction("Details", "GamesPage", new { id = gameId });
+    }
+    
+    [HttpGet("")]
+    public async Task<IActionResult> Index(int page = 1, CancellationToken ct = default)
+    {
+      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      if (string.IsNullOrWhiteSpace(userId))
+        return Unauthorized();
+
+      const int pageSize = 20;
+      if (page < 1) page = 1;
+
+      var baseQuery = _db.UserGameCollections
+          .AsNoTracking()
+          .Where(c => c.UserId == userId)
+          .Include(c => c.Game)
+          .OrderByDescending(c => c.DateAdded)
+          .Select(c => c.Game);
+
+      var totalCount = await baseQuery.CountAsync(ct);
+      var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+      var games = await baseQuery
+          .Skip((page - 1) * pageSize)
+          .Take(pageSize)
+          .ToListAsync(ct);
+
+      ViewData["Page"] = page;
+      ViewData["TotalPages"] = totalPages;
+      ViewData["TotalCount"] = totalCount;
+
+      return View(games);
+    }
+  }
+}

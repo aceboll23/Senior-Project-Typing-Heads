@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext
 
     //Locally cached board games sourced from BGG for fast homepage loading.
     public DbSet<Game> Games { get; set; }
+    public DbSet<UserGameCollection> UserGameCollections { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
@@ -35,7 +36,7 @@ public class ApplicationDbContext : IdentityDbContext
         {
             // Username uniqueness is already handled by Identity
             // Email uniqueness is already handled by Identity
-            
+
             //Automatically set timestamps (UTC)
             entity.Property(u => u.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
@@ -45,105 +46,105 @@ public class ApplicationDbContext : IdentityDbContext
         });
 
         // Configure UserProfile
-            modelBuilder.Entity<UserProfile>(entity =>
-            {
-                entity.HasOne(p => p.User)
-                    .WithOne(u => u.Profile)
-                    .HasForeignKey<UserProfile>(p => p.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                
-                entity.Property(p => p.CreatedAt)
-                    .HasDefaultValueSql("GETUTCDATE()");
-                entity.Property(p => p.UpdatedAt)
-                    .HasDefaultValueSql("GETUTCDATE()");
-                    
-                entity.HasIndex(p => p.UserId)
-                    .IsUnique();
-            });
-            
-            // Configure Friendship
-            modelBuilder.Entity<Friendship>(entity =>
-            {
-                // Requester relationship
-                entity.HasOne(f => f.RequesterProfile)
-                    .WithMany(p => p.SentFriendRequests)
-                    .HasForeignKey(f => f.RequesterProfileId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                
-                // Receiver relationship
-                entity.HasOne(f => f.ReceiverProfile)
-                    .WithMany(p => p.ReceivedFriendRequests)
-                    .HasForeignKey(f => f.ReceiverProfileId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                
-                // Prevent duplicate friend requests
-                entity.HasIndex(f => new { f.RequesterProfileId, f.ReceiverProfileId })
-                    .IsUnique();
-                
-                // Index for querying by status
-                entity.HasIndex(f => f.Status);
-                
-                entity.Property(f => f.CreatedAt)
-                    .HasDefaultValueSql("GETUTCDATE()");
-                entity.Property(f => f.UpdatedAt)
-                    .HasDefaultValueSql("GETUTCDATE()");
-            });
-            
-            // Configure BlockedUser
-            modelBuilder.Entity<BlockedUser>(entity =>
-            {
-                // Blocker relationship
-                entity.HasOne(b => b.BlockerProfile)
-                    .WithMany(p => p.BlockedUsers)
-                    .HasForeignKey(b => b.BlockerProfileId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                
-                // BlockedUser relationship
-                entity.HasOne(b => b.BlockedProfile)
-                    .WithMany(p => p.BlockedByUsers)
-                    .HasForeignKey(b => b.BlockedProfileId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                
-                // Prevent duplicate blocks
-                entity.HasIndex(b => new { b.BlockerProfileId, b.BlockedProfileId })
-                    .IsUnique();
-                
-                entity.Property(b => b.BlockedAt)
-                    .HasDefaultValueSql("GETUTCDATE()");
-            });
-            
-            // Configure Notification
-            modelBuilder.Entity<Notification>(entity =>
-            {
-                entity.HasOne(n => n.UserProfile)
-                    .WithMany(p => p.Notifications)
-                    .HasForeignKey(n => n.UserProfileId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                
-                // Index for querying unread notifications
-                entity.HasIndex(n => new { n.UserProfileId, n.IsRead });
-                
-                // Index for querying by type
-                entity.HasIndex(n => n.Type);
-                
-                entity.Property(n => n.CreatedAt)
-                    .HasDefaultValueSql("GETUTCDATE()");
-            });
-            
-            // Configure FriendRequestRateLimit
-            modelBuilder.Entity<FriendRequestRateLimit>(entity =>
-            {
-                entity.HasOne(r => r.UserProfile)
-                    .WithMany(p => p.FriendRequestRateLimits)
-                    .HasForeignKey(r => r.UserProfileId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                
-                // Index for efficient rate limit checking
-                entity.HasIndex(r => new { r.UserProfileId, r.RequestDate });
-                
-                entity.Property(r => r.RequestSentAt)
-                    .HasDefaultValueSql("GETUTCDATE()");
-            });
+        modelBuilder.Entity<UserProfile>(entity =>
+        {
+            entity.HasOne(p => p.User)
+                .WithOne(u => u.Profile)
+                .HasForeignKey<UserProfile>(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(p => p.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(p => p.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasIndex(p => p.UserId)
+                .IsUnique();
+        });
+
+        // Configure Friendship
+        modelBuilder.Entity<Friendship>(entity =>
+        {
+            // Requester relationship
+            entity.HasOne(f => f.RequesterProfile)
+                .WithMany(p => p.SentFriendRequests)
+                .HasForeignKey(f => f.RequesterProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Receiver relationship
+            entity.HasOne(f => f.ReceiverProfile)
+                .WithMany(p => p.ReceivedFriendRequests)
+                .HasForeignKey(f => f.ReceiverProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Prevent duplicate friend requests
+            entity.HasIndex(f => new { f.RequesterProfileId, f.ReceiverProfileId })
+                .IsUnique();
+
+            // Index for querying by status
+            entity.HasIndex(f => f.Status);
+
+            entity.Property(f => f.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(f => f.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure BlockedUser
+        modelBuilder.Entity<BlockedUser>(entity =>
+        {
+            // Blocker relationship
+            entity.HasOne(b => b.BlockerProfile)
+                .WithMany(p => p.BlockedUsers)
+                .HasForeignKey(b => b.BlockerProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // BlockedUser relationship
+            entity.HasOne(b => b.BlockedProfile)
+                .WithMany(p => p.BlockedByUsers)
+                .HasForeignKey(b => b.BlockedProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Prevent duplicate blocks
+            entity.HasIndex(b => new { b.BlockerProfileId, b.BlockedProfileId })
+                .IsUnique();
+
+            entity.Property(b => b.BlockedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure Notification
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasOne(n => n.UserProfile)
+                .WithMany(p => p.Notifications)
+                .HasForeignKey(n => n.UserProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Index for querying unread notifications
+            entity.HasIndex(n => new { n.UserProfileId, n.IsRead });
+
+            // Index for querying by type
+            entity.HasIndex(n => n.Type);
+
+            entity.Property(n => n.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure FriendRequestRateLimit
+        modelBuilder.Entity<FriendRequestRateLimit>(entity =>
+        {
+            entity.HasOne(r => r.UserProfile)
+                .WithMany(p => p.FriendRequestRateLimits)
+                .HasForeignKey(r => r.UserProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Index for efficient rate limit checking
+            entity.HasIndex(r => new { r.UserProfileId, r.RequestDate });
+
+            entity.Property(r => r.RequestSentAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
 
         modelBuilder.Entity<Game>(entity =>
         {
@@ -155,5 +156,16 @@ public class ApplicationDbContext : IdentityDbContext
                 .HasPrecision(4, 2);
         });
 
+        modelBuilder.Entity<UserGameCollection>(entity =>
+        {
+            // Prevent duplicate adds for the same user + same game
+            entity.HasIndex(x => new { x.UserId, x.GameId })
+                .IsUnique();
+
+            entity.Property(x => x.DateAdded)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
     }
+
 }

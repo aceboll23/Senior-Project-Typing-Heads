@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BoredGamers.Services.Games;
+using BoredGamers.Services.Collections;
+using System.Security.Claims;
 
 namespace BoredGamers.Controllers
 {
@@ -10,10 +12,13 @@ namespace BoredGamers.Controllers
     public class GamesPageController : Controller
     {
         private readonly IGameService _gameService;
+
+        private readonly IUserCollectionService _collectionService;
         //dependency injection
-        public GamesPageController(IGameService gameService)
+        public GamesPageController(IGameService gameService, IUserCollectionService collectionService)
         {
             _gameService = gameService;
+            _collectionService = collectionService;
         }
 
 
@@ -39,6 +44,24 @@ namespace BoredGamers.Controllers
             if (game == null)
             {
                 return View("NotFound");
+            }
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    ViewBag.IsInCollection = await _collectionService
+                        .IsInCollectionAsync(userId, game.Id);
+                }
+                else
+                {
+                    ViewBag.IsInCollection = false;
+                }
+            }
+            else
+            {
+                ViewBag.IsInCollection = false;
             }
 
             // Pass the game to Views/GamesPage/Details.cshtml

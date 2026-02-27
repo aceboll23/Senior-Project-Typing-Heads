@@ -9,6 +9,7 @@
     var avatarUrl = ViewData["AvatarUrl"] as string;
     var showEmail = ViewData["ShowEmail"] as bool? ?? false;  
     var showRealName = ViewData["ShowRealName"] as bool? ?? true;
+    var collection = ViewData["Collection"] as List<Game> ?? new List<Game>();
 }
 
 <!-- Profile Header -->
@@ -57,13 +58,23 @@
                             </div>
                         }
 
-                        <!-- Game Collection (placeholder for Ian's feature) -->
+                        <!--Game Collection -->
                         <div class="mb-2">
                             <strong>Games Owned:</strong>
-                            <span class="text-muted">No games yet</span>
+
+                           @if (isOwnProfile)
+                           {
+                                <a class="btn btn-outline-primary btn-sm ms-2"
+                                    asp-controller="Collection"
+                                    asp-action="Index">
+                                    View My Collection
+                                </a>
+                           }
+                           else
+                           {
+                                <span class="text-muted">Private</span>
+                           }
                         </div>
-                    </div>
-                </div>
 
                 <!-- Friend Request Button (only on other users' profiles) -->
                 @if (!isOwnProfile)
