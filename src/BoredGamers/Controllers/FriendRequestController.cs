@@ -12,6 +12,7 @@ public class FriendRequestController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<User> _userManager;
+    private const int DailyRequestLimit = 10;
 
     public FriendRequestController(ApplicationDbContext db, UserManager<User> userManager)
     {
@@ -67,6 +68,13 @@ public class FriendRequestController : Controller
                 return Json(new { success = false, message = "Request still pending"});
             }
         }
+        // Check daily rate limit
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var todayCount = await _db.Set<FriendRequestRateLimit>().CountAsync(r => r.UserProfileId == senderProfile.Id && r.RequestDate == today);
+
+        if (todayCount >= DailyRequestLimit){
+            return Json(new { success = false, message = "You have reached the daily limit of 10 friend requests." });
+        }
 
         //Create new friendship record
         var friendship = new Friendship
@@ -80,6 +88,15 @@ public class FriendRequestController : Controller
         };
 
         _db.Set<Friendship>().Add(friendship);
+
+        // Record the rate limit entry
+        _db.Set<FriendRequestRateLimit>().Add(new FriendRequestRateLimit
+        {
+            UserProfileId = senderProfile.Id,
+            RequestSentAt = DateTime.UtcNow,
+            RequestDate = DateOnly.FromDateTime(DateTime.UtcNow)
+        });
+
         await _db.SaveChangesAsync();
 
         return Json(new { success = true, status = "sent"});
