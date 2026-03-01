@@ -54,6 +54,16 @@ public class FriendRequestController : Controller
             return BadRequest("Recipient profile not found");
         }
 
+        // Silently block if recipient has blocked the sender
+        // No error is shown. Sender sees success as if the request was sent
+        var isBlocked = await _db.Set<BlockedUser>().AnyAsync(b =>b.BlockerProfileId == recipientProfile.Id &&
+            b.BlockedProfileId == senderProfile.Id);
+
+        if (isBlocked)
+        {
+            return Json(new { success = true, status = "sent" });
+        }
+        
         //Check for any friendship record between the two users
         var existing = await _db.Set<Friendship>().FirstOrDefaultAsync( f =>(f.RequesterProfileId == senderProfile.Id && f.ReceiverProfileId == recipientProfile.Id) || 
             (f.RequesterProfileId == recipientProfile.Id && f.ReceiverProfileId == senderProfile.Id));
