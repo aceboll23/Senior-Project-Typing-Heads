@@ -7,9 +7,13 @@
     var memberSince = ViewData["MemberSince"] as string;
     var username = ViewData["ProfileUsername"] as string;
     var avatarUrl = ViewData["AvatarUrl"] as string;
-    var showEmail = ViewData["ShowEmail"] as bool? ?? false;  
+    var showEmail = ViewData["ShowEmail"] as bool? ?? false;
     var showRealName = ViewData["ShowRealName"] as bool? ?? true;
     var collection = ViewData["Collection"] as List<Game> ?? new List<Game>();
+    var friendshipStatus = ViewData["FriendshipStatus"] as string;
+    var friendshipRequesterId = ViewData["FriendshipRequesterId"] as int?;
+    var currentUserProfileId = ViewData["CurrentUserProfileId"] as int?;
+    var isSender = friendshipRequesterId == currentUserProfileId;
 }
 
 <!-- Profile Header -->
@@ -22,12 +26,13 @@
                 <div class="mb-3">
                     @if (!string.IsNullOrEmpty(avatarUrl))
                     {
-                        <img src="@avatarUrl" alt="@username" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                        <img src="@avatarUrl" alt="@username" class="rounded-circle"
+                             style="width: 150px; height: 150px; object-fit: cover;">
                     }
                     else
                     {
                         <!-- Placeholder avatar using first letter of username -->
-                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto"
                              style="width: 150px; height: 150px; font-size: 4rem;">
                             @username?.Substring(0, 1).ToUpper()
                         </div>
@@ -62,43 +67,127 @@
                         <div class="mb-2">
                             <strong>Games Owned:</strong>
 
-                           @if (isOwnProfile)
-                           {
-                                <a class="btn btn-outline-primary btn-sm ms-2"
-                                    asp-controller="Collection"
-                                    asp-action="Index">
+                            @if (isOwnProfile)
+                            {
+                                <a class="btn btn-outline-primary btn-sm ms-2" asp-controller="Collection"
+                                       asp-action="Index">
                                     View My Collection
                                 </a>
-                           }
-                           else
-                           {
+                            }
+                            else
+                            {
                                 <span class="text-muted">Private</span>
-                           }
+                            }
                         </div>
 
-                <!-- Friend Request Button (only on other users' profiles) -->
-                @if (!isOwnProfile)
-                {
-                    <button id="addFriendBtn" class="btn btn-primary mt-3">
-                        <i class="bi bi-person-plus me-1"></i>Add As Friend
-                    </button>
-                }
+                        <!-- Friend Request Button (only on other users' profiles) -->
+                        @if (!isOwnProfile)
+                        {
+                            <div class="mt-3" id="friendActionArea">
+                                @if (friendshipStatus == "Accepted")
+                                {
+                                    <button class="btn btn-success" disabled>
+                                        <i class="bi bi-people-fill me-1"></i>Friends
+                                    </button>
+                                }
+                                else if (friendshipStatus == "Pending" && isSender)
+                                {
+                                    <button id="cancelRequestBtn" class="btn btn-secondary">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel Request
+                                    </button>
+                                }
+                                else if (friendshipStatus == "Pending" && !isSender)
+                                {
+                                    <span class="text-muted fst-italic">This user has sent you a friend request.</span>
+                                }
+                                else
+                                {
+                                    <button id="addFriendBtn" class="btn btn-primary">
+                                        <i class="bi bi-person-plus me-1"></i>Add As Friend
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                </div>
             </div>
+        </section>
 
-        </div>
-    </div>
-</section>
+        
+        @section Scripts {
+        <form id="antiForgeryForm">@Html.AntiForgeryToken()</form>
+        <script>
+        $(document).ready(function () {
+            const profileUsername = '@username';
+            const token = $('input[name="__RequestVerificationToken"]').first().val();
+            
+            // Debug: check if button and token are found
+            console.log('Button found:', $('#addFriendBtn').length);
+            console.log('Token found:', token ? 'yes' : 'no');
+            console.log('Username:', profileUsername);
 
-<!--Adler You can remove this stuff as you see fit for your button-->
-@section Scripts {
-<script>
-    $(document).ready(function () {
-        $('#addFriendBtn').on('click', function () {
-            var $btn = $(this);
-            $btn.removeClass('btn-primary').addClass('btn-success');
-            $btn.html('<i class="bi bi-check me-1"></i>Request Sent');
-            $btn.prop('disabled', true);
+            $('#addFriendBtn').on('click', function () {
+                var $btn = $(this);
+                console.log('Button clicked');
+                $btn.prop('disabled', true);
+
+                $.post('/FriendRequest/Send', 
+                    { 
+                        recipientUsername: profileUsername, 
+                        __RequestVerificationToken: token 
+                    },
+                    function (response) {
+                        console.log('Response:', response);
+                        if (response.success) {
+                            $btn.removeClass('btn-primary').addClass('btn-secondary');
+                            $btn.html('<i class="bi bi-x-circle me-1"></i>Cancel Request');
+                            $btn.attr('id', 'cancelRequestBtn');
+                            $btn.prop('disabled', false);
+                            bindCancelButton();
+                        } else {
+                            alert(response.message);
+                            $btn.prop('disabled', false);
+                        }
+                    }
+                ).fail(function(xhr, status, error) {
+                    console.log('Request failed:', xhr.status, error);
+                    console.log('Response text:', xhr.responseText);
+                    $btn.prop('disabled', false);
+                });
+            });
+
+            function bindCancelButton() {
+                $('#cancelRequestBtn').off('click').on('click', function () {
+                    var $btn = $(this);
+                    $btn.prop('disabled', true);
+
+                    $.post('/FriendRequest/Cancel',
+                        { 
+                            recipientUsername: profileUsername, 
+                            __RequestVerificationToken: token 
+                        },
+                        function (response) {
+                            console.log('Cancel response:', response);
+                            if (response.success) {
+                                $btn.removeClass('btn-secondary').addClass('btn-primary');
+                                $btn.html('<i class="bi bi-person-plus me-1"></i>Add As Friend');
+                                $btn.attr('id', 'addFriendBtn');
+                                $btn.prop('disabled', false);
+                            } else {
+                                alert(response.message);
+                                $btn.prop('disabled', false);
+                            }
+                        }
+                    ).fail(function(xhr, status, error) {
+                        console.log('Cancel failed:', xhr.status, error);
+                        console.log('Response text:', xhr.responseText);
+                        $btn.prop('disabled', false);
+                    });
+                });
+            }
+
+            bindCancelButton();
         });
-    });
-</script>
-}
+        </script>
+    }

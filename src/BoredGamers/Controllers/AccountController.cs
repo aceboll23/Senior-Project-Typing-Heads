@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using BoredGamers.Models;
 using Microsoft.AspNetCore.Identity;
+using BoredGamers.Data;
 
 namespace BoredGamers.Controllers;
 
@@ -10,11 +11,13 @@ public class AccountController : Controller
 
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
+    private readonly ApplicationDbContext _db;
 
-    public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+    public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ApplicationDbContext db)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _db = db;
     }
 
 
@@ -55,6 +58,16 @@ public class AccountController : Controller
 
             if (result.Succeeded)
             {
+                // Create the UserProfile for the new user
+                var profile = new UserProfile
+                {
+                    UserId = user.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _db.Set<UserProfile>().Add(profile);
+                await _db.SaveChangesAsync();
+
                 //signs in user and redirects to homepage
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");

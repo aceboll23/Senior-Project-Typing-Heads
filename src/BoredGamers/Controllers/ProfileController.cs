@@ -28,7 +28,7 @@ public class ProfileController : Controller
             if (me == null) return Challenge();
             username = me.UserName;
         }
- //           return NotFound();
+        //           return NotFound();
 
         var profileUser = await _userManager.Users
             .Include(u => u.Profile)
@@ -73,6 +73,23 @@ public class ProfileController : Controller
             .ToListAsync();
 
         ViewData["Collection"] = collection;
+
+        if (!isOwnProfile && currentUser != null)
+        {
+            var currentProfile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+            var targetProfile = profileUser.Profile;
+
+            if (currentProfile != null && targetProfile != null)
+            {
+                var friendship = await _db.Set<Friendship>()
+                    .FirstOrDefaultAsync(f => (f.RequesterProfileId == currentProfile.Id && f.ReceiverProfileId == targetProfile.Id) ||
+                        (f.RequesterProfileId == targetProfile.Id && f.ReceiverProfileId == currentProfile.Id));
+
+                ViewData["FriendshipStatus"] = friendship?.Status.ToString();
+                ViewData["FriendshipRequesterId"] = friendship?.RequesterProfileId;
+                ViewData["CurrentUserProfileId"] = currentProfile.Id;
+            }
+        }
 
         return View();
     }
