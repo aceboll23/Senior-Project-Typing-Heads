@@ -27,7 +27,7 @@ namespace BoredGamers.Services.Games
       return await _db.Games
         .AsNoTracking()
         .Where(g => g.BggNumVoters.HasValue && g.BggNumVoters.Value >= 100)
-        .OrderByDescending(g => g.AverageRating)
+        .OrderByDescending(g => (double?)g.AverageRating)
         .ThenBy(g => g.Id)
         .Take(limit)
         .ToListAsync();
@@ -50,7 +50,7 @@ namespace BoredGamers.Services.Games
       return await _db.Games
         .AsNoTracking()
         .Where(g => g.Name.ToLower().Contains(query.ToLower()))
-        .OrderByDescending(g => g.AverageRating)
+        .OrderByDescending(g => (double?)g.AverageRating)
         .ThenBy(g => g.Name)
         .Take(limit)
         .ToListAsync();
@@ -62,6 +62,37 @@ namespace BoredGamers.Services.Games
         .AsNoTracking() //we're just reading, not editing
         .FirstOrDefaultAsync(g => g.Id == id);
     }
+    public async Task<IReadOnlyList<Game>> SearchGamesFilteredAsync(
+        string? query, int? minPlayTime, int? maxPlayTime,
+        int? playerCount, decimal? minRating, int limit)
+    {
+      if (limit < 1) limit = 1;
+      if (limit > 50) limit = 50;
 
+      var games = _db.Games.AsNoTracking().AsQueryable();
+
+      if (!string.IsNullOrWhiteSpace(query))
+        games = games.Where(g => g.Name.ToLower().Contains(query.ToLower()));
+
+      if (minPlayTime.HasValue)
+        games = games.Where(g => g.PlayTime.HasValue && g.PlayTime.Value >= minPlayTime.Value);
+
+      if (maxPlayTime.HasValue)
+        games = games.Where(g => g.PlayTime.HasValue && g.PlayTime.Value <= maxPlayTime.Value);
+
+      if (playerCount.HasValue)
+        games = games.Where(g => g.MinPlayers.HasValue && g.MaxPlayers.HasValue
+            && g.MinPlayers.Value <= playerCount.Value
+            && g.MaxPlayers.Value >= playerCount.Value);
+
+      if (minRating.HasValue)
+        games = games.Where(g => g.AverageRating.HasValue && g.AverageRating.Value >= minRating.Value);
+
+      return await games
+        .OrderByDescending(g => (double?)g.AverageRating)
+        .ThenBy(g => g.Name)
+        .Take(limit)
+        .ToListAsync();
+    }
   }
 }
