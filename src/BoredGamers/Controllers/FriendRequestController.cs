@@ -13,6 +13,7 @@ public class FriendRequestController : Controller
     private readonly ApplicationDbContext _db;
     private readonly UserManager<User> _userManager;
     private const int DailyRequestLimit = 10;
+    private const int DeclineCooldownDays = 30;
 
     public FriendRequestController(ApplicationDbContext db, UserManager<User> userManager)
     {
@@ -66,6 +67,56 @@ public class FriendRequestController : Controller
             if(existing.Status == FriendshipStatus.Pending) 
             {
                 return Json(new { success = false, message = "Request still pending"});
+            }
+
+            // Friend request cooldown
+            if (existing.Status == FriendshipStatus.Declined)
+            {
+                var cooldownExpiry = existing.LastDeclinedAt?.AddDays(DeclineCooldownDays);
+                if (cooldownExpiry.HasValue && DateTime.UtcNow < cooldownExpiry.Value)
+                {
+                    var daysLeft = (int)Math.Ceiling((cooldownExpiry.Value - DateTime.UtcNow).TotalDays);
+                    return Json(new { success = false, message = $"You must wait {daysLeft} more day(s) before sending another request to this user." });
+                }
+
+                // Cooldown has passed — reuse the existing record and reset to pending
+                existing.Status = FriendshipStatus.Pending;
+                existing.RequesterProfileId = senderProfile.Id;
+                existing.ReceiverProfileId = recipientProfile.Id;
+                existing.RequestedAt = DateTime.UtcNow;
+                existing.RespondedAt = null;
+                existing.UpdatedAt = DateTime.UtcNow;
+
+                _db.Set<FriendRequestRateLimit>().Add(new FriendRequestRateLimit
+                {
+                    UserProfileId = senderProfile.Id,
+                    RequestSentAt = DateTime.UtcNow,
+                    RequestDate = DateOnly.FromDateTime(DateTime.UtcNow)
+                });
+
+                await _db.SaveChangesAsync();
+                return Json(new { success = true, status = "sent" });
+            }
+
+            if (existing.Status == FriendshipStatus.Cancelled)
+            {
+                // Cancelled requests can be resent freely — reuse the record
+                existing.Status = FriendshipStatus.Pending;
+                existing.RequesterProfileId = senderProfile.Id;
+                existing.ReceiverProfileId = recipientProfile.Id;
+                existing.RequestedAt = DateTime.UtcNow;
+                existing.RespondedAt = null;
+                existing.UpdatedAt = DateTime.UtcNow;
+
+                _db.Set<FriendRequestRateLimit>().Add(new FriendRequestRateLimit
+                {
+                    UserProfileId = senderProfile.Id,
+                    RequestSentAt = DateTime.UtcNow,
+                    RequestDate = DateOnly.FromDateTime(DateTime.UtcNow)
+                });
+
+                await _db.SaveChangesAsync();
+                return Json(new { success = true, status = "sent" });
             }
         }
         // Check daily rate limit
