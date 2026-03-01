@@ -70,6 +70,9 @@ builder.Services.AddScoped<IGameService, GameService>();
 //Sync Service that imports/upserts BGG games into our local database
 builder.Services.AddScoped<IGameSyncService, GameSyncService>();
 
+//Email service
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
