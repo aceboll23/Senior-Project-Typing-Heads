@@ -121,4 +121,65 @@ public class FriendRequestController : Controller
 
         return Json(new {success = true, status = "cancelled"});
     }
+
+    // POST /FriendRequest/Accept
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Accept(int friendshipId)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Unauthorized();
+
+        var currentProfile = await _db.Set<UserProfile>()
+            .FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+        if (currentProfile == null)
+        { 
+            return BadRequest("Profile not found.");
+        }
+        // Makes sure the current user is the receiver and not the sender
+        var friendship = await _db.Set<Friendship>().FirstOrDefaultAsync(f => f.Id == friendshipId &&
+                f.ReceiverProfileId == currentProfile.Id &&
+                f.Status == FriendshipStatus.Pending);
+
+        if (friendship == null) {
+            return Json(new { success = false, message = "Request not found." });
+        }
+
+        friendship.Status = FriendshipStatus.Accepted;
+        friendship.RespondedAt = DateTime.UtcNow;
+        friendship.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return Json(new { success = true });
+    }
+
+    // POST /FriendRequest/Decline
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Decline(int friendshipId)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null){ 
+            return Unauthorized();
+        }
+        var currentProfile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+        if (currentProfile == null) return BadRequest("Profile not found.");
+
+        // Makes sure the current user is the receiver and not the sender
+        var friendship = await _db.Set<Friendship>().FirstOrDefaultAsync(f => f.Id == friendshipId &&
+                f.ReceiverProfileId == currentProfile.Id &&
+                f.Status == FriendshipStatus.Pending);
+
+        if (friendship == null) {
+            return Json(new { success = false, message = "Request not found." });
+        }
+
+        friendship.Status = FriendshipStatus.Declined;
+        friendship.RespondedAt = DateTime.UtcNow;
+        friendship.LastDeclinedAt = DateTime.UtcNow;
+        friendship.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return Json(new { success = true });
+    }
 }   

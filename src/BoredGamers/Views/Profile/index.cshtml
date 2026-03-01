@@ -14,6 +14,7 @@
     var friendshipRequesterId = ViewData["FriendshipRequesterId"] as int?;
     var currentUserProfileId = ViewData["CurrentUserProfileId"] as int?;
     var isSender = friendshipRequesterId == currentUserProfileId;
+    var pendingRequests = ViewData["PendingRequests"] as List<object> ?? new List<object>();
 }
 
 <!-- Profile Header -->
@@ -112,6 +113,60 @@
 
                 </div>
             </div>
+
+            <!-- Pending Friend Requests (only shown on own profile) -->
+            @if (isOwnProfile && pendingRequests.Any())
+            {
+                <section class="py-4">
+                    <div class="container">
+                        <h4 class="mb-3">Friend Requests</h4>
+                        <div id="pendingRequestsList">
+                            @foreach (var req in pendingRequests)
+                            {
+                                var friendshipId = (int)req.GetType().GetProperty("FriendshipId")!.GetValue(req)!;
+                                var requesterUsername = req.GetType().GetProperty("Username")!.GetValue(req) as string;
+                                var requesterAvatar = req.GetType().GetProperty("AvatarUrl")!.GetValue(req) as string;
+                                var requestedAt = req.GetType().GetProperty("RequestedAt")!.GetValue(req) as string;
+
+                                <div class="card bg-dark mb-2 friend-request-card" id="request-@friendshipId">
+                                    <div class="card-body d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(requesterAvatar))
+                                            {
+                                                <img src="@requesterAvatar" class="rounded-circle me-3"
+                                                    style="width:48px;height:48px;object-fit:cover;">
+                                            }
+                                            else
+                                            {
+                                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3"
+                                                    style="width:48px;height:48px;font-size:1.5rem;">
+                                                    @requesterUsername?.Substring(0, 1).ToUpper()
+                                                </div>
+                                            }
+                                            <div>
+                                                <a href="/Profile/@requesterUsername" class="fw-bold text-white text-decoration-none">
+                                                    @requesterUsername
+                                                </a>
+                                                <div class="text-muted small">Sent @requestedAt</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-success btn-sm me-2 accept-btn"
+                                                    data-friendship-id="@friendshipId">
+                                                <i class="bi bi-check-lg me-1"></i>Accept
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm decline-btn"
+                                                    data-friendship-id="@friendshipId">
+                                                <i class="bi bi-x-lg me-1"></i>Decline
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </section>
+            }
         </section>
 
         
@@ -121,6 +176,54 @@
         $(document).ready(function () {
             const profileUsername = '@username';
             const token = $('input[name="__RequestVerificationToken"]').first().val();
+
+            // Accept friend request
+            $(document).on('click', '.accept-btn', function () {
+                var $btn = $(this);
+                var friendshipId = $btn.data('friendship-id');
+                var $card = $('#request-' + friendshipId);
+                $btn.prop('disabled', true);
+
+                $.post('/FriendRequest/Accept',
+                    { friendshipId: friendshipId, __RequestVerificationToken: token },
+                    function (response) {
+                        if (response.success) {
+                            // Remove the card from the list "smoothly" ;)
+                            $card.fadeOut(300, function () { $(this).remove(); });
+                        } else {
+                            alert(response.message);
+                            $btn.prop('disabled', false);
+                        }
+                    }
+                ).fail(function (xhr) {
+                    console.log('Accept failed:', xhr.responseText);
+                    $btn.prop('disabled', false);
+                });
+            });
+
+            // Decline friend request
+            $(document).on('click', '.decline-btn', function () {
+                var $btn = $(this);
+                var friendshipId = $btn.data('friendship-id');
+                var $card = $('#request-' + friendshipId);
+                $btn.prop('disabled', true);
+
+                $.post('/FriendRequest/Decline',
+                    { friendshipId: friendshipId, __RequestVerificationToken: token },
+                    function (response) {
+                        if (response.success) {
+                            // Remove the card from the list "smoothly" ;)
+                            $card.fadeOut(300, function () { $(this).remove(); });
+                        } else {
+                            alert(response.message);
+                            $btn.prop('disabled', false);
+                        }
+                    }
+                ).fail(function (xhr) {
+                    console.log('Decline failed:', xhr.responseText);
+                    $btn.prop('disabled', false);
+                });
+            });
             
             // Debug: check if button and token are found
             console.log('Button found:', $('#addFriendBtn').length);
