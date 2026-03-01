@@ -26,7 +26,7 @@ namespace BoredGamers.Tests.Controllers
             // Setup UserManager mock
             var userStoreMock = new Mock<IUserStore<User>>();
             _mockUserManager = new Mock<UserManager<User>>(
-                userStoreMock.Object, null, null, null, null, null, null, null, null);
+                userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
             // Setup SignInManager mock
             var contextAccessor = new Mock<IHttpContextAccessor>();
@@ -35,10 +35,10 @@ namespace BoredGamers.Tests.Controllers
                 _mockUserManager.Object,
                 contextAccessor.Object,
                 userPrincipalFactory.Object,
-                null, null, null, null);
+                null!, null!, null!, null!);
 
             _controller = new AccountController(_mockUserManager.Object, _mockSignInManager.Object);
-            
+
             // Setup TempData (required for ModelState)
             _controller.TempData = new TempDataDictionary(
                 new DefaultHttpContext(),
@@ -92,7 +92,7 @@ namespace BoredGamers.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<RedirectToActionResult>());
-            var redirectResult = result as RedirectToActionResult;
+            var redirectResult = (RedirectToActionResult)result;
             Assert.That(redirectResult.ActionName, Is.EqualTo("Index"));
             Assert.That(redirectResult.ControllerName, Is.EqualTo("Home"));
         }
@@ -114,7 +114,7 @@ namespace BoredGamers.Tests.Controllers
             };
 
             _mockUserManager.Setup(x => x.FindByNameAsync("frank@example.com"))
-                .ReturnsAsync((User)null);
+                .ReturnsAsync((User)null!);
 
             _mockUserManager.Setup(x => x.FindByEmailAsync("frank@example.com"))
                 .ReturnsAsync(user);
@@ -131,7 +131,7 @@ namespace BoredGamers.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<RedirectToActionResult>());
-            var redirectResult = result as RedirectToActionResult;
+            var redirectResult = (RedirectToActionResult)result;
             Assert.That(redirectResult.ActionName, Is.EqualTo("Index"));
             Assert.That(redirectResult.ControllerName, Is.EqualTo("Home"));
         }
@@ -147,10 +147,10 @@ namespace BoredGamers.Tests.Controllers
             };
 
             _mockUserManager.Setup(x => x.FindByNameAsync("nonexistent"))
-                .ReturnsAsync((User)null);
+                .ReturnsAsync((User)null!);
 
             _mockUserManager.Setup(x => x.FindByEmailAsync("nonexistent"))
-                .ReturnsAsync((User)null);
+                .ReturnsAsync((User)null!);
 
             // Act
             var result = await _controller.Login(model);
@@ -159,7 +159,7 @@ namespace BoredGamers.Tests.Controllers
             Assert.That(result, Is.TypeOf<ViewResult>());
             Assert.That(_controller.ModelState.IsValid, Is.False);
             Assert.That(_controller.ModelState.ContainsKey(string.Empty), Is.True);
-            Assert.That(_controller.ModelState[string.Empty].Errors[0].ErrorMessage, 
+            Assert.That(_controller.ModelState[string.Empty]!.Errors[0].ErrorMessage,
                 Is.EqualTo("Invalid login attempt."));
         }
 
@@ -196,7 +196,7 @@ namespace BoredGamers.Tests.Controllers
             Assert.That(result, Is.TypeOf<ViewResult>());
             Assert.That(_controller.ModelState.IsValid, Is.False);
             Assert.That(_controller.ModelState.ContainsKey(string.Empty), Is.True);
-            Assert.That(_controller.ModelState[string.Empty].Errors[0].ErrorMessage, 
+            Assert.That(_controller.ModelState[string.Empty]!.Errors[0].ErrorMessage,
                 Is.EqualTo("Invalid login attempt."));
         }
 
@@ -217,7 +217,7 @@ namespace BoredGamers.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<ViewResult>());
-            var viewResult = result as ViewResult;
+            var viewResult = (ViewResult)result;
             Assert.That(viewResult.Model, Is.EqualTo(model));
             Assert.That(_controller.ModelState.IsValid, Is.False);
         }
@@ -306,10 +306,10 @@ namespace BoredGamers.Tests.Controllers
 
             // Assert
             Assert.That(result, Is.TypeOf<RedirectToActionResult>());
-            var redirectResult = result as RedirectToActionResult;
+            var redirectResult = (RedirectToActionResult)result;
             Assert.That(redirectResult.ActionName, Is.EqualTo("Index"));
             Assert.That(redirectResult.ControllerName, Is.EqualTo("Home"));
-            
+
             _mockSignInManager.Verify(x => x.SignOutAsync(), Times.Once);
         }
     }
