@@ -10,6 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using NUnit.Framework;
+using BoredGamers.Data;
+using BoredGamers.Services;
+using BoredGamers.Services.Email;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoredGamers.Tests.Controllers
 {
@@ -37,7 +41,14 @@ namespace BoredGamers.Tests.Controllers
                 userPrincipalFactory.Object,
                 null!, null!, null!, null!);
 
-            _controller = new AccountController(_mockUserManager.Object, _mockSignInManager.Object);
+            var dbOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+            var db = new ApplicationDbContext(dbOptions);
+
+            var emailServiceMock = new Mock<IEmailService>();
+
+            _controller = new AccountController(_mockUserManager.Object, _mockSignInManager.Object, db, emailServiceMock.Object);
 
             // Setup TempData (required for ModelState)
             _controller.TempData = new TempDataDictionary(

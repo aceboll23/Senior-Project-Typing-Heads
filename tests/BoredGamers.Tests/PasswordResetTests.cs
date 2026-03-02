@@ -74,7 +74,7 @@ public class PasswordResetTests
             .Returns("http://localhost/Account/ResetPassword?token=abc");
         _controller.Url = urlHelperMock.Object;
 
-        // Give the controller a fake HttpContext
+        // Gives the controller a fake HttpContext
         _controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext()
@@ -159,8 +159,7 @@ public class PasswordResetTests
         var model = new ForgotPasswordViewModel { Email = "unknown@test.com" };
         await _controller!.ForgotPassword(model);
 
-        _emailServiceMock.Verify(
-            e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+        _emailServiceMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
     }
 
@@ -230,7 +229,7 @@ public class PasswordResetTests
     [Test]
     public async Task ResetPassword_Get_WithNullToken_RedirectsToLogin()
     {
-        var result = await _controller!.ResetPassword(null!);
+        var result = await _controller!.ResetPassword((string)null!);
         Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
         var redirect = result as RedirectToActionResult;
         Assert.That(redirect!.ActionName, Is.EqualTo("Login"));
