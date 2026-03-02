@@ -147,7 +147,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(r => r.RequestSentAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
-
+        //User game colleciton
         modelBuilder.Entity<Game>(entity =>
         {
             //Prevent duplicate games across syncs
@@ -167,6 +167,17 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.DateAdded)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
+        //User Reviews
+        modelBuilder.Entity<Review>(entity =>
+        {
+            //Prevent duplicate reviews for same user + same game
+            entity.HasIndex(r => new { r.UserId, r.GameId })
+                .IsUnique();
+
+            entity.Property(r => r.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+        
 
     }
 
