@@ -15,7 +15,7 @@
         <div class="row justify-content-center mb-4">
     <div class="col-md-6">
         <!-- Game Search Form (shown by default) -->
-        <form id="gameSearchForm" action="/Games/SearchResults" method="get" data-authenticated="@Json.Serialize(SignInManager.IsSignedIn(User))">>
+        <form id="gameSearchForm" action="/Games/SearchResults" method="get" data-authenticated="@Json.Serialize(SignInManager.IsSignedIn(User))">
             <div class="input-group input-group-lg">
                 <!-- Dropdown to switch search type -->
                 <button class="btn btn-outline-light dropdown-toggle" 
