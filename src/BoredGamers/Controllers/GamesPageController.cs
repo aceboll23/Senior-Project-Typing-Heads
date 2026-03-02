@@ -22,17 +22,17 @@ namespace BoredGamers.Controllers
         }
 
 
-        // Example: GET /Games/SearchResults?q=dewan
+         // Example: GET /Games/SearchResults?q=catan&playTime=30-60&playerCount=4&minRating=7
         [Route("Games/SearchResults")]
-        public IActionResult SearchResults(string q)
+        public IActionResult SearchResults(string q, string playTime, int? playerCount, decimal? minRating)
         {
             ViewData["SearchQuery"] = q;
-            
-            // This looks for the view that matches the name "SearchResults", 
-            // it takes GamesPageController, strips off "Controller" and 
-            // looks for Views/{GamesPage}/{SearchResults}.cshtml
-            return View(); 
+            ViewData["PlayTime"] = playTime;
+            ViewData["PlayerCount"] = playerCount;
+            ViewData["MinRating"] = minRating;
+            return View();
         }
+
 
         // Example: GET /Games/Details/5 (5 being a game id)
         [Route("Games/Details/{id}")]

@@ -118,17 +118,36 @@ function initSearchResults() {
     // Only run on pages that have the search results container
     if (!$results.length) return;
 
-    // Read "q" from the URL query string
+    // Read all params from the URL
     var params = new URLSearchParams(window.location.search);
     var query = params.get('q');
+    var playTime = params.get('playTime');
+    var playerCount = params.get('playerCount');
+    var minRating = params.get('minRating');
 
-    if (!query || query.trim() === '') return;
+    // Only search if there's a query or at least one filter
+    var hasFilters = playTime || playerCount || minRating;
+    if ((!query || query.trim() === '') && !hasFilters) return;
 
     // Show loading state
     $results.html('<div class="text-center py-5"><div class="spinner-border text-light" role="status"></div><p class="mt-2 text-muted">Searching...</p></div>');
 
-    // Call the existing search API
-    $.get('/api/games/search?q=' + encodeURIComponent(query.trim()) + '&limit=10')
+    // Build the API URL with filter params
+    var apiUrl = '/api/games/search/filtered?limit=20';
+    if (query && query.trim() !== '') apiUrl += '&q=' + encodeURIComponent(query.trim());
+
+    // Parse play time range into min/max
+    if (playTime) {
+        var parts = playTime.split('-');
+        if (parts.length === 2) {
+            apiUrl += '&minPlayTime=' + parts[0] + '&maxPlayTime=' + parts[1];
+        }
+    }
+
+    if (playerCount) apiUrl += '&playerCount=' + playerCount;
+    if (minRating) apiUrl += '&minRating=' + minRating;
+
+    $.get(apiUrl)
         .done(function(games) {
             if (games.length === 0) {
                 $results.empty();
@@ -141,18 +160,33 @@ function initSearchResults() {
             games.forEach(function(game) {
                 var thumbnail = game.thumbnailUrl || '/images/no-image.png';
                 var year = game.yearPublished ? ' (' + game.yearPublished + ')' : '';
-                var rank = game.bggRank ? '#' + game.bggRank : '';
+                var rating = game.averageRating ? parseFloat(game.averageRating).toFixed(1) : '';
+                var players = '';
+                if (game.minPlayers && game.maxPlayers) {
+                    players = game.minPlayers === game.maxPlayers
+                        ? game.minPlayers + ' players'
+                        : game.minPlayers + '-' + game.maxPlayers + ' players';
+                }
+                var time = game.playTime ? game.playTime + ' min' : '';
 
                 html += '<div class="col">';
+                html += '  <a href="/Games/Details/' + game.id + '" class="text-decoration-none">';
                 html += '  <div class="card bg-dark text-white h-100">';
                 html += '    <img src="' + thumbnail + '" class="card-img-top" alt="' + game.name + '">';
                 html += '    <div class="card-body">';
                 html += '      <h6 class="card-title">' + game.name + year + '</h6>';
-                if (rank) {
-                    html += '      <small class="text-muted">BGG Rank: ' + rank + '</small>';
+                if (rating) {
+                    html += '      <small class="text-warning"><i class="bi bi-star-fill"></i> ' + rating + '</small>';
+                }
+                if (players || time) {
+                    html += '      <div class="mt-1">';
+                    if (players) html += '<small class="text-muted me-2"><i class="bi bi-people"></i> ' + players + '</small>';
+                    if (time) html += '<small class="text-muted"><i class="bi bi-clock"></i> ' + time + '</small>';
+                    html += '      </div>';
                 }
                 html += '    </div>';
                 html += '  </div>';
+                html += '  </a>';
                 html += '</div>';
             });
 
@@ -163,3 +197,4 @@ function initSearchResults() {
             $results.html('<div class="text-center py-5 text-danger"><p>Something went wrong. Please try again.</p></div>');
         });
 }
+
