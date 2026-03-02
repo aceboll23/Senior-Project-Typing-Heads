@@ -195,31 +195,44 @@
 
                                 @if (User.Identity?.IsAuthenticated == true)
                                 {
-                                    <h6 class="mb-2">Write a review</h6>
+                                    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                                    var hasReviewed = Model.Reviews != null &&
+                                                           Model.Reviews.Any(r => r.UserId == currentUserId);
 
-                                    <form asp-controller="Reviews" asp-action="Create" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="gameId" value="@Model.Id" />
-
-                                        <div class="mb-3">
-                                            <label class="form-label" for="rating">Rating (1-10)</label>
-                                            <select class="form-select" id="rating" name="rating" required>
-                                                @for (int i = 1; i <= 10; i++)
-                                                {
-                                                    <option value="@i">@i</option>
-                                                }
-                                            </select>
+                                    if (hasReviewed)
+                                    {
+                                        <div class="alert alert-info mb-3">
+                                            You've already reviewed this game.
                                         </div>
+                                    }
+                                    else
+                                    {
+                                        <h6 class="mb-2">Write a review</h6>
 
-                                        <div class="mb-3">
-                                            <label class="form-label" for="text">Review</label>
-                                            <textarea class="form-control" id="text" name="text" rows="4" required></textarea>
-                                        </div>
+                                        <form asp-controller="Reviews" asp-action="Create" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="gameId" value="@Model.Id" />
 
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="bi bi-send me-1"></i>Submit Review
-                                        </button>
-                                    </form>
+                                            <div class="mb-3">
+                                                <label class="form-label" for="rating">Rating (1-10)</label>
+                                                <select class="form-select" id="rating" name="rating" required>
+                                                    @for (int i = 1; i <= 10; i++)
+                                                    {
+                                                        <option value="@i">@i</option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label" for="text">Review</label>
+                                                <textarea class="form-control" id="text" name="text" rows="4" required></textarea>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-send me-1"></i>Submit Review
+                                            </button>
+                                        </form>
+                                    }
                                 }
                                 else
                                 {
