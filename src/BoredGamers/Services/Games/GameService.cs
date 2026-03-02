@@ -60,6 +60,8 @@ namespace BoredGamers.Services.Games
     {
       return await _db.Games
         .AsNoTracking() //we're just reading, not editing
+        .Include(g => g.Reviews)
+          .ThenInclude(r => r.User)
         .FirstOrDefaultAsync(g => g.Id == id);
     }
     public async Task<IReadOnlyList<Game>> SearchGamesFilteredAsync(

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace BoredGamers.Models
 {
@@ -20,5 +21,7 @@ namespace BoredGamers.Models
         public string Text { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        public IdentityUser? User { get; set; }
     }
 }
