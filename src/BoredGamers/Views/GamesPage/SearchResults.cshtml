@@ -1,19 +1,56 @@
 @{
     ViewData["Title"] = "Search Results";
     var query = ViewData["SearchQuery"] as string;
+    var playTime = ViewData["PlayTime"] as string;
+    var playerCount = ViewData["PlayerCount"] as int?;
+    var minRating = ViewData["MinRating"] as decimal?;
 }
 
 <!-- Search Section -->
 <section class="bg-dark text-white py-4">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6">
-                <form action="/Games/SearchResults" method="get">
+            <div class="col-md-8">
+                <form action="/Games/SearchResults" method="get" id="searchFilterForm">
                     <div class="input-group input-group-lg">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
                         <input type="text" name="q" class="form-control" placeholder="Search games..."
                                value="@query">
                         <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                     <!-- Filter Controls -->
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-3">
+                            <label class="form-label small text-white-50">Play Time</label>
+                            <select name="playTime" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                <option value="">Any</option>
+                                <option value="0-29" selected="@(playTime == "0-29")">Under 30 min</option>
+                                <option value="30-60" selected="@(playTime == "30-60")">30-60 min</option>
+                                <option value="61-120" selected="@(playTime == "61-120")">1-2 hours</option>
+                                <option value="121-999" selected="@(playTime == "121-999")">2+ hours</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small text-white-50">Player Count</label>
+                            <input type="number" name="playerCount" class="form-control form-control-sm bg-dark text-white border-secondary"
+                                   placeholder="e.g. 4" min="1" max="20"
+                                   value="@(playerCount.HasValue ? playerCount.Value.ToString() : "")">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small text-white-50">Min Rating</label>
+                            <select name="minRating" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                <option value="">Any</option>
+                                <option value="6" selected="@(minRating == 6)">6+</option>
+                                <option value="7" selected="@(minRating == 7)">7+</option>
+                                <option value="8" selected="@(minRating == 8)">8+</option>
+                                <option value="9" selected="@(minRating == 9)">9+</option>
+
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <a href="/Games/SearchResults@(string.IsNullOrEmpty(query) ? "" : "?q=" + query)"
+                               class="btn btn-outline-secondary btn-sm w-100">Clear Filters</a>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -28,6 +65,10 @@
         {
             <h2 class="h4 mb-4">Results for "@query"</h2>
         }
+        else if (playTime != null || playerCount.HasValue || minRating.HasValue)
+        {
+            <h2 class="h4 mb-4">Filtered Results</h2>
+        }
         else
         {
             <h2 class="h4 mb-4">Browse Games</h2>
@@ -37,14 +78,15 @@
         <div id="searchResults">
             <div class="text-center py-5 text-muted">
                 <i class="bi bi-search" style="font-size: 2rem;"></i>
-                <p class="mt-2">Search for a game to see results</p>
+                <p class="mt-2">Search for a game or apply filters to see results</p>
             </div>
         </div>
 
         <!-- No results message (hidden by default, shown by JS) -->
         <div id="noResults" class="text-center py-5" style="display: none;">
             <i class="bi bi-emoji-frown" style="font-size: 2rem;"></i>
-            <p class="mt-2 text-muted">No games found. Try a different search term.</p>
+            <p class="mt-2 text-muted">No games match your filters. Try adjusting your search.</p>
+
         </div>
     </div>
 </section>
