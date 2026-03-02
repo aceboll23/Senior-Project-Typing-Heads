@@ -12,7 +12,7 @@ public class EmailService : IEmailService
         _config = config;
     }
 
-    public async Task SendEmailAsync(stirng toEmail, string subject, string body)
+    public async Task SendEmailAsync(string toEmail, string subject, string body)
     {
         var smtpHost = _config["Email:SmtpHost"];
         var smtpPort = int.Parse(_config["Email:SmtpPort"] ?? "587");

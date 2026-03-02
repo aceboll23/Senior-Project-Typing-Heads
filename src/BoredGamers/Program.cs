@@ -1,6 +1,7 @@
 using BoredGamers.Data;
 using BoredGamers.Services.Bgg;
 using BoredGamers.Services.Games;
+using BoredGamers.Services.Email;
 using BoredGamers.Services.Collections;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
