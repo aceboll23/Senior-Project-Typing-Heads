@@ -28,7 +28,7 @@ public class ProfileController : Controller
             if (me == null) return Challenge();
             username = me.UserName;
         }
- //           return NotFound();
+        //           return NotFound();
 
         var profileUser = await _userManager.Users
             .Include(u => u.Profile)
@@ -73,6 +73,53 @@ public class ProfileController : Controller
             .ToListAsync();
 
         ViewData["Collection"] = collection;
+
+        if (!isOwnProfile && currentUser != null)
+        {
+            var currentProfile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+            var targetProfile = profileUser.Profile;
+
+            if (currentProfile != null && targetProfile != null)
+            {
+                var friendship = await _db.Set<Friendship>().FirstOrDefaultAsync(f => (f.RequesterProfileId == currentProfile.Id && f.ReceiverProfileId == targetProfile.Id) ||
+                        (f.RequesterProfileId == targetProfile.Id && f.ReceiverProfileId == currentProfile.Id));
+
+                ViewData["FriendshipStatus"] = friendship?.Status.ToString();
+                ViewData["FriendshipRequesterId"] = friendship?.RequesterProfileId;
+                ViewData["CurrentUserProfileId"] = currentProfile.Id;
+            }
+        }
+
+        // Load pending incoming friend requests (only on own profile)
+        if (isOwnProfile && currentUser != null)
+        {
+            var currentProfile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+
+            if (currentProfile != null)
+            {
+                var pendingRequests = await _db.Set<Friendship>()
+                    .Where(f => f.ReceiverProfileId == currentProfile.Id && f.Status == FriendshipStatus.Pending)
+                    .Include(f => f.RequesterProfile)
+                    .ToListAsync();
+
+                // Load the User for each requester to get username and avatar
+                var requestsWithUsers = new List<object>();
+                foreach (var f in pendingRequests)
+                {
+                    var requesterUser = await _userManager.Users.FirstOrDefaultAsync(u => u.Profile != null && u.Profile.Id == f.RequesterProfileId);
+
+                    requestsWithUsers.Add(new
+                    {
+                        FriendshipId = f.Id,
+                        Username = requesterUser?.UserName,
+                        AvatarUrl = f.RequesterProfile.AvatarUrl,
+                        RequestedAt = f.RequestedAt.ToString("MMM dd, yyyy")
+                    });
+                }
+
+                ViewData["PendingRequests"] = requestsWithUsers;
+            }
+        }
 
         return View();
     }

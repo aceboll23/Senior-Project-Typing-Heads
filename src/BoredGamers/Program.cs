@@ -1,6 +1,7 @@
 using BoredGamers.Data;
 using BoredGamers.Services.Bgg;
 using BoredGamers.Services.Games;
+using BoredGamers.Services.Email;
 using BoredGamers.Services.Collections;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -69,6 +70,9 @@ builder.Services.AddScoped<IUserCollectionService, UserCollectionService>();
 builder.Services.AddScoped<IGameService, GameService>();
 //Sync Service that imports/upserts BGG games into our local database
 builder.Services.AddScoped<IGameSyncService, GameSyncService>();
+
+//Email service
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
