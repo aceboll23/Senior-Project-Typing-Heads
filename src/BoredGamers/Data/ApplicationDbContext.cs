@@ -23,6 +23,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Game> Games { get; set; }
     public DbSet<UserGameCollection> UserGameCollections { get; set; }
     public DbSet<Review> Reviews { get; set; }
+    public DbSet<DirectMessage> DirectMessages { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
 
@@ -178,6 +179,29 @@ public class ApplicationDbContext : IdentityDbContext
                 .HasDefaultValueSql("GETUTCDATE()");
         });
         
+
+        //Configure DirectMessage
+        modelBuilder.Entity<DirectMessage>(entity =>
+        {
+            entity.HasOne(m => m.SenderProfile)
+                .WithMany(p => p.SentMessages)
+                .HasForeignKey(m => m.SenderProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(m => m.RecipientProfile)
+                .WithMany(p => p.ReceivedMessages)
+                .HasForeignKey(m => m.RecipientProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Fast lookup for conversation between two users
+            entity.HasIndex(m => new { m.SenderProfileId, m.RecipientProfileId });
+
+            // Fast lookup for unread messages
+            entity.HasIndex(m => new { m.RecipientProfileId, m.Status });
+
+            entity.Property(m => m.SentAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
 
     }
 
