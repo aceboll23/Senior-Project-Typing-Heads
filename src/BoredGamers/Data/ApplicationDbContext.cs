@@ -22,9 +22,11 @@ public class ApplicationDbContext : IdentityDbContext
     //Locally cached board games sourced from BGG for fast homepage loading.
     public DbSet<Game> Games { get; set; }
     public DbSet<UserGameCollection> UserGameCollections { get; set; }
+    public DbSet<Review> Reviews { get; set; }
     public DbSet<DirectMessage> DirectMessages { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
+
     {
     }
 
@@ -146,7 +148,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(r => r.RequestSentAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
-
+        //User game colleciton
         modelBuilder.Entity<Game>(entity =>
         {
             //Prevent duplicate games across syncs
@@ -166,6 +168,17 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.DateAdded)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
+        //User Reviews
+        modelBuilder.Entity<Review>(entity =>
+        {
+            //Prevent duplicate reviews for same user + same game
+            entity.HasIndex(r => new { r.UserId, r.GameId })
+                .IsUnique();
+
+            entity.Property(r => r.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+        
 
         //Configure DirectMessage
         modelBuilder.Entity<DirectMessage>(entity =>

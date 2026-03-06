@@ -65,6 +65,7 @@ builder.Services.AddHttpClient<IBggClient, BggClient>();
 //
 
 builder.Services.AddScoped<IUserCollectionService, UserCollectionService>();
+builder.Services.AddScoped<ReviewService>();
 
 //Register GameService
 builder.Services.AddScoped<IGameService, GameService>();
