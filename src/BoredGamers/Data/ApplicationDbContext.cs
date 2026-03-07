@@ -24,6 +24,9 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<UserGameCollection> UserGameCollections { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<DirectMessage> DirectMessages { get; set; }
+    public DbSet<Playgroup> Playgroups { get; set; }
+    public DbSet<PlaygroupMember> PlaygroupMembers { get; set; }
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
 
@@ -202,6 +205,31 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(m => m.SentAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
+
+                // Configure Playgroup
+        modelBuilder.Entity<Playgroup>(entity =>
+        {
+            entity.Property(p => p.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(p => p.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure PlaygroupMember
+        modelBuilder.Entity<PlaygroupMember>(entity =>
+        {
+            entity.HasOne(m => m.Playgroup)
+                .WithMany(g => g.Members)
+                .HasForeignKey(m => m.PlaygroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(m => new { m.PlaygroupId, m.UserId })
+                .IsUnique();
+
+            entity.Property(m => m.JoinedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
 
     }
 
