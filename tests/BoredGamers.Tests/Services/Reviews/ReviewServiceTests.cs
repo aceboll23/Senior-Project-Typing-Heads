@@ -115,5 +115,63 @@ namespace BoredGamers.Tests.Services
       Assert.That(result.Success, Is.False);
       Assert.That(result.ErrorMessage, Does.Contain("game").IgnoreCase);
     }
+
+    [Test]
+    public async Task EditReviewAsync_WithValidOwnerInput_UpdatesReview()
+    {
+      var db = NewDb(Guid.NewGuid().ToString());
+
+      db.Games.Add(new Game { Id = 1, Name = "Catan" });
+      db.Reviews.Add(new Review
+      {
+        ReviewId = 1,
+        GameId = 1,
+        UserId = "user-1",
+        Rating = 6,
+        Text = "Old review text",
+        CreatedAt = DateTime.UtcNow
+      });
+
+      await db.SaveChangesAsync();
+
+      var sut = new ReviewService(db);
+      
+      var result = await sut.EditReviewAsync(1, "user-1", 9, "Updated review text");
+
+      Assert.That(result.Success, Is.True);
+
+      var saved = await db.Reviews.FirstOrDefaultAsync(r => r.ReviewId == 1);
+
+      Assert.That(saved, Is.Not.Null);
+      Assert.That(saved!.Rating, Is.EqualTo(9));
+      Assert.That(saved.Text, Is.EqualTo("Updated review text"));      
+    }
+
+    [Test]
+    public async Task EditReviewAsync_UserDoesNotOwnReview_Fails()
+    {
+      var db = NewDb(Guid.NewGuid().ToString());
+
+      db.Games.Add(new Game { Id = 1, Name = "Catan" });
+
+      db.Reviews.Add(new Review
+      {
+        ReviewId = 1,
+        GameId = 1,
+        UserId = "user-1",
+        Rating = 7, 
+        Text = "Original text",
+        CreatedAt = DateTime.UtcNow
+      });
+
+      await db.SaveChangesAsync();
+
+      var sut = new ReviewService(db);
+      
+      var result = await sut.EditReviewAsync(1, "user-2", 9, "Hacked edit");
+
+      Assert.That(result.Success, Is.False);
+      Assert.That(result.ErrorMessage, Does.Contain("own").IgnoreCase);
+    }
   }
 }
