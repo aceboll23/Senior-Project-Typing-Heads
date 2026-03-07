@@ -1,0 +1,70 @@
+@model BoredGamers.Models.Playgroup
+
+@{
+    ViewData["Title"] = Model.Name;
+    var isOwner = (bool)(ViewData["IsOwner"] ?? false);
+    var isMember = (bool)(ViewData["IsMember"] ?? false);
+    var memberCount = (int)(ViewData["MemberCount"] ?? 0);
+}
+
+<section class="py-4">
+    <div class="container">
+
+        <a href="/Playgroup" class="btn btn-outline-secondary btn-sm mb-4">
+            <i class="bi bi-arrow-left me-1"></i>My Playgroups
+        </a>
+
+        <div class="row g-4">
+            <!-- Group Info -->
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name">
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center text-white" style="height: 180px;">
+                            <i class="bi bi-people" style="font-size: 4rem;"></i>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h3 class="card-title">@Model.Name</h3>
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <p class="text-muted">@Model.Description</p>
+                        }
+                        <small class="text-muted">
+                            <i class="bi bi-people me-1"></i>@memberCount member@(memberCount != 1 ? "s" : "")
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members List -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Members</h5>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var member in Model.Members.OrderBy(m => m.Role))
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@member.UserId</span>
+                                    @if (member.Role == BoredGamers.Models.PlaygroupRole.Owner)
+                                    {
+                                        <span class="badge bg-primary">Owner</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Member</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
