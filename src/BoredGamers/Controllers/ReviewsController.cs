@@ -69,5 +69,25 @@ namespace BoredGamers.Controllers
       TempData["ReviewSuccess"] = "Review updated!";
       return RedirectToAction("Details", "Games", new { id = gameId });
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int reviewId, int gameId)
+    {
+      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      if (string.IsNullOrWhiteSpace(userId))
+        return Forbid();
+
+      var result = await _reviewService.DeleteReviewAsync(reviewId, userId);
+
+      if (!result.Success)
+      {
+        TempData["ReviewError"] = result.ErrorMessage;
+        return RedirectToAction("Details", "Games", new { id = gameId });
+      }
+
+      TempData["ReviewSuccess"] = "Review deleted!";
+      return RedirectToAction("Details", "Games", new { id = gameId });
+    }
   }
 }
