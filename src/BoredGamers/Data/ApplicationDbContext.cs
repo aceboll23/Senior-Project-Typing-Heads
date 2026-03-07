@@ -22,11 +22,8 @@ public class ApplicationDbContext : IdentityDbContext
     //Locally cached board games sourced from BGG for fast homepage loading.
     public DbSet<Game> Games { get; set; }
     public DbSet<UserGameCollection> UserGameCollections { get; set; }
-<<<<<<< HEAD
     public DbSet<Review> Reviews { get; set; }
     public DbSet<DirectMessage> DirectMessages { get; set; }
-=======
->>>>>>> b06c98c (Finish merge resolution)
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
 
