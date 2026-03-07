@@ -75,6 +75,15 @@ namespace BoredGamers.Services
 
       return ServiceResult.Ok();
     }
+
+    public async Task<Review?> GetReviewForEditAsync(int reviewId, string userId)
+    {
+      if (string.IsNullOrWhiteSpace(userId))
+        return null;
+
+      return await _db.Reviews
+        .FirstOrDefaultAsync(r => r.ReviewId == reviewId && r.UserId == userId);
+    }
   }
 
   public class ServiceResult
