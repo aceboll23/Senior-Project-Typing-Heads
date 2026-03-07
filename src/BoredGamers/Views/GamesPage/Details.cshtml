@@ -6,20 +6,20 @@
     ViewData["Title"] = Model.Name;
 
     var image = !string.IsNullOrWhiteSpace(Model.ImageUrl)
-        ? Model.ImageUrl
-        : !string.IsNullOrWhiteSpace(Model.ThumbnailUrl)
-            ? Model.ThumbnailUrl
-            : Url.Content("~/images/game-placeholder.png");
+    ? Model.ImageUrl
+    : !string.IsNullOrWhiteSpace(Model.ThumbnailUrl)
+    ? Model.ThumbnailUrl
+    : Url.Content("~/images/game-placeholder.png");
 
     string playersText = (Model.MinPlayers.HasValue || Model.MaxPlayers.HasValue)
-        ? (Model.MinPlayers.HasValue && Model.MaxPlayers.HasValue
-            ? (Model.MinPlayers == Model.MaxPlayers
-                ? $"{Model.MinPlayers} players"
-                : $"{Model.MinPlayers}-{Model.MaxPlayers} players")
-            : (Model.MinPlayers.HasValue
-                ? $"{Model.MinPlayers}+ players"
-                : $"Up to {Model.MaxPlayers} players"))
-        : "—";
+    ? (Model.MinPlayers.HasValue && Model.MaxPlayers.HasValue
+    ? (Model.MinPlayers == Model.MaxPlayers
+    ? $"{Model.MinPlayers} players"
+    : $"{Model.MinPlayers}-{Model.MaxPlayers} players")
+    : (Model.MinPlayers.HasValue
+    ? $"{Model.MinPlayers}+ players"
+    : $"Up to {Model.MaxPlayers} players"))
+    : "—";
 
     string playTimeText = Model.PlayTime.HasValue ? $"{Model.PlayTime} min" : "—";
     string yearText = Model.YearPublished.HasValue ? Model.YearPublished.Value.ToString() : "—";
@@ -27,6 +27,8 @@
     string votersText = Model.BggNumVoters.HasValue ? Model.BggNumVoters.Value.ToString("N0") : "—";
 
     bool hasDescription = !string.IsNullOrWhiteSpace(Model.Description);
+
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
 <!-- Game Details -->
@@ -195,9 +197,8 @@
 
                                 @if (User.Identity?.IsAuthenticated == true)
                                 {
-                                    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                                     var hasReviewed = Model.Reviews != null &&
-                                                           Model.Reviews.Any(r => r.UserId == currentUserId);
+                                    Model.Reviews.Any(r => r.UserId == currentUserId);
 
                                     if (hasReviewed)
                                     {
@@ -247,13 +248,29 @@
                                 @if (Model.Reviews != null && Model.Reviews.Any())
                                 {
                                     <div class="d-flex flex-column gap-3">
-                                        @foreach (var r in Model. Reviews.OrderByDescending(r => r. CreatedAt))
+                                        @* FIXED: removed spacing typo in Model.Reviews and r.CreatedAt *@
+                                        @foreach (var r in Model.Reviews.OrderByDescending(r => r.CreatedAt))
                                         {
-                                            <div clas="border rounded p-3">
+                                            @* FIXED: changed clas to class *@
+                                            <div class="border rounded p-3">
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <strong>@(r.User?.UserName ?? "Unknown user")</strong>
-                                                    <span class="badge bg-secondary">@r.Rating / 10</span>
+
+                                                    @* CHANGED: wrapped badge in a flex container so Edit button can sit beside it *@
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="badge bg-secondary">@r.Rating / 10</span>
+
+                                                        @* ADDED: only show Edit button for the current user's own reviews *@
+                                                        @if (User.Identity?.IsAuthenticated == true && r.UserId == currentUserId)
+                                                        {
+                                                            <a asp-controller="Reviews" asp-action="Edit" asp-route-id="@r.ReviewId"
+                                                                   class="btn btn-sm btn-outline-primary">
+                                                                <i class="bi bi-pencil me-1"></i>Edit
+                                                            </a>
+                                                        }
+                                                    </div>
                                                 </div>
+
                                                 <div class="text-muted small mb-2">@r.CreatedAt.ToLocalTime().ToString("g")</div>
                                                 <div style="white-space: pre-line;">@r.Text</div>
                                             </div>
@@ -264,6 +281,7 @@
                                 {
                                     <p class="text-muted mb-0">No Reviews yet.</p>
                                 }
+
                             </div>
                         </div>
                     </div>

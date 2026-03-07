@@ -49,6 +49,41 @@ namespace BoredGamers.Services
 
       return ServiceResult.Ok();
     }
+    public async Task<ServiceResult> EditReviewAsync(int reviewId, string userId, int rating, string text)
+    {
+      if (string.IsNullOrWhiteSpace(userId))
+        return ServiceResult.Fail("User is required.");
+
+      if (rating < 1 || rating > 10)
+        return ServiceResult.Fail("Rating must be between 1 and 10.");
+
+      if (string.IsNullOrWhiteSpace(text))
+        return ServiceResult.Fail("Text is required.");
+
+      var review = await _db.Reviews.FirstOrDefaultAsync(r => r.ReviewId == reviewId);
+
+      if (review == null)
+        return ServiceResult.Fail("Review not found.");
+
+      if (review.UserId != userId)
+        return ServiceResult.Fail("You can only edit your own review.");
+
+      review.Rating = rating;
+      review.Text = text.Trim();
+
+      await _db.SaveChangesAsync();
+
+      return ServiceResult.Ok();
+    }
+
+    public async Task<Review?> GetReviewForEditAsync(int reviewId, string userId)
+    {
+      if (string.IsNullOrWhiteSpace(userId))
+        return null;
+
+      return await _db.Reviews
+        .FirstOrDefaultAsync(r => r.ReviewId == reviewId && r.UserId == userId);
+    }
   }
 
   public class ServiceResult

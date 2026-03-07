@@ -34,5 +34,40 @@ namespace BoredGamers.Controllers
       TempData["ReviewSuccess"] = "Review submitted!";
       return RedirectToAction("Details", "Games", new { id = gameId });
     }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      if (string.IsNullOrWhiteSpace(userId))
+        return Forbid();
+
+      var review = await _reviewService.GetReviewForEditAsync(id, userId);
+
+      if (review == null)
+        return Forbid();
+
+      return View(review);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int reviewId, int gameId, int rating, string text)
+    {
+      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      if (string.IsNullOrWhiteSpace(userId))
+        return Forbid();
+
+      var result = await _reviewService.EditReviewAsync(reviewId, userId, rating, text);
+
+      if(!result.Success)
+      {
+        TempData["ReviewError"] = result.ErrorMessage;
+        return RedirectToAction("Edit", new { id = reviewId });
+      }
+
+      TempData["ReviewSuccess"] = "Review updated!";
+      return RedirectToAction("Details", "Games", new { id = gameId });
+    }
   }
 }
