@@ -173,5 +173,62 @@ namespace BoredGamers.Tests.Services
       Assert.That(result.Success, Is.False);
       Assert.That(result.ErrorMessage, Does.Contain("own").IgnoreCase);
     }
+
+    [Test]
+    public async Task DeleteReviewAsync_WithValidOwner_DeletesReview()
+    {
+      var db = NewDb(Guid.NewGuid().ToString());
+
+      db.Games.Add(new Game { Id = 1, Name = "Catan" });
+      db.Reviews.Add(new Review
+      {
+        ReviewId = 1,
+        GameId = 1,
+        UserId = "user-1",
+        Rating = 8,
+        Text = "Review to delete",
+        CreatedAt = DateTime.UtcNow
+      });
+
+      await db.SaveChangesAsync();
+
+      var sut = new ReviewService(db);
+
+      var result = await sut.DeleteReviewAsync(1, "user-1");
+
+      Assert.That(result.Success, Is.True);
+
+      var deleted = await db.Reviews.FirstOrDefaultAsync(r => r.ReviewId == 1);
+      Assert.That(deleted, Is.Null);
+    }
+
+    [Test]
+    public async Task DeleteReviewAsync_USerDoesNotOwnReview_Fails()
+    {
+      var db = NewDb(Guid.NewGuid().ToString());
+
+      db.Games.Add(new Game { Id = 1, Name = "Catan" } );
+      db.Reviews.Add(new Review
+      {
+        ReviewId = 1,
+        GameId = 1,
+        UserId = "user-1",
+        Rating = 8,
+        Text = "Review to protect",
+        CreatedAt = DateTime.UtcNow
+      });
+
+      await db.SaveChangesAsync();
+
+      var sut = new ReviewService (db);
+
+      var result = await sut.DeleteReviewAsync(1, "user-2");
+
+      Assert.That(result.Success, Is.False);
+      Assert.That(result.ErrorMessage, Does.Contain("own").IgnoreCase);
+
+      var reviewStillExists = await db.Reviews.FirstOrDefaultAsync(r => r.ReviewId == 1);
+      Assert.That(reviewStillExists, Is.Not.Null);
+    }
   }
 }

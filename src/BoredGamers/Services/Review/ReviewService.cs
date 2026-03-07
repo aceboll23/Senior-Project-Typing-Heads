@@ -84,6 +84,25 @@ namespace BoredGamers.Services
       return await _db.Reviews
         .FirstOrDefaultAsync(r => r.ReviewId == reviewId && r.UserId == userId);
     }
+
+    public async Task<ServiceResult> DeleteReviewAsync(int reviewId, string userId)
+    {
+      if (string.IsNullOrWhiteSpace(userId))
+        return ServiceResult.Fail("User is required.");
+
+      var review = await _db.Reviews.FirstOrDefaultAsync(r => r.ReviewId == reviewId);
+
+      if (review == null)
+        return ServiceResult.Fail("Review not found.");
+      
+      if (review.UserId != userId)
+        return ServiceResult.Fail("You can only delete your own review.");
+
+      _db.Reviews.Remove(review);
+      await _db.SaveChangesAsync();
+
+      return ServiceResult.Ok();
+    }
   }
 
   public class ServiceResult
