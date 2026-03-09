@@ -1,0 +1,38 @@
+@using BoredGamers.Models
+@{
+    ViewData["Title"] = "Messages";
+    var currentProfileId = (int)ViewData["CurrentProfileId"]!;
+    var friendConversations = ViewData["FriendConversations"] as List<DirectMessage> ?? new();
+    var messageRequests = ViewData["MessageRequests"] as List<DirectMessage> ?? new();
+    var allProfiles = ViewData["AllProfiles"] as List<UserProfile> ?? new();
+}
+
+<div class="container py-4">
+    <h2 class="mb-4">Messages</h2>
+
+    <h5>Friends</h5>
+    @if (!friendConversations.Any())
+    {
+        <p class="text-muted">No messages yet.</p>
+    }
+    else
+    {
+        @foreach (var msg in friendConversations)
+        {
+            var otherProfileId = msg.SenderProfileId == currentProfileId
+                ? msg.RecipientProfileId
+                : msg.SenderProfileId;
+            var otherProfile = allProfiles.FirstOrDefault(p => p.Id == otherProfileId);
+            var otherUsername = otherProfile?.User?.UserName ?? "Unknown";
+
+            <div class="card bg-dark mb-2">
+                <div class="card-body">
+                    <a href="/Messages/Conversation/@otherUsername">
+                        <strong>@otherUsername</strong>
+                        <span>@msg.Content</span>
+                    </a>
+                </div>
+            </div>
+        }
+    }
+</div>

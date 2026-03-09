@@ -94,6 +94,11 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 app.MapControllerRoute(
+    name: "conversation",
+    pattern: "Messages/Conversation/{username}",
+    defaults: new { controller = "Messages", action = "Conversation" });
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
@@ -106,6 +111,8 @@ app.MapControllerRoute(
     name: "profile",
     pattern: "Profile/{username}",
     defaults: new { controller = "Profile", action = "Index" });
+
+
 
 if (app.Environment.IsDevelopment())
 {

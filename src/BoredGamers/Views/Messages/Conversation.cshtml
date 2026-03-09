@@ -1,0 +1,85 @@
+@using BoredGamers.Models
+@{
+    ViewData["Title"] = "Conversation";
+    var currentProfileId = (int)ViewData["CurrentProfileId"]!;
+    var otherUsername = ViewData["OtherUsername"] as string;
+    var messages = ViewData["Messages"] as List<DirectMessage> ?? new();
+}
+
+<div class="container py-4">
+
+    <!-- Message History -->
+    <div class="card bg-dark" id="messageHistory">
+        @if (!messages.Any())
+        {
+            <p>No messages yet.</p>
+        }
+        else
+        {
+            @foreach (var msg in messages)
+            {
+                var isMine = msg.SenderProfileId == currentProfileId;
+                <div class="d-flex @(isMine ? "justify-content-end" : "justify-content-start") mb-2">
+                    <div class="@(isMine ? "bg-primary" : "bg-secondary") text-white"
+                         style="max-width:80%;">
+                        <div>@msg.Content</div>
+                        <small>@msg.SentAt.ToString("MMM dd, h:mm tt")</small>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Message Input -->
+    <div class="d-flex gap-2">
+        <input type="text" id="messageInput" class="form-control" placeholder="Type a message..." maxlength="1000" />
+    </div>
+    <div id="sendError" class="text-danger mt-1 d-none"></div>
+</div>
+
+@section Scripts {
+<form id="antiForgeryForm">@Html.AntiForgeryToken()</form>
+<script>
+$(document).ready(function () {
+    const recipientUsername = '@otherUsername';
+    const token = $('input[name="__RequestVerificationToken"]').first().val();
+    const $history = $('#messageHistory');
+    const $input = $('#messageInput');
+
+    // Send
+    $input.on('keydown', function (e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    function sendMessage() {
+        const content = $input.val();
+    
+        $('#sendError').addClass('d-none');
+
+        $.post('/Messages/Send',
+            { recipientUsername: recipientUsername, content: content, __RequestVerificationToken: token },
+            function (response) {
+                if (response.success) {
+                    $history.append(`
+                        <div class="d-flex justify-content-end mb-2">
+                            <div class="bg-primary text-white" style="max-width:80%;">
+                                <div>${escapeHtml(response.content)}</div>
+                                <small>${response.sentAt}</small>
+                            </div>
+                        </div>`);
+                } else {
+                    $('#sendError').text(response.message).removeClass('d-none');
+                }
+                
+            }
+        ).fail(function () {
+            $('#sendError').text('Failed to send. Please try again.').removeClass('d-none');
+        });
+    }
+
+    function escapeHtml(str) {
+        return $('<div>').text(str).html();
+    }
+});
+</script>
+}
