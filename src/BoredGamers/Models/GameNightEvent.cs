@@ -6,11 +6,14 @@ namespace BoredGamers.Models
 {
   public class GameNightEvent
   {
+    [Key]
+    public int Id { get; set; }
+    
     [Required]
     public int PlaygroupId { get; set; }
 
     [Required]
-    public string CreatedByUserId { get; set; } = string.Empty;
+    public string CreatedByUserId { get; set; } = string.Empty; //FK to get the value from AspNetUser
 
     [Required]
     [StringLength(100)]
@@ -26,7 +29,7 @@ namespace BoredGamers.Models
 
     public Playgroup? Playgroup { get; set; }
 
-    public User? CreatedByUser { get; set; }
+    public User? CreatedByUser { get; set; } // Brings in the full User Object
 
     public ICollection<GameNightEventGame> EventGames { get; set; } = new List<GameNightEventGame>();
 

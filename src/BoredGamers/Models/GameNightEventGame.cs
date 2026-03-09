@@ -4,6 +4,7 @@ namespace BoredGamers.Models
 {
   public class GameNightEventGame
   {
+    [Key]
     public int Id { get; set; }
 
     [Required]

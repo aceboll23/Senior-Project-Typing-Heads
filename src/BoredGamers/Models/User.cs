@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
 
@@ -40,6 +41,9 @@ namespace BoredGamers.Models
     [MaxLength(256)]
     public string? PasswordResetToken {get; set;}
     public DateTime? PasswordResetTokenExpiry {get;set;}
+
+    public ICollection<GameNightEvent> CreatedGameNightEvents { get; set; } = new List<GameNightEvent>();
+    public ICollection<GameNightEventGame> GameNightEventGames { get; set; } = new List<GameNightEventGame>();
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }    
