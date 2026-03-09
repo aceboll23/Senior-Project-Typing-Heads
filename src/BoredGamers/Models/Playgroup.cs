@@ -28,5 +28,7 @@ namespace BoredGamers.Models
         public DateTime UpdatedAt { get; set; }
 
         public ICollection<PlaygroupMember> Members { get; set; } = new List<PlaygroupMember>();
+
+        public ICollection<GameNightEvent> GameNightEvents { get; set; } = new List<GameNightEvent>();
     }
 }

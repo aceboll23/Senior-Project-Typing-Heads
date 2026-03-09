@@ -26,6 +26,8 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<DirectMessage> DirectMessages { get; set; }
     public DbSet<Playgroup> Playgroups { get; set; }
     public DbSet<PlaygroupMember> PlaygroupMembers { get; set; }
+    public DbSet<GameNightEvent> GameNightEvents { get; set; }
+    public DbSet<GameNightEventGame> GameNightEventGames { get; set; } 
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -230,6 +232,51 @@ public class ApplicationDbContext : IdentityDbContext
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 
+        // Configure GameNightEvent
+        modelBuilder.Entity<GameNightEvent>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(e => e.Playgroup)
+                .WithMany(p => p.GameNightEvents)
+                .HasForeignKey(e => e.PlaygroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.CreatedByUser)
+                .WithMany(u => u.CreatedGameNightEvents)
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasIndex(e => e.PlaygroupId);
+            entity.HasIndex(e => e.EventDateTime);
+        });
+
+        //Configure GameNightEventGame
+        modelBuilder.Entity<GameNightEventGame>(entity =>
+        {
+            entity.HasKey(eg => eg.Id);
+            
+            entity.HasOne(eg => eg.GameNightEvent)
+                .WithMany(e => e.EventGames)
+                .HasForeignKey(eg => eg.GameNightEventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(eg => eg.Game)
+                .WithMany()
+                .HasForeignKey(eg => eg.GameId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(eg => eg.User)
+                .WithMany(u => u.GameNightEventGames)
+                .HasForeignKey(eg => eg.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(eg => new { eg.GameNightEventId, eg.GameId, eg.UserId })
+                .IsUnique();
+        });
 
     }
 
