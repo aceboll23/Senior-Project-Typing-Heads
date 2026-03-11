@@ -7,32 +7,94 @@
     var allProfiles = ViewData["AllProfiles"] as List<UserProfile> ?? new();
 }
 
-<div class="container py-4">
-    <h2 class="mb-4">Messages</h2>
+<section class="py-4">
+    <div class="container">
+        <h2 class="mb-4">Messages</h2>
 
-    <h5>Friends</h5>
-    @if (!friendConversations.Any())
-    {
-        <p class="text-muted">No messages yet.</p>
-    }
-    else
-    {
-        @foreach (var msg in friendConversations)
+        <!-- Friend Messages -->
+        <h5 class="mb-3">
+            <i class="bi bi-chat-dots me-2"></i>Friends
+        </h5>
+
+        @if (!friendConversations.Any())
         {
-            var otherProfileId = msg.SenderProfileId == currentProfileId
-                ? msg.RecipientProfileId
-                : msg.SenderProfileId;
-            var otherProfile = allProfiles.FirstOrDefault(p => p.Id == otherProfileId);
-            var otherUsername = otherProfile?.User?.UserName ?? "Unknown";
+            <p class="text-muted mb-4">No messages yet. Send a message from a friend's profile.</p>
+        }
+        else
+        {
+            <div class="list-group mb-4">
+                @foreach (var msg in friendConversations)
+                {
+                    var otherProfileId = msg.SenderProfileId == currentProfileId ? msg.RecipientProfileId : msg.SenderProfileId;
+                    var otherProfile = allProfiles.FirstOrDefault(p => p.Id == otherProfileId);
+                    var otherUsername = otherProfile?.User?.UserName ?? "Unknown";
+                    var otherAvatar = otherProfile?.AvatarUrl;
+                    var isUnread = msg.RecipientProfileId == currentProfileId && msg.Status != MessageStatus.Read;
 
-            <div class="card bg-dark mb-2">
-                <div class="card-body">
-                    <a href="/Messages/Conversation/@otherUsername">
-                        <strong>@otherUsername</strong>
-                        <span>@msg.Content</span>
+                    <a href="/Messages/Conversation/@otherUsername"
+                       class="list-group-item list-group-item-action bg-dark d-flex align-items-center gap-3 @(isUnread ? "border-primary" : "")">
+                        @if (!string.IsNullOrEmpty(otherAvatar))
+                        {
+                            <img src="@otherAvatar" class="rounded-circle"
+                                 style="width:48px;height:48px;object-fit:cover;">
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width:48px;height:48px;font-size:1.2rem;">
+                                @otherUsername.Substring(0, 1).ToUpper()
+                            </div>
+                        }
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold @(isUnread ? "text-white" : "text-muted")">
+                                    @otherUsername
+                                </span>
+                                <small class="text-muted">@msg.SentAt.ToString("MMM dd")</small>
+                            </div>
+                            <div class="text-muted text-truncate small">
+                                @(msg.SenderProfileId == currentProfileId ? "You: " : "")@msg.Content
+                            </div>
+                        </div>
+                        @if (isUnread)
+                        {
+                            <span class="badge bg-primary rounded-pill">New</span>
+                        }
                     </a>
-                </div>
+                }
             </div>
         }
-    }
-</div>
+
+        <!-- Message Requests -->
+        @if (messageRequests.Any())
+        {
+            <h5 class="mb-3 text-muted">
+                <i class="bi bi-envelope me-2"></i>Message Requests
+                <span class="badge bg-secondary ms-1">@messageRequests.Count</span>
+            </h5>
+            <p class="text-muted small mb-3">
+                Messages from people you are not friends with.
+            </p>
+            <div class="list-group">
+                @foreach (var msg in messageRequests)
+                {
+                    var otherProfileId = msg.SenderProfileId == currentProfileId ? msg.RecipientProfileId : msg.SenderProfileId;
+                    var otherProfile = allProfiles.FirstOrDefault(p => p.Id == otherProfileId);
+                    var otherUsername = otherProfile?.User?.UserName ?? "Unknown";
+
+                    <a href="/Messages/Conversation/@otherUsername"
+                       class="list-group-item list-group-item-action bg-dark d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:48px;height:48px;font-size:1.2rem;">
+                            @otherUsername.Substring(0, 1).ToUpper()
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="fw-bold">@otherUsername</div>
+                            <div class="text-muted text-truncate small">@msg.Content</div>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</section>
