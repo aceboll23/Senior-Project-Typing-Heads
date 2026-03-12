@@ -3,6 +3,7 @@ using BoredGamers.Services.Bgg;
 using BoredGamers.Services.Games;
 using BoredGamers.Services.Email;
 using BoredGamers.Services.Collections;
+using BoredGamers.Services.GameNightEvents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
@@ -69,6 +70,8 @@ builder.Services.AddScoped<ReviewService>();
 
 //Register GameService
 builder.Services.AddScoped<IGameService, GameService>();
+//Register GameNightEventService
+builder.Services.AddScoped<IGameNightEventService, GameNightEventService>();
 //Sync Service that imports/upserts BGG games into our local database
 builder.Services.AddScoped<IGameSyncService, GameSyncService>();
 

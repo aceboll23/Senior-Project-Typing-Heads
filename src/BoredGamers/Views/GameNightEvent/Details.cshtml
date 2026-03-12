@@ -1,0 +1,68 @@
+@model BoredGamers.Models.GameNightEvent
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1 class="mb-2">@Model.Title</h1>
+        <p class="text-muted mb-1">
+            <strong>Date & Time:</strong> @Model.EventDateTime.ToString("f")
+        </p>
+        <p class="text-muted mb-1">
+            <strong>Playgroup:</strong> @Model.Playgroup?.Name
+        </p>
+        <p class="text-muted mb-3">
+            <strong>Created By:</strong> @Model.CreatedByUser?.UserName
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Description</h5>
+                    <p class="card-text mb-0">@Model.Description</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div>
+        <h2 class="mb-3">Games Members Are Bringing</h2>
+
+        @if (Model.EventGames == null || !Model.EventGames.Any())
+        {
+            <div class="alert alert-info">
+                No games added yet.
+            </div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var eventGame in Model.EventGames)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            @if (!string.IsNullOrWhiteSpace(eventGame.Game?.ThumbnailUrl))
+                            {
+                                <img src="@eventGame.Game.ThumbnailUrl" class="card-img-top" alt="@eventGame.Game.Name" />
+                            }
+
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a asp-controller="Games" asp-action="Details" asp-route-id="@eventGame.GameId">
+                                        @eventGame.Game?.Name
+                                    </a>
+                                </h5>
+                                <p class="card-text mb-0">
+                                    <strong>Brought by:</strong> @eventGame.User?.UserName
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

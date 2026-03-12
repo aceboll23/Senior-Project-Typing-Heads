@@ -1,0 +1,40 @@
+@model BoredGamers.Models.ViewModels.CreateGameNightEventViewModel
+
+@{
+    ViewData["Title"] = "Create Game Night Event";
+}
+
+<div class="container py-4">
+    <h1 class="mb-4">Create Game Night Event</h1>
+
+    <form asp-action="Create" method="post">
+        <input asp-for="PlaygroupId" type="hidden" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="EventDateTime" class="form-label"></label>
+            <input asp-for="EventDateTime" class="form-control" type="datetime-local" />
+            <span asp-validation-for="EventDateTime" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Event</button>
+        <a asp-controller="Playgroup" asp-action="Details" asp-route-id="@Model.PlaygroupId" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
