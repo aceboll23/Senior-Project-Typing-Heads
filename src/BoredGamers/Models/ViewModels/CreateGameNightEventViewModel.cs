@@ -15,7 +15,7 @@ namespace BoredGamers.Models.ViewModels
 
     [Required]
     [Display(Name = "Date and Time")]
-    public DateTime EventDateTime { get; set; }
+    public DateTime EventDateTime { get; set; } = DateTime.Now;
 
     [StringLength(1000)]
     public string? Description { get; set; }

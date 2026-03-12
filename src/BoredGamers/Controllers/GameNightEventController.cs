@@ -10,79 +10,84 @@ namespace BoredGamers.Controllers;
 [Authorize]
 public class GameNightEventController : Controller
 {
-    private readonly IGameNightEventService _gameNightEventService;
+  private readonly IGameNightEventService _gameNightEventService;
 
-    public GameNightEventController(IGameNightEventService gameNightEventService)
+  public GameNightEventController(IGameNightEventService gameNightEventService)
+  {
+    _gameNightEventService = gameNightEventService;
+  }
+
+  private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+  // GET /GameNightEvent/Create?playgroupId=5
+  public async Task<IActionResult> Create(int playgroupId)
+  {
+    var userId = GetUserId();
+
+    var isMember = await _gameNightEventService.UserIsPlaygroupMemberAsync(playgroupId, userId);
+    if (!isMember)
     {
-        _gameNightEventService = gameNightEventService;
+      return NotFound();
     }
 
-    private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-
-    // GET /GameNightEvent/Create?playgroupId=5
-    public async Task<IActionResult> Create(int playgroupId)
+    var model = new CreateGameNightEventViewModel
     {
-        var userId = GetUserId();
+      PlaygroupId = playgroupId
+    };
 
-        var isMember = await _gameNightEventService.UserIsPlaygroupMemberAsync(playgroupId, userId);
-        if (!isMember)
-        {
-            return NotFound();
-        }
+    return View(model);
+  }
 
-        var model = new CreateGameNightEventViewModel
-        {
-            PlaygroupId = playgroupId
-        };
+  // POST /GameNightEvent/Create
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> Create(CreateGameNightEventViewModel model)
+  {
+    var userId = GetUserId();
 
-        return View(model);
+    var isMember = await _gameNightEventService.UserIsPlaygroupMemberAsync(model.PlaygroupId, userId);
+    if (!isMember)
+    {
+      return NotFound();
     }
 
-    // POST /GameNightEvent/Create
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateGameNightEventViewModel model)
+    if (model.EventDateTime < DateTime.Now)
     {
-        var userId = GetUserId();
-
-        var isMember = await _gameNightEventService.UserIsPlaygroupMemberAsync(model.PlaygroupId, userId);
-        if (!isMember)
-        {
-            return NotFound();
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return View(model);
-        }
-
-        var createdEvent = await _gameNightEventService.CreateEventAsync(
-            model.PlaygroupId,
-            userId,
-            model.Title,
-            model.EventDateTime,
-            model.Description);
-
-        return RedirectToAction("Details", new { id = createdEvent.Id });
+      ModelState.AddModelError(nameof(model.EventDateTime), "Event date and time cannot be in the past.");
     }
 
-    // GET /GameNightEvent/Details/5
-    public async Task<IActionResult> Details(int id)
+    if (!ModelState.IsValid)
     {
-        var userId = GetUserId();
-
-        var canAccess = await _gameNightEventService.UserCanAccessEventAsync(id, userId);
-        if (!canAccess)
-        {
-            return NotFound();
-        }
-
-        var gameNightEvent = await _gameNightEventService.GetEventByIdAsync(id);
-        if (gameNightEvent == null)
-        {
-            return NotFound();
-        }
-
-        return View(gameNightEvent);
+      return View(model);
     }
+
+    var createdEvent = await _gameNightEventService.CreateEventAsync(
+        model.PlaygroupId,
+        userId,
+        model.Title,
+        model.EventDateTime,
+        model.Description);
+
+    return RedirectToAction("Details", new { id = createdEvent.Id });
+  }
+
+  // GET /GameNightEvent/Details/5
+  public async Task<IActionResult> Details(int id)
+  {
+    var userId = GetUserId();
+
+    var canAccess = await _gameNightEventService.UserCanAccessEventAsync(id, userId);
+    if (!canAccess)
+    {
+      return NotFound();
+    }
+
+    var gameNightEvent = await _gameNightEventService.GetEventByIdAsync(id);
+    if (gameNightEvent == null)
+    {
+      return NotFound();
+    }
+
+    return View(gameNightEvent);
+  }
 }

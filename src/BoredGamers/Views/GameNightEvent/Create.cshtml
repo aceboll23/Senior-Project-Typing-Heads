@@ -20,7 +20,11 @@
 
         <div class="mb-3">
             <label asp-for="EventDateTime" class="form-label"></label>
-            <input asp-for="EventDateTime" class="form-control" type="datetime-local" />
+            <input asp-for="EventDateTime"
+                class="form-control"
+                type="dateTime-local"
+                value="@Model.EventDateTime.ToString("yyyy-MM-ddTHH:mm")"
+                min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
             <span asp-validation-for="EventDateTime" class="text-danger"></span>
         </div>
 
