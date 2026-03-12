@@ -2,9 +2,23 @@
 
 @{
     ViewData["Title"] = Model.Title;
+    var status = ViewData["Status"] as string;
 }
 
 <div class="container py-4">
+    @if (status == "added")
+    {
+        <div class="alert alert-success">
+            Game added to event.
+        </div>
+    }
+    @if (status == "error")
+    {
+        <div class="alert alert-danger">
+            That game is already on this event or is not in your collection.
+        </div>
+    }
+
     <div class="mb-4">
         <h1 class="mb-2">@Model.Title</h1>
         <p class="text-muted mb-1">
@@ -26,6 +40,12 @@
                 </div>
             </div>
         }
+    </div>
+
+    <div class="mb-3">
+        <a asp-action="AddGame" asp-route-id="@Model.Id" class="btn btn-primary">
+            Add Game From My Collection
+        </a>
     </div>
 
     <div>

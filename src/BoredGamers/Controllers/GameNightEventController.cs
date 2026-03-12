@@ -72,7 +72,7 @@ public class GameNightEventController : Controller
   }
 
   // GET /GameNightEvent/Details/5
-  public async Task<IActionResult> Details(int id)
+  public async Task<IActionResult> Details(int id, string? status)
   {
     var userId = GetUserId();
 
@@ -88,6 +88,64 @@ public class GameNightEventController : Controller
       return NotFound();
     }
 
+    ViewData["Status"] = status;
     return View(gameNightEvent);
+  }
+
+  //GET /GaameNightEvent/AddGame/5
+  public async Task<IActionResult> AddGame(int id)
+  {
+    var userId = GetUserId();
+
+    var canAccess = await _gameNightEventService.UserCanAccessEventAsync(id, userId);
+    if (!canAccess)
+    {
+      return NotFound();
+    }
+
+    var gameNightEvent = await _gameNightEventService.GetEventByIdAsync(id);
+    if (gameNightEvent == null)
+    {
+      return NotFound();
+    }
+
+    var games = await _gameNightEventService.GetUserCollectionForEventAsync(id, userId);
+
+    ViewData["EventId"] = id;
+    ViewData["EventTitle"] = gameNightEvent.Title;
+
+    return View(games);
+  }
+
+  //POST /GameNightEvent/AddGame
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  [ActionName("AddGame")]
+  public async Task<IActionResult> AddGamePost(int eventId, int gameId)
+  {
+    var userId = GetUserId();
+
+    var canAccess = await _gameNightEventService.UserCanAccessEventAsync(eventId, userId);
+    if (!canAccess)
+    {
+      return NotFound();
+    }
+
+    var added = await _gameNightEventService.AddGameToEventAsync(eventId, gameId, userId);
+
+    if(!added)
+    {
+      return RedirectToAction("Details", new
+      {
+        id = eventId,
+        status = "added"
+      });
+    }
+    return RedirectToAction("Details", new
+    {
+      id = eventId,
+      status = "error"
+    });
+
   }
 }

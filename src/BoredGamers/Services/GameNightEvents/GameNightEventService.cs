@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using BoredGamers.Data;
 using BoredGamers.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace BoredGamers.Services.GameNightEvents
 {
@@ -74,6 +75,83 @@ namespace BoredGamers.Services.GameNightEvents
       return await _db.PlaygroupMembers
         .AsNoTracking()
         .AnyAsync(m => m.PlaygroupId == playgroupId && m.UserId == userId);
+    }
+    
+    public async Task<IReadOnlyList<Game>> GetUserCollectionForEventAsync(int eventId, string userId)
+    {
+      var playgroupId = await _db.GameNightEvents
+        .AsNoTracking()
+        .Where(e => e.Id == eventId)
+        .Select(e => (int?)e.PlaygroupId)
+        .FirstOrDefaultAsync();
+
+      if (!playgroupId.HasValue)
+      {
+        return new List<Game>();
+      }
+
+      var isMember = await UserIsPlaygroupMemberAsync(playgroupId.Value, userId);
+      if (!isMember)
+      {
+        return new List<Game>();
+      }
+
+      return await _db.UserGameCollections
+        .AsNoTracking()
+        .Where(ugc => ugc.UserId == userId)
+        .Include(ugc => ugc.Game)
+        .Where(ugc => !_db.GameNightEventGames.Any(eg =>
+          eg.GameNightEventId == eventId &&
+          eg.UserId == userId &&
+          eg.GameId == ugc.GameId))
+        .Select(ugc => ugc.Game)
+        .OrderBy(g => g.Name)
+        .ToListAsync();
+    }
+
+    public async Task<bool> AddGameToEventAsync(int eventId, int gameId, string userId)
+    {
+      var gameNightEvent = await _db.GameNightEvents
+        .FirstOrDefaultAsync(e => e.Id == eventId);
+
+      if (gameNightEvent == null)
+      {
+        return false;
+      }
+
+      var isMember = await UserIsPlaygroupMemberAsync(gameNightEvent.PlaygroupId, userId);
+      if (!isMember)
+      {
+        return false;
+      }
+
+      var ownsGame = await _db.UserGameCollections
+        .AnyAsync(ugc => ugc.UserId == userId && ugc.GameId == gameId);
+
+      if (!ownsGame)
+      {
+        return false;
+      }
+
+      var alreadyAdded = await _db.GameNightEventGames
+        .AnyAsync(eg => eg.GameNightEventId == eventId && eg.GameId == gameId &&eg.UserId == userId);
+
+      if (alreadyAdded)
+      {
+        return false;
+      }
+
+      var eventGame = new GameNightEventGame
+      {
+        GameNightEventId = eventId,
+        GameId = gameId,
+        UserId = userId
+      };
+
+      _db.GameNightEventGames.Add(eventGame);
+      var rowsChanged = await _db.SaveChangesAsync();
+
+      return rowsChanged > 0;
     }
   }
 }
