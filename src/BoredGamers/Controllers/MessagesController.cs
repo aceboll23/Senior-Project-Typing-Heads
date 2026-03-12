@@ -74,6 +74,7 @@ public class MessagesController : Controller
             .ToList();
 
             // Load usernames for display
+            //Bad for scaling: Warning this loads in all users. 
             var allProfiles = await _db.Set<UserProfile>().Include(p => p.User).ToListAsync();
 
             ViewData["CurrentProfileId"] = currentProfile.Id;
@@ -87,6 +88,11 @@ public class MessagesController : Controller
     // GET /Messages/Conversations/{username}
     public async Task<IActionResult> Conversation(string username)
     {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return NotFound();
+        }
+        
         var currentUser = await _userManager.GetUserAsync(User);
         if(currentUser == null)
         {
@@ -173,7 +179,7 @@ public class MessagesController : Controller
         var recipient = await _userManager.Users.Include(u => u.Profile).FirstOrDefaultAsync(u => u.UserName == recipientUsername && !u.IsBanned && !u.IsDeactivated);
         if(recipient?.Profile == null)
         {
-            return NotFound("User not fouynd");
+            return NotFound("User not found");
         }
         if(recipient.Id == currentUser.Id)
         {
