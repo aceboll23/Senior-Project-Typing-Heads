@@ -1,0 +1,157 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using BoredGamers.Data;
+using BoredGamers.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+
+namespace BoredGamers.Services.GameNightEvents
+{
+  // GameNightEventService
+  // Central place for game night event queries and commands
+  public class GameNightEventService : IGameNightEventService
+  {
+    private readonly ApplicationDbContext _db;
+
+    public GameNightEventService(ApplicationDbContext db)
+    {
+      _db = db;
+    }
+
+    public async Task<GameNightEvent> CreateEventAsync(
+      int playgroupId,
+      string userId,
+      string title,
+      DateTime eventDateTime,
+      string? description)
+    {
+      var gameNightEvent = new GameNightEvent
+      {
+        PlaygroupId = playgroupId,
+        CreatedByUserId = userId,
+        Title = title.Trim(),
+        EventDateTime = eventDateTime,
+        Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim()
+      };
+
+      _db.GameNightEvents.Add(gameNightEvent);
+      await _db.SaveChangesAsync();
+
+      return gameNightEvent;
+    }
+
+    public async Task<GameNightEvent?> GetEventByIdAsync(int eventId)
+    {
+      return await _db.GameNightEvents
+        .AsNoTracking()
+        .Include(e => e.Playgroup)
+        .Include(e => e.CreatedByUser)
+        .Include(e => e.EventGames)
+          .ThenInclude(eg => eg.Game)
+        .Include(e => e.EventGames)
+          .ThenInclude(eg => eg.User)
+        .FirstOrDefaultAsync(e => e.Id == eventId);
+    }
+
+    public async Task<bool> UserCanAccessEventAsync(int eventId, string userId)
+    {
+      var playgroupId = await _db.GameNightEvents
+        .AsNoTracking()
+        .Where(e => e.Id == eventId)
+        .Select(e => (int?)e.PlaygroupId)
+        .FirstOrDefaultAsync();
+
+      if (!playgroupId.HasValue)
+      {
+        return false;
+      }
+
+      return await UserIsPlaygroupMemberAsync(playgroupId.Value, userId);
+    }
+
+    public async Task<bool> UserIsPlaygroupMemberAsync(int playgroupId, string userId)
+    {
+      return await _db.PlaygroupMembers
+        .AsNoTracking()
+        .AnyAsync(m => m.PlaygroupId == playgroupId && m.UserId == userId);
+    }
+    
+    public async Task<IReadOnlyList<Game>> GetUserCollectionForEventAsync(int eventId, string userId)
+    {
+      var playgroupId = await _db.GameNightEvents
+        .AsNoTracking()
+        .Where(e => e.Id == eventId)
+        .Select(e => (int?)e.PlaygroupId)
+        .FirstOrDefaultAsync();
+
+      if (!playgroupId.HasValue)
+      {
+        return new List<Game>();
+      }
+
+      var isMember = await UserIsPlaygroupMemberAsync(playgroupId.Value, userId);
+      if (!isMember)
+      {
+        return new List<Game>();
+      }
+
+      return await _db.UserGameCollections
+        .AsNoTracking()
+        .Where(ugc => ugc.UserId == userId)
+        .Include(ugc => ugc.Game)
+        .Where(ugc => !_db.GameNightEventGames.Any(eg =>
+          eg.GameNightEventId == eventId &&
+          eg.UserId == userId &&
+          eg.GameId == ugc.GameId))
+        .Select(ugc => ugc.Game)
+        .OrderBy(g => g.Name)
+        .ToListAsync();
+    }
+
+    public async Task<bool> AddGameToEventAsync(int eventId, int gameId, string userId)
+    {
+      var gameNightEvent = await _db.GameNightEvents
+        .FirstOrDefaultAsync(e => e.Id == eventId);
+
+      if (gameNightEvent == null)
+      {
+        return false;
+      }
+
+      var isMember = await UserIsPlaygroupMemberAsync(gameNightEvent.PlaygroupId, userId);
+      if (!isMember)
+      {
+        return false;
+      }
+
+      var ownsGame = await _db.UserGameCollections
+        .AnyAsync(ugc => ugc.UserId == userId && ugc.GameId == gameId);
+
+      if (!ownsGame)
+      {
+        return false;
+      }
+
+      var alreadyAdded = await _db.GameNightEventGames
+        .AnyAsync(eg => eg.GameNightEventId == eventId && eg.GameId == gameId &&eg.UserId == userId);
+
+      if (alreadyAdded)
+      {
+        return false;
+      }
+
+      var eventGame = new GameNightEventGame
+      {
+        GameNightEventId = eventId,
+        GameId = gameId,
+        UserId = userId
+      };
+
+      _db.GameNightEventGames.Add(eventGame);
+      var rowsChanged = await _db.SaveChangesAsync();
+
+      return rowsChanged > 0;
+    }
+  }
+}
