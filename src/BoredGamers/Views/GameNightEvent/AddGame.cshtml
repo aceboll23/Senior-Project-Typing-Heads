@@ -1,0 +1,88 @@
+@model IReadOnlyList<BoredGamers.Models.Game>
+
+@{
+    ViewData["Title"] = "Add Game to Event";
+    var eventId = (int)(ViewData["EventId"] ?? 0);
+    var eventTitle = ViewData["EventTitle"] as string ?? "Game Night Event";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1 class="mb-2">Add Game to Event</h1>
+        <p class="text-muted mb-0">Choose a game from your collection to bring to <strong>@eventTitle</strong>.</p>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        var collectionCount = (int)(ViewData["CollectionCount"] ?? 0);
+
+        @if (collectionCount == 0)
+        {
+            <div class="alert alert-info">
+                You do not have any games in your collection yet.
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                All eligible games from your colleciton have already been added to this event.
+            </div>
+        }    
+
+        <a asp-action="Details" asp-route-id="@eventId" class="btn btn-secondary">Back to Event</a>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var game in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrWhiteSpace(game.ThumbnailUrl))
+                        {
+                            <img src="@game.ThumbnailUrl" class="card-img-top" alt="@game.Name" />
+                        }
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@game.Name</h5>
+
+                            @if (game.MinPlayers.HasValue || game.MaxPlayers.HasValue)
+                            {
+                                <p class="card-text text-muted mb-2">
+                                    Players:
+                                    @if (game.MinPlayers.HasValue && game.MaxPlayers.HasValue)
+                                    {
+                                        @(game.MinPlayers == game.MaxPlayers
+                                            ? game.MinPlayers.ToString()
+                                            : $"{game.MinPlayers}-{game.MaxPlayers}")
+                                    }
+                                    else if (game.MinPlayers.HasValue)
+                                    {
+                                        @game.MinPlayers
+                                    }
+                                    else if (game.MaxPlayers.HasValue)
+                                    {
+                                        @game.MaxPlayers
+                                    }
+                                </p>
+                            }
+
+                            <div class="mt-auto">
+                                <form asp-action="AddGame" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="eventId" value="@eventId" />
+                                    <input type="hidden" name="gameId" value="@game.Id" />
+                                    <button type="submit" class="btn btn-primary w-100">Bring This Game</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="mt-4">
+            <a asp-action="Details" asp-route-id="@eventId" class="btn btn-secondary">Back to Event</a>
+        </div>
+    }
+</div>

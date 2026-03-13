@@ -47,11 +47,11 @@
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         <!-- Logged In: Icons and User Menu -->
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-3">
                             <!-- Messages -->
                             <a asp-controller="Messages" asp-action="Index" class="btn btn-outline-light position-relative" title="Messages">
                                 <i class="bi bi-envelope"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                                @await Component.InvokeAsync("UnreadMessages")
                             </a>
 
                             <!-- User Dropdown -->

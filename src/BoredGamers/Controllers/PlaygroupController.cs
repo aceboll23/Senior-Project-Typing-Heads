@@ -91,7 +91,7 @@ public class PlaygroupController : Controller
     }
 
     // GET /Playgroup/Details/5
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(int id, string? status)
     {
         var userId = GetUserId();
 
@@ -107,6 +107,7 @@ public class PlaygroupController : Controller
             return NotFound();
 
         ViewData["UserId"] = userId;
+        ViewData["Status"] = status;
 
          // Build a dictionary of UserId → UserName for display
         var memberIds = playgroup.Members.Select(m => m.UserId).ToList();

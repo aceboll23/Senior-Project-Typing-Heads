@@ -274,7 +274,7 @@ public class ApplicationDbContext : IdentityDbContext
                 .HasForeignKey(eg => eg.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasIndex(eg => new { eg.GameNightEventId, eg.GameId, eg.UserId })
+            entity.HasIndex(eg => new { eg.GameNightEventId, eg.GameId })
                 .IsUnique();
         });
 
