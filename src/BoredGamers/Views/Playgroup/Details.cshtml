@@ -2,9 +2,10 @@
 
 @{
     ViewData["Title"] = Model.Name;
-    var isOwner = (bool)(ViewData["IsOwner"] ?? false);
-    var isMember = (bool)(ViewData["IsMember"] ?? false);
-    var memberCount = (int)(ViewData["MemberCount"] ?? 0);
+    var userId = (string)ViewData["UserId"]!;
+    var isOwner = Model.IsOwner(userId);
+    var isMember = Model.IsMember(userId);
+    var memberNames = (Dictionary<string, string>)ViewData["MemberNames"]!;
 }
 
 <section class="py-4">
@@ -35,7 +36,7 @@
                             <p class="text-muted">@Model.Description</p>
                         }
                         <small class="text-muted">
-                            <i class="bi bi-people me-1"></i>@memberCount member@(memberCount != 1 ? "s" : "")
+                            <i class="bi bi-people me-1"></i>@Model.MemberCount() member@(Model.MemberCount() != 1 ? "s" : "")
                         </small>
                     </div>
                 </div>
@@ -50,7 +51,7 @@
                             @foreach (var member in Model.Members.OrderBy(m => m.Role))
                             {
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>@member.UserId</span>
+                                    <span>@memberNames[member.UserId]</span>
                                     @if (member.Role == BoredGamers.Models.PlaygroupRole.Owner)
                                     {
                                         <span class="badge bg-primary">Owner</span>
