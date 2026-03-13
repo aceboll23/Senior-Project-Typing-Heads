@@ -31,6 +31,12 @@
             You can only remove games that you added.
         </div>
     }
+    @if (status == "updated")
+    {
+        <div class="alert alert-success">
+            Event updated successfully
+        </div>
+    }
 
     <div class="mb-4">
         <h1 class="mb-2">@Model.Title</h1>

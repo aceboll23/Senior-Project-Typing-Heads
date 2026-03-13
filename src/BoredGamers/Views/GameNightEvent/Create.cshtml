@@ -1,13 +1,15 @@
 @model BoredGamers.Models.ViewModels.CreateGameNightEventViewModel
 
 @{
-    ViewData["Title"] = "Create Game Night Event";
+    var isEdit = (bool)(ViewData["IsEdit"] ?? false);
+    var eventId = (int?)(ViewData["EventId"] ?? null);
+    ViewData["Title"] = isEdit ? "Edit Game Night Event" : "Create Game Night Event";
 }
 
 <div class="container py-4">
-    <h1 class="mb-4">Create Game Night Event</h1>
+    <h1 class="mb-4">@(isEdit ? "Edit Game Night Event" : "Create Game Night Event")</h1>
 
-    <form asp-action="Create" method="post">
+    <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@eventId" method="post">
         <input asp-for="PlaygroupId" type="hidden" />
 
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -45,7 +47,7 @@
         </div>
         @if (string.IsNullOrWhiteSpace(Model.WarningMessage))
         {
-            <button type="submit" class="btn btn-primary">Create Event</button>
+            <button type="submit" class="btn btn-primary">@(isEdit ? "Save Changes" : "Create Event")</button>
             <a asp-controller="Playgroup" 
                asp-action="Details" 
                asp-route-id="@Model.PlaygroupId" 

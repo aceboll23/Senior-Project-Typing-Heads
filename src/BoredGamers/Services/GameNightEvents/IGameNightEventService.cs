@@ -18,5 +18,7 @@ namespace BoredGamers.Services.GameNightEvents
     Task<bool> PlaygroupHasEventOnDateAsync(int laygroupId, DateTime eventDateTime);
     Task<bool> UserCanRemoveEventGameAsync(int eventGameId, string userId);
     Task<bool> RemoveGameFromEventAsync(int eventGameId, string userId);
+    Task<bool> UserCanEditEventAsync(int eventId, string userId);
+    Task<bool> UpdateEventAsync(int eventId, string userId, string title, DateTime eventDateTime, string? description);
   }
 }

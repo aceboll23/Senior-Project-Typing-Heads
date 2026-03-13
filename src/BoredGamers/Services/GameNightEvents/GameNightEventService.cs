@@ -198,5 +198,30 @@ namespace BoredGamers.Services.GameNightEvents
 
       return rowsChanged > 0;
     }
+
+    public async Task<bool> UserCanEditEventAsync(int eventId, string userId)
+    {
+      return await _db.GameNightEvents
+        .AsNoTracking()
+        .AnyAsync(e => e.Id == eventId && e.CreatedByUserId == userId);
+    }
+
+    public async Task<bool> UpdateEventAsync(int eventId, string userId, string title, DateTime eventDateTime, string? description)
+    {
+      var gameNightEvent = await _db.GameNightEvents
+        .FirstOrDefaultAsync(e => e.Id == eventId && e.CreatedByUserId == userId);
+      
+      if (gameNightEvent == null)
+      {
+        return false;
+      }
+
+      gameNightEvent.Title = title.Trim();
+      gameNightEvent.EventDateTime = eventDateTime;
+      gameNightEvent.Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+
+      var rowsChanged = await _db.SaveChangesAsync();
+      return rowsChanged > 0;
+    }
   }
 }

@@ -192,4 +192,92 @@ public class GameNightEventController : Controller
       status = "remove-error"
     });
   }
+
+  //GET /GameNightEvent/Edit/5
+  public async Task<IActionResult> Edit(int id)
+  {
+    var userId = GetUserId();
+
+    var canEdit = await _gameNightEventService.UserCanEditEventAsync(id, userId);
+    if (!canEdit)
+    {
+      return NotFound();
+    }
+
+    var gameNightEvent = await _gameNightEventService.GetEventByIdAsync(id);
+    if (gameNightEvent == null)
+    {
+      return NotFound();
+    }
+
+    var model = new CreateGameNightEventViewModel
+    {
+      PlaygroupId = gameNightEvent.PlaygroupId,
+      Title = gameNightEvent.Title,
+      EventDateTime = gameNightEvent.EventDateTime,
+      Description = gameNightEvent.Description
+    };
+
+    ViewData["EventId"] = id;
+    ViewData["IsEdit"] = true;
+
+    return View("Create", model);
+  }
+
+  //POST /GameNightEvent/Edit/5
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> Edit(int id, CreateGameNightEventViewModel model)
+  {
+    var userId = GetUserId();
+
+    var canEdit = await _gameNightEventService.UserCanEditEventAsync(id, userId);
+    if (!canEdit)
+    {
+      return NotFound();
+    }
+
+    if (model.EventDateTime < DateTime.Now)
+    {
+      ModelState.AddModelError(nameof(model.EventDateTime), "Event date and time cannot be in the past.");
+    }
+
+    var hasEventSameDay = await _gameNightEventService.PlaygroupHasEventOnDateAsync(
+      model.PlaygroupId,
+      model.EventDateTime);
+    
+    if (hasEventSameDay && !model.ConfirmDuplicateDate)
+    {
+      var existingEvent = await _gameNightEventService.GetEventByIdAsync(id);
+
+      if (existingEvent == null || existingEvent.EventDateTime.Date != model.EventDateTime.Date)
+      {
+        model.WarningMessage = "Your playgroup already has an event scheduled on that day. Do you want to continue anyway?";
+        ViewData["EventId"] = id;
+        ViewData["IsEdit"] = true;
+        return View("Create", model);
+      }
+    }
+
+    if (!ModelState.IsValid)
+    {
+      ViewData["EventId"] = id;
+      ViewData["IsEdit"] = true;
+      return View("Create", model);
+    }
+
+    var updated = await _gameNightEventService.UpdateEventAsync(
+      id,
+      userId,
+      model.Title,
+      model.EventDateTime,
+      model.Description);
+    
+    if (!updated)
+    {
+      return NotFound();
+    }
+
+    return RedirectToAction("Details", new { id, status = "updated" });
+  }
 }
