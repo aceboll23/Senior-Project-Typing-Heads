@@ -46,7 +46,13 @@
         @if (string.IsNullOrWhiteSpace(Model.WarningMessage))
         {
             <button type="submit" class="btn btn-primary">Create Event</button>
-            <a asp-controller="Playgroup" asp-action="Details" asp-route-id="@Model.PlaygroupId" class="btn btn-secondary ms-2">Cancel</a>
+            <a asp-controller="Playgroup" 
+               asp-action="Details" 
+               asp-route-id="@Model.PlaygroupId" 
+               class="btn btn-secondary ms-2"
+               onclick="return confirm('Are you sure you want to cancel? Any unsaved event details will be lost.');">
+               Cancel
+            </a>
         }
     </form>
 </div>
