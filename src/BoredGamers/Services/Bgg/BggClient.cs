@@ -29,6 +29,13 @@ namespace BoredGamers.Services.Bgg
 
     private const string ThingUrlSuffix = 
       "&stats=1";
+
+    private const string SearchUrlBase = 
+      "https://boardgamegeek.com/xmlapi2/search?type=boardgame&query=";
+
+    private const string SearchUrlSuffix =
+      "&exact=0";
+
     //Keep a consistent UA that works well with cloudflare.
     private const string BrowserUserAgent = "Mozilla/5.0";
 
@@ -301,6 +308,69 @@ namespace BoredGamers.Services.Bgg
 
       _logger.LogInformation("Parsed details for {Count} games via BGG thing endpoint.", results.Count);
       return results;
+    }
+
+    public async Task<IReadOnlyList<BggGameDetails>> SearchGamesAsync(string query, int limit = 10, CancellationToken ct = default)
+    {
+      query = (query ?? string.Empty).Trim();
+
+      if (string.IsNullOrWhiteSpace(query))
+        return Array.Empty<BggGameDetails>();
+
+      if (limit < 1) limit = 1;
+      if (limit > 25) limit = 25;
+
+      var url = SearchUrlBase + Uri.EscapeDataString(query) + SearchUrlSuffix;
+
+      string xml;
+      try
+      {
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.UserAgent.ParseAdd(BrowserUserAgent);
+        request.Headers.Accept.ParseAdd("application/xml");
+
+        var response = await _http.SendAsync(request, ct);
+        response.EnsureSuccessStatusCode();
+
+        xml = await response. Content.ReadAsStringAsync(ct);
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Failed to search BGG for query {Query}.", query);
+        return Array.Empty<BggGameDetails>();
+      }
+
+      List<int> ids;
+      try
+      {
+        var doc = XDocument.Parse(xml);
+
+        ids = doc.Descendants("item")
+          .Select(x => x.Attribute("id")?.Value)
+          .Where(x => int.TryParse(x, out _))
+          .Select(int.Parse)
+          .Distinct()
+          .Take(limit)
+          .ToList();
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Failed to parse BGG search XML for query {Query}.", query);
+        return Array.Empty<BggGameDetails>();
+      }
+
+      if (ids.Count == 0)
+      {
+        return Array.Empty<BggGameDetails>();
+      }
+
+      var details = await GetGameDetailsAsync(ids, ct);
+
+      return ids
+        .Where(id => details.ContainsKey(id))
+        .Select(id => details[id])
+        .Where(g => !string.IsNullOrWhiteSpace(g.Name))
+        .ToList();
     }
   }
 }

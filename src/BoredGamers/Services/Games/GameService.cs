@@ -33,7 +33,7 @@ namespace BoredGamers.Services.Games
         .ToListAsync();
     }
 
-    public async Task<IReadOnlyList<Game>> SearchGamesAsync(string query, int limit)
+    public async Task<IReadOnlyList<GameSearchResult>> SearchGamesAsync(string query, int limit)
     {
       query = (query ?? string.Empty).Trim();
 
@@ -42,18 +42,31 @@ namespace BoredGamers.Services.Games
 
       if (string.IsNullOrWhiteSpace(query))
       {
-        return new List<Game>();
+        return new List<GameSearchResult>();
       }
 
-      //Simple MVP search: name contains query (DB-only)
-      //Later we can upgrade to full-text search or ranking logic
-      return await _db.Games
+      var localResults = await _db.Games
         .AsNoTracking()
         .Where(g => g.Name.ToLower().Contains(query.ToLower()))
         .OrderByDescending(g => (double?)g.AverageRating)
         .ThenBy(g => g.Name)
         .Take(limit)
         .ToListAsync();
+
+
+      return localResults.Select(g => new GameSearchResult
+      {
+        Id = g.Id,
+        BggGameId = g.BggGameId,
+        Name = g.Name,
+        YearPublished = g.YearPublished,
+        ThumbnailUrl = g.ThumbnailUrl,
+        ImageUrl = g.ImageUrl,
+        BggNumVoters = g.BggNumVoters,
+        AverageRating = g.AverageRating,
+        IsLocal = true
+      }).ToList();
+
     }
 
      public async Task<Game?> GetGameByIdAsync(int id)

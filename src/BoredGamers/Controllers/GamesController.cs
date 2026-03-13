@@ -64,7 +64,10 @@ namespace BoredGamers.Controllers
         g.Name,
         g.YearPublished,
         g.ThumbnailUrl,
-        g.BggNumVoters
+        g.BggNumVoters,
+        g.AverageRating,
+        g.IsLocal,
+        g.SourceLabel
       }));
     }
     
