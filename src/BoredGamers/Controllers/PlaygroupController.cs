@@ -7,19 +7,20 @@ using BoredGamers.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
-namespace BoredGamers.Controllers;
+using Microsoft.AspNetCore.Identity;
+ namespace BoredGamers.Controllers;
 
 [Authorize]
 public class PlaygroupController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private readonly UserManager<User> _userManager;
 
-    public PlaygroupController(ApplicationDbContext db)
+    public PlaygroupController(ApplicationDbContext db, UserManager<User> userManager)
     {
         _db = db;
+        _userManager = userManager;
     }
-
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     // GET /Playgroup — "My Playgroups" list
@@ -96,20 +97,26 @@ public class PlaygroupController : Controller
 
         var playgroup = await _db.Playgroups
             .Include(g => g.Members)
+            .Include(g => g.GameNightEvents)
             .FirstOrDefaultAsync(g => g.Id == id);
 
         if (playgroup == null)
             return NotFound();
 
-        var isMember = playgroup.Members.Any(m => m.UserId == userId);
-        if (playgroup.IsPrivate && !isMember)
+        //private group still returns not found
+        if (playgroup.IsPrivate && !playgroup.IsMember(userId))
             return NotFound();
 
-        ViewData["IsMember"] = isMember;
-        ViewData["IsOwner"] = playgroup.Members.Any(m => m.UserId == userId && m.Role == PlaygroupRole.Owner);
-        ViewData["MemberCount"] = playgroup.Members.Count;
+        ViewData["UserId"] = userId;
         ViewData["Status"] = status;
 
+         // Build a dictionary of UserId → UserName for display
+        var memberIds = playgroup.Members.Select(m => m.UserId).ToList();
+        var users = await _userManager.Users
+            .Where(u => memberIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.UserName ?? "Unknown");
+        ViewData["MemberNames"] = users;
+        
         return View(playgroup);
     }
 }
