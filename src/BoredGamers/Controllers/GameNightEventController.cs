@@ -56,6 +56,16 @@ public class GameNightEventController : Controller
       ModelState.AddModelError(nameof(model.EventDateTime), "Event date and time cannot be in the past.");
     }
 
+    var hasEventSameDay = await _gameNightEventService.PlaygroupHasEventOnDateAsync(
+        model.PlaygroupId,
+        model.EventDateTime);
+
+    if (hasEventSameDay && !model.ConfirmDuplicateDate)
+    {
+      model.WarningMessage = "Your playgroup already has an event scheduled on that day. Do you want to continue anyway?";
+      return View(model);
+    }
+
     if (!ModelState.IsValid)
     {
       return View(model);

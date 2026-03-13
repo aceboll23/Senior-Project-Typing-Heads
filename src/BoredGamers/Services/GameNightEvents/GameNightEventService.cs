@@ -165,5 +165,15 @@ namespace BoredGamers.Services.GameNightEvents
         .AsNoTracking()
         .CountAsync(ugc => ugc.UserId == userId);
     }
+
+    public async Task<bool> PlaygroupHasEventOnDateAsync(int playgroupId, DateTime eventDateTime)
+    {
+      var eventDate = eventDateTime.Date;
+
+      return await _db.GameNightEvents
+        .AsNoTracking()
+        .AnyAsync(e => e.PlaygroupId == playgroupId
+                    && e.EventDateTime.Date == eventDate);
+    }
   }
 }

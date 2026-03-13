@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using System. Collections.Generic;
 using BoredGamers.Models;
 
 namespace BoredGamers.Services.GameNightEvents
@@ -13,5 +15,6 @@ namespace BoredGamers.Services.GameNightEvents
     Task<bool> AddGameToEventAsync(int eventId, int gameId, string userId);
     Task<bool> UserHasAnyCollectionGamesAsync(string userId);
     Task<int> GetUserCollectionCountAsync(string userId);
+    Task<bool> PlaygroupHasEventOnDateAsync(int laygroupId, DateTime eventDateTime);
   }
 }
