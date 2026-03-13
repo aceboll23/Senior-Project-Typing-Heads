@@ -11,5 +11,7 @@ namespace BoredGamers.Services.GameNightEvents
     Task<bool> UserIsPlaygroupMemberAsync(int playgroupId, string userId);
     Task<IReadOnlyList<Game>> GetUserCollectionForEventAsync(int eventId, string userId);
     Task<bool> AddGameToEventAsync(int eventId, int gameId, string userId);
+    Task<bool> UserHasAnyCollectionGamesAsync(string userId);
+    Task<int> GetUserCollectionCountAsync(string userId);
   }
 }

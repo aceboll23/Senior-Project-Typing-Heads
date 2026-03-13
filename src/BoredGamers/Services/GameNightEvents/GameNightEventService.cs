@@ -152,5 +152,18 @@ namespace BoredGamers.Services.GameNightEvents
 
       return rowsChanged > 0;
     }
+
+    public async Task<bool> UserHasAnyCollectionGamesAsync(string userId)
+    {
+      return await _db.UserGameCollections
+        .AsNoTracking()
+        .AnyAsync(ugc => ugc.UserId == userId);
+    }
+    public async Task<int> GetUserCollectionCountAsync(string userId)
+    {
+      return await _db.UserGameCollections
+        .AsNoTracking()
+        .CountAsync(ugc => ugc.UserId == userId);
+    }
   }
 }

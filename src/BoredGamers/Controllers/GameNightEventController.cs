@@ -111,9 +111,11 @@ public class GameNightEventController : Controller
     }
 
     var games = await _gameNightEventService.GetUserCollectionForEventAsync(id, userId);
+    var collectionCount = await _gameNightEventService.GetUserCollectionCountAsync(userId);
 
     ViewData["EventId"] = id;
     ViewData["EventTitle"] = gameNightEvent.Title;
+    ViewData["CollectionCount"] = collectionCount;
 
     return View(games);
   }
