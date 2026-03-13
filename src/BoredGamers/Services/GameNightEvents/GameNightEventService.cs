@@ -102,7 +102,6 @@ namespace BoredGamers.Services.GameNightEvents
         .Include(ugc => ugc.Game)
         .Where(ugc => !_db.GameNightEventGames.Any(eg =>
           eg.GameNightEventId == eventId &&
-          eg.UserId == userId &&
           eg.GameId == ugc.GameId))
         .Select(ugc => ugc.Game)
         .OrderBy(g => g.Name)
@@ -134,7 +133,7 @@ namespace BoredGamers.Services.GameNightEvents
       }
 
       var alreadyAdded = await _db.GameNightEventGames
-        .AnyAsync(eg => eg.GameNightEventId == eventId && eg.GameId == gameId &&eg.UserId == userId);
+        .AnyAsync(eg => eg.GameNightEventId == eventId && eg.GameId == gameId);
 
       if (alreadyAdded)
       {
