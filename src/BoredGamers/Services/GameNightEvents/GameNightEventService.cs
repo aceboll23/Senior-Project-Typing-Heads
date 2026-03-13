@@ -223,5 +223,27 @@ namespace BoredGamers.Services.GameNightEvents
       var rowsChanged = await _db.SaveChangesAsync();
       return rowsChanged > 0;
     }
+
+    public async Task<bool> CancelEventAsync(int eventId, string userId)
+    {
+      var gameNightEvent = await _db.GameNightEvents
+        .Include(e => e.EventGames)
+        .FirstOrDefaultAsync(e => e.Id == eventId && e.CreatedByUserId == userId);
+
+      if (gameNightEvent == null)
+      {
+        return false;
+      }
+
+      if (gameNightEvent.EventGames.Any())
+      {
+        _db.GameNightEventGames.RemoveRange(gameNightEvent.EventGames);
+      }
+
+      _db.GameNightEvents.Remove(gameNightEvent);
+      var rowsChanged = await _db.SaveChangesAsync();
+
+      return rowsChanged > 0;
+    }
   }
 }

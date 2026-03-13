@@ -61,10 +61,27 @@
         }
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3 d-flex flex-wrap gap-2">
         <a asp-action="AddGame" asp-route-id="@Model.Id" class="btn btn-primary">
             Add Game From My Collection
         </a>
+
+        @if (Model.CreatedByUserId == currentUserId)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-light">
+                Edit Event
+            </a>
+
+            <form asp-action="CancelEvent" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="eventId" value="@Model.Id" />
+                <button type="submit"
+                    class="btn btn-outline-danger"
+                    onclick="return confirm('Are you sure you want to cancel this event? This cannot be undone.');">
+                    Cancel Event    
+                </button>
+            </form>
+        }
     </div>
 
     <div>

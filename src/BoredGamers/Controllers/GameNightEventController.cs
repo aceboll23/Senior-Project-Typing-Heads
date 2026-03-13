@@ -280,4 +280,34 @@ public class GameNightEventController : Controller
 
     return RedirectToAction("Details", new { id, status = "updated" });
   }
+
+  //POST /GameNightEvent/CancelEvent
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> CancelEvent(int eventId)
+  {
+    var userId = GetUserId();
+
+    var canEdit = await _gameNightEventService.UserCanEditEventAsync(eventId, userId);
+    if(!canEdit)
+    {
+      return NotFound();
+    }
+
+    var gameNightEvent = await _gameNightEventService.GetEventByIdAsync(eventId);
+    if (gameNightEvent == null)
+    {
+      return NotFound();
+    }
+
+    var playgroupId = gameNightEvent.PlaygroupId;
+
+    var cancelled = await _gameNightEventService.CancelEventAsync(eventId, userId);
+    if (!cancelled)
+    {
+      return NotFound();
+    }
+
+    return RedirectToAction("Details", "Playgroup", new { id = playgroupId, status = "event-cancelled" });
+  }
 }

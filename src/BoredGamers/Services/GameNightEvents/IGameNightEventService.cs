@@ -15,10 +15,11 @@ namespace BoredGamers.Services.GameNightEvents
     Task<bool> AddGameToEventAsync(int eventId, int gameId, string userId);
     Task<bool> UserHasAnyCollectionGamesAsync(string userId);
     Task<int> GetUserCollectionCountAsync(string userId);
-    Task<bool> PlaygroupHasEventOnDateAsync(int laygroupId, DateTime eventDateTime);
+    Task<bool> PlaygroupHasEventOnDateAsync(int playgroupId, DateTime eventDateTime);
     Task<bool> UserCanRemoveEventGameAsync(int eventGameId, string userId);
     Task<bool> RemoveGameFromEventAsync(int eventGameId, string userId);
     Task<bool> UserCanEditEventAsync(int eventId, string userId);
     Task<bool> UpdateEventAsync(int eventId, string userId, string title, DateTime eventDateTime, string? description);
+    Task<bool> CancelEventAsync(int eventId, string userId);
   }
 }

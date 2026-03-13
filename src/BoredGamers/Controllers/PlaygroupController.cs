@@ -90,7 +90,7 @@ public class PlaygroupController : Controller
     }
 
     // GET /Playgroup/Details/5
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(int id, string? status)
     {
         var userId = GetUserId();
 
@@ -108,6 +108,7 @@ public class PlaygroupController : Controller
         ViewData["IsMember"] = isMember;
         ViewData["IsOwner"] = playgroup.Members.Any(m => m.UserId == userId && m.Role == PlaygroupRole.Owner);
         ViewData["MemberCount"] = playgroup.Members.Count;
+        ViewData["Status"] = status;
 
         return View(playgroup);
     }
