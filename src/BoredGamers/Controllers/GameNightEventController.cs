@@ -89,6 +89,7 @@ public class GameNightEventController : Controller
     }
 
     ViewData["Status"] = status;
+    
     return View(gameNightEvent);
   }
 
@@ -133,7 +134,7 @@ public class GameNightEventController : Controller
 
     var added = await _gameNightEventService.AddGameToEventAsync(eventId, gameId, userId);
 
-    if(!added)
+    if(added)
     {
       return RedirectToAction("Details", new
       {
