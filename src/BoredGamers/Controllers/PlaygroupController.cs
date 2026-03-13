@@ -97,6 +97,7 @@ public class PlaygroupController : Controller
 
         var playgroup = await _db.Playgroups
             .Include(g => g.Members)
+            .Include(g => g.GameNightEvents)
             .FirstOrDefaultAsync(g => g.Id == id);
 
         if (playgroup == null)
