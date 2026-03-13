@@ -161,4 +161,35 @@ public class GameNightEventController : Controller
     });
 
   }
+
+  //POST /GameNightEvent/Remove
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> RemoveGame(int eventGameId, int eventId)
+  {
+    var userId = GetUserId();
+
+    var canAccess = await _gameNightEventService.UserCanAccessEventAsync(eventId, userId);
+    if (!canAccess)
+    {
+      return NotFound();
+    }
+
+    var removed = await _gameNightEventService.RemoveGameFromEventAsync(eventGameId, userId);
+
+    if (removed)
+    {
+      return RedirectToAction("Details", new
+      {
+        id = eventId,
+        status = "removed"
+      });
+    }
+
+    return RedirectToAction("Details", new
+    {
+      id = eventId,
+      status = "remove-error"
+    });
+  }
 }

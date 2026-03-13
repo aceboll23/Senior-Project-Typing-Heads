@@ -175,5 +175,28 @@ namespace BoredGamers.Services.GameNightEvents
         .AnyAsync(e => e.PlaygroupId == playgroupId
                     && e.EventDateTime.Date == eventDate);
     }
+
+    public async Task<bool> UserCanRemoveEventGameAsync(int eventGameId, string userId)
+    {
+      return await _db.GameNightEventGames
+        .AsNoTracking()
+        .AnyAsync(eg => eg.Id == eventGameId && eg.UserId == userId);
+    }
+
+    public async Task<bool> RemoveGameFromEventAsync(int eventGameId, string userId)
+    {
+      var eventGame = await _db.GameNightEventGames
+        .FirstOrDefaultAsync(eg => eg.Id == eventGameId && eg.UserId == userId);
+
+      if (eventGame == null)
+      {
+        return false;
+      }
+
+      _db.GameNightEventGames.Remove(eventGame);
+      var rowsChanged = await _db.SaveChangesAsync();
+
+      return rowsChanged > 0;
+    }
   }
 }

@@ -16,5 +16,7 @@ namespace BoredGamers.Services.GameNightEvents
     Task<bool> UserHasAnyCollectionGamesAsync(string userId);
     Task<int> GetUserCollectionCountAsync(string userId);
     Task<bool> PlaygroupHasEventOnDateAsync(int laygroupId, DateTime eventDateTime);
+    Task<bool> UserCanRemoveEventGameAsync(int eventGameId, string userId);
+    Task<bool> RemoveGameFromEventAsync(int eventGameId, string userId);
   }
 }
