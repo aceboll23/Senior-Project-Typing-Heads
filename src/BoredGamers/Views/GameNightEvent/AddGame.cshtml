@@ -14,9 +14,20 @@
 
     @if (Model == null || !Model.Any())
     {
-        <div class="alert alert-info">
-            You do not have any games in your collection yet.
-        </div>
+        var collectionCount = (int)(ViewData["CollectionCount"] ?? 0);
+
+        @if (collectionCount == 0)
+        {
+            <div class="alert alert-info">
+                You do not have any games in your collection yet.
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                All eligible games from your colleciton have already been added to this event.
+            </div>
+        }    
 
         <a asp-action="Details" asp-route-id="@eventId" class="btn btn-secondary">Back to Event</a>
     }

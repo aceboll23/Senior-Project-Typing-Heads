@@ -5,10 +5,17 @@
     var isOwner = (bool)(ViewData["IsOwner"] ?? false);
     var isMember = (bool)(ViewData["IsMember"] ?? false);
     var memberCount = (int)(ViewData["MemberCount"] ?? 0);
+    var status = ViewData["Status"] as string;
 }
 
 <section class="py-4">
     <div class="container">
+        @if (status == "event-cancelled")
+        {
+            <div class="alert alert-success mb-4">
+                Event Cancelled Successfully
+            </div>
+        }
 
         <a href="/Playgroup" class="btn btn-outline-secondary btn-sm mb-4">
             <i class="bi bi-arrow-left me-1"></i>My Playgroups

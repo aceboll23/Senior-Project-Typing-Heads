@@ -56,6 +56,16 @@ public class GameNightEventController : Controller
       ModelState.AddModelError(nameof(model.EventDateTime), "Event date and time cannot be in the past.");
     }
 
+    var hasEventSameDay = await _gameNightEventService.PlaygroupHasEventOnDateAsync(
+        model.PlaygroupId,
+        model.EventDateTime);
+
+    if (hasEventSameDay && !model.ConfirmDuplicateDate)
+    {
+      model.WarningMessage = "Your playgroup already has an event scheduled on that day. Do you want to continue anyway?";
+      return View(model);
+    }
+
     if (!ModelState.IsValid)
     {
       return View(model);
@@ -89,6 +99,7 @@ public class GameNightEventController : Controller
     }
 
     ViewData["Status"] = status;
+    
     return View(gameNightEvent);
   }
 
@@ -110,9 +121,11 @@ public class GameNightEventController : Controller
     }
 
     var games = await _gameNightEventService.GetUserCollectionForEventAsync(id, userId);
+    var collectionCount = await _gameNightEventService.GetUserCollectionCountAsync(userId);
 
     ViewData["EventId"] = id;
     ViewData["EventTitle"] = gameNightEvent.Title;
+    ViewData["CollectionCount"] = collectionCount;
 
     return View(games);
   }
@@ -133,7 +146,7 @@ public class GameNightEventController : Controller
 
     var added = await _gameNightEventService.AddGameToEventAsync(eventId, gameId, userId);
 
-    if(!added)
+    if(added)
     {
       return RedirectToAction("Details", new
       {
@@ -147,5 +160,154 @@ public class GameNightEventController : Controller
       status = "error"
     });
 
+  }
+
+  //POST /GameNightEvent/Remove
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> RemoveGame(int eventGameId, int eventId)
+  {
+    var userId = GetUserId();
+
+    var canAccess = await _gameNightEventService.UserCanAccessEventAsync(eventId, userId);
+    if (!canAccess)
+    {
+      return NotFound();
+    }
+
+    var removed = await _gameNightEventService.RemoveGameFromEventAsync(eventGameId, userId);
+
+    if (removed)
+    {
+      return RedirectToAction("Details", new
+      {
+        id = eventId,
+        status = "removed"
+      });
+    }
+
+    return RedirectToAction("Details", new
+    {
+      id = eventId,
+      status = "remove-error"
+    });
+  }
+
+  //GET /GameNightEvent/Edit/5
+  public async Task<IActionResult> Edit(int id)
+  {
+    var userId = GetUserId();
+
+    var canEdit = await _gameNightEventService.UserCanEditEventAsync(id, userId);
+    if (!canEdit)
+    {
+      return NotFound();
+    }
+
+    var gameNightEvent = await _gameNightEventService.GetEventByIdAsync(id);
+    if (gameNightEvent == null)
+    {
+      return NotFound();
+    }
+
+    var model = new CreateGameNightEventViewModel
+    {
+      PlaygroupId = gameNightEvent.PlaygroupId,
+      Title = gameNightEvent.Title,
+      EventDateTime = gameNightEvent.EventDateTime,
+      Description = gameNightEvent.Description
+    };
+
+    ViewData["EventId"] = id;
+    ViewData["IsEdit"] = true;
+
+    return View("Create", model);
+  }
+
+  //POST /GameNightEvent/Edit/5
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> Edit(int id, CreateGameNightEventViewModel model)
+  {
+    var userId = GetUserId();
+
+    var canEdit = await _gameNightEventService.UserCanEditEventAsync(id, userId);
+    if (!canEdit)
+    {
+      return NotFound();
+    }
+
+    if (model.EventDateTime < DateTime.Now)
+    {
+      ModelState.AddModelError(nameof(model.EventDateTime), "Event date and time cannot be in the past.");
+    }
+
+    var hasEventSameDay = await _gameNightEventService.PlaygroupHasEventOnDateAsync(
+      model.PlaygroupId,
+      model.EventDateTime);
+    
+    if (hasEventSameDay && !model.ConfirmDuplicateDate)
+    {
+      var existingEvent = await _gameNightEventService.GetEventByIdAsync(id);
+
+      if (existingEvent == null || existingEvent.EventDateTime.Date != model.EventDateTime.Date)
+      {
+        model.WarningMessage = "Your playgroup already has an event scheduled on that day. Do you want to continue anyway?";
+        ViewData["EventId"] = id;
+        ViewData["IsEdit"] = true;
+        return View("Create", model);
+      }
+    }
+
+    if (!ModelState.IsValid)
+    {
+      ViewData["EventId"] = id;
+      ViewData["IsEdit"] = true;
+      return View("Create", model);
+    }
+
+    var updated = await _gameNightEventService.UpdateEventAsync(
+      id,
+      userId,
+      model.Title,
+      model.EventDateTime,
+      model.Description);
+    
+    if (!updated)
+    {
+      return NotFound();
+    }
+
+    return RedirectToAction("Details", new { id, status = "updated" });
+  }
+
+  //POST /GameNightEvent/CancelEvent
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> CancelEvent(int eventId)
+  {
+    var userId = GetUserId();
+
+    var canEdit = await _gameNightEventService.UserCanEditEventAsync(eventId, userId);
+    if(!canEdit)
+    {
+      return NotFound();
+    }
+
+    var gameNightEvent = await _gameNightEventService.GetEventByIdAsync(eventId);
+    if (gameNightEvent == null)
+    {
+      return NotFound();
+    }
+
+    var playgroupId = gameNightEvent.PlaygroupId;
+
+    var cancelled = await _gameNightEventService.CancelEventAsync(eventId, userId);
+    if (!cancelled)
+    {
+      return NotFound();
+    }
+
+    return RedirectToAction("Details", "Playgroup", new { id = playgroupId, status = "event-cancelled" });
   }
 }

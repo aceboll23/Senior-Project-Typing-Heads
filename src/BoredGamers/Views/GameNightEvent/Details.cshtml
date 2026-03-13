@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = Model.Title;
     var status = ViewData["Status"] as string;
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
 <div class="container py-4">
@@ -16,6 +17,24 @@
     {
         <div class="alert alert-danger">
             That game is already on this event or is not in your collection.
+        </div>
+    }
+    @if (status == "removed")
+    {
+        <div class="alert alert-success">
+            Game removed from event
+        </div>
+    }
+    @if (status == "remove-error")
+    {
+        <div class="alert alert-danger">
+            You can only remove games that you added.
+        </div>
+    }
+    @if (status == "updated")
+    {
+        <div class="alert alert-success">
+            Event updated successfully
         </div>
     }
 
@@ -42,10 +61,27 @@
         }
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3 d-flex flex-wrap gap-2">
         <a asp-action="AddGame" asp-route-id="@Model.Id" class="btn btn-primary">
             Add Game From My Collection
         </a>
+
+        @if (Model.CreatedByUserId == currentUserId)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-light">
+                Edit Event
+            </a>
+
+            <form asp-action="CancelEvent" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="eventId" value="@Model.Id" />
+                <button type="submit"
+                    class="btn btn-outline-danger"
+                    onclick="return confirm('Are you sure you want to cancel this event? This cannot be undone.');">
+                    Cancel Event    
+                </button>
+            </form>
+        }
     </div>
 
     <div>
@@ -78,6 +114,20 @@
                                 <p class="card-text mb-0">
                                     <strong>Brought by:</strong> @eventGame.User?.UserName
                                 </p>
+
+                                @if (eventGame.UserId == currentUserId)
+                                {
+                                    <form asp-action="RemoveGame" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="eventGameId" value="@eventGame.Id" />
+                                        <input type="hidden" name="eventId" value="@Model.Id" />
+                                        <button type="submit"
+                                                class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Are you sure you want to remove this game from the event?');">
+                                            Remove    
+                                        </button>
+                                    </form>
+                                }
                             </div>
                         </div>
                     </div>

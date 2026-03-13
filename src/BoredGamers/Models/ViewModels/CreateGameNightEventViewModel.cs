@@ -19,5 +19,8 @@ namespace BoredGamers.Models.ViewModels
 
     [StringLength(1000)]
     public string? Description { get; set; }
+
+    public bool ConfirmDuplicateDate { get; set; } = false;
+    public string? WarningMessage { get; set; } 
   }
 }
