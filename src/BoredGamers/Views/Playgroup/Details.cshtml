@@ -18,6 +18,13 @@
             </div>
         }
 
+        @if (status == "cannot-leave-owner")
+        {
+            <div class="alert alert-warning mb-4">
+                Owners cannot leave the playgroup. Transfer ownership or delete the group first.
+            </div>
+        }
+
         <a href="/Playgroup" class="btn btn-outline-secondary btn-sm mb-4">
             <i class="bi bi-arrow-left me-1"></i>My Playgroups
         </a>
@@ -63,6 +70,13 @@
                                     <i class="bi bi-calendar-event me-1"></i>Create Game Night Event    
                                 </a>
                             </div>
+                            @if (isOwner)
+                            {
+                                <a asp-action="InviteFriends" asp-route-id="@Model.Id"
+                                class="btn btn-outline-primary">
+                                    <i class="bi bi-person-plus me-1"></i>Invite Friends
+                                </a>
+                            }
                         }
                         <h5 class="card-title mb-3">Members</h5>
                         <ul class="list-group list-group-flush">
@@ -81,6 +95,18 @@
                                 </li>
                             }
                         </ul>
+                        
+                        @if (isMember && !isOwner)
+                        {
+                            <form asp-action="LeavePlaygroup" asp-route-id="@Model.Id" method="post" class="mt-3">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Are you sure you want to leave this playgroup?')">
+                                    <i class="bi bi-box-arrow-right me-1"></i>Leave Playgroup
+                                </button>
+                            </form>
+                        }
+
                     </div>
                 </div>
             </div>

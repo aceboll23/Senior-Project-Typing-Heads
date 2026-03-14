@@ -1,0 +1,57 @@
+@model List<BoredGamers.Models.PlaygroupInvite>
+
+@{
+    ViewData["Title"] = "Pending Invites";
+    var inviterNames = (Dictionary<string, string>)ViewData["InviterNames"]!;
+}
+
+<section class="py-4">
+    <div class="container">
+        <a href="/Playgroup" class="btn btn-outline-secondary btn-sm mb-4">
+            <i class="bi bi-arrow-left me-1"></i>My Playgroups
+        </a>
+
+        <h3>Pending Playgroup Invites</h3>
+
+        @if (Model.Any())
+        {
+            <div class="card shadow-sm mt-3">
+                <ul class="list-group list-group-flush">
+                    @foreach (var invite in Model)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>@invite.Playgroup.Name</strong>
+                                <br />
+                                <small class="text-muted">
+                                    Invited by @inviterNames[invite.InvitedByUserId]
+                                    · @invite.CreatedAt.ToString("MMM d, yyyy")
+                                </small>
+                            </div>
+                            <div>
+                                <form asp-action="AcceptInvite" asp-route-id="@invite.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success btn-sm me-1">
+                                        <i class="bi bi-check-lg me-1"></i>Accept
+                                    </button>
+                                </form>
+                                <form asp-action="DeclineInvite" asp-route-id="@invite.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-x-lg me-1"></i>Decline
+                                    </button>
+                                </form>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info mt-3">
+                No pending invites right now.
+            </div>
+        }
+    </div>
+</section>
