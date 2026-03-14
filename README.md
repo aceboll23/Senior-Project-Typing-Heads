@@ -96,5 +96,3 @@ Ideas explored can be viewed in this [Mindmap](https://miro.com/app/board/uXjVGP
 [DDL](./documents/DDL.md) and [Initial Data Model](./documents/images/DataModel.png)
 
 [Sprint 1 Retrospective](./documents/sprint1Retrospctive.md)
-
-[Sprint 2 Retrospective](./documents/sprint2Retro.md)

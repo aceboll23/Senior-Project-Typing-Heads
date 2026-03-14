@@ -35,7 +35,7 @@
                         <a asp-controller="Games" asp-action="Index" class="nav-link">Games</a>
                     </li>
                     <li class="nav-item">
-                        <a asp-controller="Playgroup" asp-action="Index" class="nav-link">Groups</a>
+                        <a asp-controller="Groups" asp-action="Index" class="nav-link">Groups</a>
                     </li>
                     <li class="nav-item">
                         <a asp-controller="Home" asp-action="About" class="nav-link">About</a>
@@ -47,11 +47,11 @@
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         <!-- Logged In: Icons and User Menu -->
-                        <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-2">
                             <!-- Messages -->
                             <a asp-controller="Messages" asp-action="Index" class="btn btn-outline-light position-relative" title="Messages">
                                 <i class="bi bi-envelope"></i>
-                                @await Component.InvokeAsync("UnreadMessages")
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
                             </a>
 
                             <!-- User Dropdown -->

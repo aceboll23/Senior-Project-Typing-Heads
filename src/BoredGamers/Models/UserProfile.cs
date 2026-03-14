@@ -49,9 +49,6 @@ namespace BoredGamers.Models
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         //Rate limit tracking
         public ICollection<FriendRequestRateLimit> FriendRequestRateLimits { get; set; } = new List<FriendRequestRateLimit>();
-        // Tracks of messages sent and received
-        public ICollection<DirectMessage> SentMessages { get; set; } = new List<DirectMessage>();
-        public ICollection<DirectMessage> ReceivedMessages { get; set; } = new List<DirectMessage>();
 
         // Timestamps
         public DateTime CreatedAt { get; set; }

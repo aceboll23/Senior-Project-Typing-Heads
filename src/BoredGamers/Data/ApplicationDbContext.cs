@@ -22,16 +22,8 @@ public class ApplicationDbContext : IdentityDbContext
     //Locally cached board games sourced from BGG for fast homepage loading.
     public DbSet<Game> Games { get; set; }
     public DbSet<UserGameCollection> UserGameCollections { get; set; }
-    public DbSet<Review> Reviews { get; set; }
-    public DbSet<DirectMessage> DirectMessages { get; set; }
-    public DbSet<Playgroup> Playgroups { get; set; }
-    public DbSet<PlaygroupMember> PlaygroupMembers { get; set; }
-    public DbSet<GameNightEvent> GameNightEvents { get; set; }
-    public DbSet<GameNightEventGame> GameNightEventGames { get; set; } 
-    public DbSet<PlaygroupInvite> PlaygroupInvites { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
-
     {
     }
 
@@ -153,7 +145,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(r => r.RequestSentAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
-        //User game colleciton
+
         modelBuilder.Entity<Game>(entity =>
         {
             //Prevent duplicate games across syncs
@@ -172,126 +164,6 @@ public class ApplicationDbContext : IdentityDbContext
 
             entity.Property(x => x.DateAdded)
                 .HasDefaultValueSql("GETUTCDATE()");
-        });
-        //User Reviews
-        modelBuilder.Entity<Review>(entity =>
-        {
-            //Prevent duplicate reviews for same user + same game
-            entity.HasIndex(r => new { r.UserId, r.GameId })
-                .IsUnique();
-
-            entity.Property(r => r.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-        });
-        
-
-        //Configure DirectMessage
-        modelBuilder.Entity<DirectMessage>(entity =>
-        {
-            entity.HasOne(m => m.SenderProfile)
-                .WithMany(p => p.SentMessages)
-                .HasForeignKey(m => m.SenderProfileId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(m => m.RecipientProfile)
-                .WithMany(p => p.ReceivedMessages)
-                .HasForeignKey(m => m.RecipientProfileId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Fast lookup for conversation between two users
-            entity.HasIndex(m => new { m.SenderProfileId, m.RecipientProfileId });
-
-            // Fast lookup for unread messages
-            entity.HasIndex(m => new { m.RecipientProfileId, m.Status });
-
-            entity.Property(m => m.SentAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-        });
-
-                // Configure Playgroup
-        modelBuilder.Entity<Playgroup>(entity =>
-        {
-            entity.Property(p => p.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-            entity.Property(p => p.UpdatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-        });
-
-        // Configure PlaygroupMember
-        modelBuilder.Entity<PlaygroupMember>(entity =>
-        {
-            entity.HasOne(m => m.Playgroup)
-                .WithMany(g => g.Members)
-                .HasForeignKey(m => m.PlaygroupId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasIndex(m => new { m.PlaygroupId, m.UserId })
-                .IsUnique();
-
-            entity.Property(m => m.JoinedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-        });
-
-        // Configure PlaygroupInvite
-        modelBuilder.Entity<PlaygroupInvite>(entity =>
-        {
-            entity.HasOne(i => i.Playgroup)
-                .WithMany()
-                .HasForeignKey(i => i.PlaygroupId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Prevent duplicate pending invites
-            entity.HasIndex(i => new { i.PlaygroupId, i.InvitedUserId })
-                .IsUnique();
-
-            entity.Property(i => i.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-        });
-
-        // Configure GameNightEvent
-        modelBuilder.Entity<GameNightEvent>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-
-            entity.HasOne(e => e.Playgroup)
-                .WithMany(p => p.GameNightEvents)
-                .HasForeignKey(e => e.PlaygroupId)
-                .OnDelete(DeleteBehavior.Cascade);
-            
-            entity.HasOne(e => e.CreatedByUser)
-                .WithMany(u => u.CreatedGameNightEvents)
-                .HasForeignKey(e => e.CreatedByUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            entity.HasIndex(e => e.PlaygroupId);
-            entity.HasIndex(e => e.EventDateTime);
-        });
-
-        //Configure GameNightEventGame
-        modelBuilder.Entity<GameNightEventGame>(entity =>
-        {
-            entity.HasKey(eg => eg.Id);
-            
-            entity.HasOne(eg => eg.GameNightEvent)
-                .WithMany(e => e.EventGames)
-                .HasForeignKey(eg => eg.GameNightEventId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(eg => eg.Game)
-                .WithMany()
-                .HasForeignKey(eg => eg.GameId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasOne(eg => eg.User)
-                .WithMany(u => u.GameNightEventGames)
-                .HasForeignKey(eg => eg.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasIndex(eg => new { eg.GameNightEventId, eg.GameId })
-                .IsUnique();
         });
 
     }
