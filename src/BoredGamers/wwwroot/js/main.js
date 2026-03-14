@@ -3,7 +3,7 @@
    Handles modal switching, demo login simulation, and basic interactivity
    ============================================================================ */
 
-$(document).ready(function() {
+$(document).ready(function () {
     initModals();
     initDemoLogin();
     initNavbarScroll();
@@ -17,7 +17,7 @@ $(document).ready(function() {
 
 function initModals() {
     // Switch from Login modal to Register modal
-    $('#showRegisterLink').on('click', function(e) {
+    $('#showRegisterLink').on('click', function (e) {
         e.preventDefault();
         var loginModal = bootstrap.Modal.getInstance($('#loginModal')[0]);
         if (loginModal) {
@@ -28,7 +28,7 @@ function initModals() {
     });
 
     // Switch from Register modal to Login modal
-    $('#showLoginLink').on('click', function(e) {
+    $('#showLoginLink').on('click', function (e) {
         e.preventDefault();
         var registerModal = bootstrap.Modal.getInstance($('#registerModal')[0]);
         if (registerModal) {
@@ -46,7 +46,7 @@ function initModals() {
 
 function initDemoLogin() {
     // Quick demo login button - simulates logged-in state visually
-    $('#quickLoginBtn').on('click', function() {
+    $('#quickLoginBtn').on('click', function () {
         // Store demo login state in localStorage
         localStorage.setItem('boredgamers-demo-logged-in', 'true');
 
@@ -61,7 +61,7 @@ function initDemoLogin() {
     });
 
     // Login form submit (for demo purposes)
-    $('#loginForm').on('submit', function(e) {
+    $('#loginForm').on('submit', function (e) {
         e.preventDefault();
         localStorage.setItem('boredgamers-demo-logged-in', 'true');
 
@@ -74,7 +74,7 @@ function initDemoLogin() {
     });
 
     // Register form submit (for demo purposes)
-    $('#registerForm').on('submit', function(e) {
+    $('#registerForm').on('submit', function (e) {
         e.preventDefault();
         localStorage.setItem('boredgamers-demo-logged-in', 'true');
 
@@ -96,7 +96,7 @@ function initNavbarScroll() {
     var $navbar = $('.navbar');
 
     if ($navbar.length) {
-        $(window).on('scroll', function() {
+        $(window).on('scroll', function () {
             if ($(window).scrollTop() > 10) {
                 $navbar.addClass('scrolled');
             } else {
@@ -133,22 +133,30 @@ function initSearchResults() {
     $results.html('<div class="text-center py-5"><div class="spinner-border text-light" role="status"></div><p class="mt-2 text-muted">Searching...</p></div>');
 
     // Build the API URL with filter params
-    var apiUrl = '/api/games/search/filtered?limit=20';
-    if (query && query.trim() !== '') apiUrl += '&q=' + encodeURIComponent(query.trim());
+    var apiUrl;
 
-    // Parse play time range into min/max
-    if (playTime) {
-        var parts = playTime.split('-');
-        if (parts.length === 2) {
-            apiUrl += '&minPlayTime=' + parts[0] + '&maxPlayTime=' + parts[1];
+    //If the user is using filters, keep using the filtered DB search
+    if (hasFilters) {
+        apiUrl = '/api/games/search/filtered?limit=20';
+        if (query && query.trim() !== '') apiUrl += '&q=' + encodeURIComponent(query.trim());
+
+        if (playTime) {
+            var parts = playTime.split('-');
+            if (parts.length === 2) {
+                apiUrl += '&minPlayTime=' + parts[0] + '&maxPlayTime' + parts[1];
+            }
         }
+
+        if (playerCount) apiUrl += '&playerCount=' + playerCount;
+        if (minRating) apiUrl += '&minRting' + minRating;
+    }
+    //If it's just a normal text ssearch, use the new DB-first + BGG fallback search
+    else {
+        apiUrl = '/api/games/search?limit=20&q=' + encodeURIComponent(query.trim());
     }
 
-    if (playerCount) apiUrl += '&playerCount=' + playerCount;
-    if (minRating) apiUrl += '&minRating=' + minRating;
-
     $.get(apiUrl)
-        .done(function(games) {
+        .done(function (games) {
             if (games.length === 0) {
                 $results.empty();
                 $noResults.show();
@@ -157,7 +165,7 @@ function initSearchResults() {
 
             var html = '<div class="row row-cols-2 row-cols-md-4 g-4">';
 
-            games.forEach(function(game) {
+            games.forEach(function (game) {
                 var thumbnail = game.thumbnailUrl || '/images/no-image.png';
                 var year = game.yearPublished ? ' (' + game.yearPublished + ')' : '';
                 var rating = game.averageRating ? parseFloat(game.averageRating).toFixed(1) : '';
@@ -170,7 +178,10 @@ function initSearchResults() {
                 var time = game.playTime ? game.playTime + ' min' : '';
 
                 html += '<div class="col">';
-                html += '  <a href="/Games/Details/' + game.id + '" class="text-decoration-none">';
+                var linkAttrs = game.isLocal
+                    ? 'href="/Games/Details/' + game.id + '"'
+                    : 'href="#" class="text-decoration-none import-game-link" data-bgg-id="' + game.bggGameId + '"';
+                html += '  <a ' + linkAttrs + ' class="text-decoration-none">';
                 html += '  <div class="card bg-dark text-white h-100">';
                 html += '    <img src="' + thumbnail + '" class="card-img-top" alt="' + game.name + '">';
                 html += '    <div class="card-body">';
@@ -193,8 +204,27 @@ function initSearchResults() {
             html += '</div>';
             $results.html(html);
         })
-        .fail(function() {
+        .fail(function () {
             $results.html('<div class="text-center py-5 text-danger"><p>Something went wrong. Please try again.</p></div>');
         });
+
+    $(document).on('click', '.import-game-link', function (e) {
+        e.preventDefault();
+
+        var bggGameId = $(this).data('bgg-id');
+        if (!bggGameId) return;
+
+        $.post('/api/games/import/' + bggGameId)
+            .done(function (game) {
+                if (game && game.id) {
+                    window.location.href = '/Games/Details/' + game.id;
+                } else {
+                    alert('The game was imported, but we could not open it.');
+                }
+            })
+            .fail(function () {
+                alert('Unable to import that game right now. Please try again.');
+            });
+    });
 }
 
