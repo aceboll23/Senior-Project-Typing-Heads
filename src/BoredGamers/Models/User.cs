@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
 
@@ -28,11 +29,21 @@ namespace BoredGamers.Models
     // account status, whether a user is banned or their account is deactivated
     public bool IsBanned {get; set;} = false;
     public bool IsDeactivated {get; set;} = false; 
+    // For when the user wants to change their email
+    [MaxLength(256)]
+    public string? PendingEmail {get; set;}
+    [MaxLength(256)]
+    public string? EmailVerificationToken { get; set; }
+
+    public DateTime? EmailVerificationTokenExpiry { get; set; }
 
     // password reset fields
     [MaxLength(256)]
     public string? PasswordResetToken {get; set;}
     public DateTime? PasswordResetTokenExpiry {get;set;}
+
+    public ICollection<GameNightEvent> CreatedGameNightEvents { get; set; } = new List<GameNightEvent>();
+    public ICollection<GameNightEventGame> GameNightEventGames { get; set; } = new List<GameNightEventGame>();
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }    

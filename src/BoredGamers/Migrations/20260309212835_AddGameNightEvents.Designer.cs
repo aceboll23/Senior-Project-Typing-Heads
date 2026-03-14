@@ -4,6 +4,7 @@ using BoredGamers.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoredGamers.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260309212835_AddGameNightEvents")]
+    partial class AddGameNightEvents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -294,7 +297,7 @@ namespace BoredGamers.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("GameNightEventId", "GameId")
+                    b.HasIndex("GameNightEventId", "GameId", "UserId")
                         .IsUnique();
 
                     b.ToTable("GameNightEventGames");
@@ -394,44 +397,6 @@ namespace BoredGamers.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Playgroups");
-                });
-
-            modelBuilder.Entity("BoredGamers.Models.PlaygroupInvite", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("InvitedByUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("InvitedUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("PlaygroupId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("RespondedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlaygroupId", "InvitedUserId")
-                        .IsUnique();
-
-                    b.ToTable("PlaygroupInvites");
                 });
 
             modelBuilder.Entity("BoredGamers.Models.PlaygroupMember", b =>
@@ -974,17 +939,6 @@ namespace BoredGamers.Migrations
                         .IsRequired();
 
                     b.Navigation("UserProfile");
-                });
-
-            modelBuilder.Entity("BoredGamers.Models.PlaygroupInvite", b =>
-                {
-                    b.HasOne("BoredGamers.Models.Playgroup", "Playgroup")
-                        .WithMany()
-                        .HasForeignKey("PlaygroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Playgroup");
                 });
 
             modelBuilder.Entity("BoredGamers.Models.PlaygroupMember", b =>
