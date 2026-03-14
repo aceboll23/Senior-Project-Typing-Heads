@@ -106,6 +106,11 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapControllerRoute(
+    name: "settings",
+    pattern: "Settings",
+    defaults: new { controller = "Settings", action = "Index" });
+
 // Map Identity endpoints (Razor Pages)
 app.MapRazorPages();
 
