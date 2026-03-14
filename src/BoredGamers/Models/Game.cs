@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
 
 namespace BoredGamers.Models
 {
@@ -42,9 +41,6 @@ namespace BoredGamers.Models
 
     //When this record was last refreshed from BGG data
     public DateTime LastSyncedAt { get; set;}
-
-    //Reviews
-    public ICollection<Review> Reviews { get; set; } = new List<Review>();
 
   }
 }
