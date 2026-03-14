@@ -353,4 +353,49 @@ public class PlaygroupController : Controller
 
         return RedirectToAction("PendingInvites");
     }
+
+        // GET /Playgroup/DeletePlaygroup/5
+    public async Task<IActionResult> DeletePlaygroup(int id)
+    {
+        var userId = GetUserId();
+
+        var playgroup = await _db.Playgroups
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.Id == id);
+
+        if (playgroup == null)
+            return NotFound();
+
+        if (!playgroup.IsOwner(userId))
+            return Forbid();
+
+        return View(playgroup);
+    }
+
+    // POST /Playgroup/ConfirmDelete/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmDelete(int id, string confirmation)
+    {
+        var userId = GetUserId();
+
+        var playgroup = await _db.Playgroups
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.Id == id);
+
+        if (playgroup == null)
+            return NotFound();
+
+        if (!playgroup.IsOwner(userId))
+            return Forbid();
+
+        if (confirmation != "DELETE")
+            return RedirectToAction("DeletePlaygroup", new { id, status = "invalid" });
+
+        _db.Playgroups.Remove(playgroup);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Index");
+    }
+
 }

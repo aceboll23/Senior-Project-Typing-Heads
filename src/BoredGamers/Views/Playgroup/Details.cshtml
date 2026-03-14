@@ -76,6 +76,10 @@
                                 class="btn btn-outline-primary">
                                     <i class="bi bi-person-plus me-1"></i>Invite Friends
                                 </a>
+                                <a asp-action="DeletePlaygroup" asp-route-id="@Model.Id"
+                                    class="btn btn-outline-danger">
+                                    <i class="bi bi-trash me-1"></i>Delete Playgroup
+                                </a>
                             }
                         }
                         <h5 class="card-title mb-3">Members</h5>

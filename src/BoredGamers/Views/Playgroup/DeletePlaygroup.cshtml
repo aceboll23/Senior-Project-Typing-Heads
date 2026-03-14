@@ -1,0 +1,39 @@
+@model BoredGamers.Models.Playgroup
+
+@{
+    ViewData["Title"] = "Delete Playgroup";
+    var status = ViewData["Status"] as string;
+}
+
+<section class="py-4">
+    <div class="container" style="max-width: 500px;">
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm mb-4">
+            <i class="bi bi-arrow-left me-1"></i>Back to @Model.Name
+        </a>
+
+        <div class="card shadow-sm border-danger">
+            <div class="card-body">
+                <h4 class="text-danger mb-3">Delete Playgroup</h4>
+                <p>You are about to permanently delete <strong>@Model.Name</strong>. This will remove all members, invites, and events.</p>
+                <p>Type <strong>DELETE</strong> to confirm:</p>
+
+                @if (status == "invalid")
+                {
+                    <div class="alert alert-danger">
+                        You must type DELETE to confirm.
+                    </div>
+                }
+
+                <form asp-action="ConfirmDelete" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <input type="text" name="confirmation" class="form-control" placeholder="Type DELETE here" required />
+                    </div>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Delete Playgroup
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
