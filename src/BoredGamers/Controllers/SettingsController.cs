@@ -37,12 +37,59 @@ public class SettingsController : Controller
             Email = user.Email ?? string.Empty
         };
 
-        // Show pending email notice if they have one awaiting verification
+        // Shows pending email notice if they have one awaiting verification
         if (!string.IsNullOrEmpty(user.PendingEmail))
         { 
             ViewData["PendingEmail"] = user.PendingEmail;
         }
         return View(model);
+    }
+
+    // GET /Settings/DeleteAccount
+    [HttpGet]
+    public IActionResult DeleteAccount()
+    {
+        return View();
+    }
+
+    // POST/Settings/DeleteAccount
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAccount(DeleteAccountViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+        var user = await _userManager.GetUserAsync(User);
+        if(user == null)
+        {
+            return Challenge();
+        }
+
+        //Verifies password before deleting
+        var passwordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+        if(!passwordValid)
+        {
+            ModelState.AddModelError(nameof(model.CurrentPassword), "Password is incorrect");
+            return View(model);
+        }
+
+        // Signs out before deleting so the session is cleared immediately
+        await _signInManager.SignOutAsync();
+
+        var result = await _userManager.DeleteAsync(user);
+        if(!result.Succeeded)
+        {
+            // Signs back in if deletion failed so the user isn't stranded
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            foreach(var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return View(model);
+        }
+        return RedirectToAction("Index", "Home");
     }
 
     // POST /Settings
@@ -58,7 +105,7 @@ public class SettingsController : Controller
         if (user == null){
              return Challenge();
         }
-        // Verify current password before making any changes
+        // Verifies current password before making any changes
         var passwordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
         if (!passwordValid)
         {
@@ -69,7 +116,7 @@ public class SettingsController : Controller
         var usernameChanged = !string.Equals(user.UserName, model.Username, StringComparison.OrdinalIgnoreCase);
         var emailChanged = !string.Equals(user.Email, model.Email, StringComparison.OrdinalIgnoreCase);
 
-        // CheckS username uniqueness if changed
+        // Checks username uniqueness if changed
         if (usernameChanged)
         {
             var existingUser = await _userManager.FindByNameAsync(model.Username);
@@ -89,7 +136,7 @@ public class SettingsController : Controller
             }
         }
 
-        // Handle email change — store as pending and send verification
+        // Handles email change — store as pending and send verification
         if (emailChanged)
         {
             var existingUser = await _userManager.FindByEmailAsync(model.Email);
@@ -99,7 +146,7 @@ public class SettingsController : Controller
                 return View(model);
             }
 
-            // Store the new email as pending until verified
+            // Stores the new email as pending until verified
             var token = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
 
             user.PendingEmail = model.Email;
@@ -108,7 +155,7 @@ public class SettingsController : Controller
             user.UpdatedAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            // Build verification link
+            // Builds verification link
             var verifyLink = Url.Action(
                 "VerifyEmail",
                 "Settings",
@@ -136,7 +183,7 @@ public class SettingsController : Controller
         user.UpdatedAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
 
-        // Refresh the auth cookie so the new username shows in the nav immediately
+        // Refreshes the auth cookie so the new username shows in the nav immediately
         await _signInManager.RefreshSignInAsync(user);
 
         ViewData["SuccessMessage"] = "Your settings have been updated.";
@@ -159,7 +206,7 @@ public class SettingsController : Controller
             return View("VerifyEmailError");
         }
 
-        // Apply the pending email
+        // Applies the pending email
         var setEmailResult = await _userManager.SetEmailAsync(user, user.PendingEmail);
         if (!setEmailResult.Succeeded)
         {
@@ -167,7 +214,7 @@ public class SettingsController : Controller
             return View("VerifyEmailError");
         }
 
-        // Clear pending email fields
+        // Clears pending email fields
         user.PendingEmail = null;
         user.EmailVerificationToken = null;
         user.EmailVerificationTokenExpiry = null;
