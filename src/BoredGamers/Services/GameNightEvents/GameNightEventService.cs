@@ -245,5 +245,46 @@ namespace BoredGamers.Services.GameNightEvents
 
       return rowsChanged > 0;
     }
+    public async Task<bool> RespondToEventAsync(int eventId, string userId, ResponseStatus status)
+    {
+      var canAccess = await UserCanAccessEventAsync(eventId, userId);
+      if (!canAccess) return false;
+
+      var existing = await _db.EventResponses
+        .FirstOrDefaultAsync(r => r.GameNightEventId == eventId && r.UserId == userId);
+
+      if (existing != null)
+      {
+        existing.Status = status;
+        existing.RespondedAt = DateTime.UtcNow;
+      }
+      else
+      {
+        _db.EventResponses.Add(new EventResponse
+        {
+          GameNightEventId = eventId,
+          UserId = userId,
+          Status = status,
+          RespondedAt = DateTime.UtcNow
+        });
+      }
+
+      return await _db.SaveChangesAsync() > 0;
+    }
+
+    public async Task<EventResponse?> GetUserResponseAsync(int eventId, string userId)
+    {
+      return await _db.EventResponses
+        .AsNoTracking()
+        .FirstOrDefaultAsync(r => r.GameNightEventId == eventId && r.UserId == userId);
+    }
+
+    public async Task<List<EventResponse>> GetEventResponsesAsync(int eventId)
+    {
+      return await _db.EventResponses
+        .AsNoTracking()
+        .Where(r => r.GameNightEventId == eventId)
+        .ToListAsync();
+    }
   }
 }

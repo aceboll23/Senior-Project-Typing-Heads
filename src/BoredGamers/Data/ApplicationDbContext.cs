@@ -29,6 +29,8 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<GameNightEvent> GameNightEvents { get; set; }
     public DbSet<GameNightEventGame> GameNightEventGames { get; set; } 
     public DbSet<PlaygroupInvite> PlaygroupInvites { get; set; }
+
+    public DbSet<EventResponse> EventResponses { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
 
@@ -292,6 +294,21 @@ public class ApplicationDbContext : IdentityDbContext
 
             entity.HasIndex(eg => new { eg.GameNightEventId, eg.GameId })
                 .IsUnique();
+        });
+
+        // Configure EventResponse
+        modelBuilder.Entity<EventResponse>(entity =>
+        {
+            entity.HasOne(r => r.GameNightEvent)
+                .WithMany()
+                .HasForeignKey(r => r.GameNightEventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(r => new { r.GameNightEventId, r.UserId })
+                .IsUnique();
+
+            entity.Property(r => r.RespondedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
         });
 
     }

@@ -21,5 +21,8 @@ namespace BoredGamers.Services.GameNightEvents
     Task<bool> UserCanEditEventAsync(int eventId, string userId);
     Task<bool> UpdateEventAsync(int eventId, string userId, string title, DateTime eventDateTime, string? description);
     Task<bool> CancelEventAsync(int eventId, string userId);
+    Task<bool> RespondToEventAsync(int eventId, string userId, ResponseStatus status);
+    Task<EventResponse?> GetUserResponseAsync(int eventId, string userId);
+    Task<List<EventResponse>> GetEventResponsesAsync(int eventId);
   }
 }

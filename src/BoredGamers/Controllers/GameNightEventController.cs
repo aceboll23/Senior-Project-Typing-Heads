@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
+using BoredGamers.Models;
 using BoredGamers.Models.ViewModels;
 using BoredGamers.Services.GameNightEvents;
 using Microsoft.AspNetCore.Authorization;
@@ -81,7 +82,7 @@ public class GameNightEventController : Controller
     return RedirectToAction("Details", new { id = createdEvent.Id });
   }
 
-  // GET /GameNightEvent/Details/5
+   // GET /GameNightEvent/Details/5
   public async Task<IActionResult> Details(int id, string? status)
   {
     var userId = GetUserId();
@@ -99,7 +100,17 @@ public class GameNightEventController : Controller
     }
 
     ViewData["Status"] = status;
-    
+
+    // RSVP data
+    var responses = await _gameNightEventService.GetEventResponsesAsync(id);
+    var userResponse = await _gameNightEventService.GetUserResponseAsync(id, userId);
+    ViewData["UserResponse"] = userResponse?.Status;
+    ViewData["GoingCount"] = responses.Count(r => r.Status == ResponseStatus.Going);
+    ViewData["MaybeCount"] = responses.Count(r => r.Status == ResponseStatus.Maybe);
+    ViewData["NotGoingCount"] = responses.Count(r => r.Status == ResponseStatus.NotGoing);
+    ViewData["Responses"] = responses;
+    ViewData["CurrentUserId"] = userId;
+
     return View(gameNightEvent);
   }
 
@@ -309,5 +320,20 @@ public class GameNightEventController : Controller
     }
 
     return RedirectToAction("Details", "Playgroup", new { id = playgroupId, status = "event-cancelled" });
+  }
+    // POST /GameNightEvent/Respond
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> Respond(int eventId, ResponseStatus status)
+  {
+    var userId = GetUserId();
+
+    var responded = await _gameNightEventService.RespondToEventAsync(eventId, userId, status);
+    if (!responded)
+    {
+      return NotFound();
+    }
+
+    return RedirectToAction("Details", new { id = eventId, status = "responded" });
   }
 }
