@@ -102,9 +102,19 @@ app.MapControllerRoute(
     defaults: new { controller = "Messages", action = "Conversation" });
 
 app.MapControllerRoute(
+    name: "deleteAccount",
+    pattern: "Settings/DeleteAccount",
+    defaults: new { controller = "Settings", action = "DeleteAccount" });
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+app.MapControllerRoute(
+    name: "settings",
+    pattern: "Settings",
+    defaults: new { controller = "Settings", action = "Index" });
 
 // Map Identity endpoints (Razor Pages)
 app.MapRazorPages();
