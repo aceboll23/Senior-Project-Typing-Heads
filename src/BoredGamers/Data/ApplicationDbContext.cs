@@ -28,7 +28,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<PlaygroupMember> PlaygroupMembers { get; set; }
     public DbSet<GameNightEvent> GameNightEvents { get; set; }
     public DbSet<GameNightEventGame> GameNightEventGames { get; set; } 
-
+    public DbSet<PlaygroupInvite> PlaygroupInvites { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
 
@@ -229,6 +229,22 @@ public class ApplicationDbContext : IdentityDbContext
                 .IsUnique();
 
             entity.Property(m => m.JoinedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure PlaygroupInvite
+        modelBuilder.Entity<PlaygroupInvite>(entity =>
+        {
+            entity.HasOne(i => i.Playgroup)
+                .WithMany()
+                .HasForeignKey(i => i.PlaygroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Prevent duplicate pending invites
+            entity.HasIndex(i => new { i.PlaygroupId, i.InvitedUserId })
+                .IsUnique();
+
+            entity.Property(i => i.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 
