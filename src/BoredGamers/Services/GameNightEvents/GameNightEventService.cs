@@ -38,6 +38,32 @@ namespace BoredGamers.Services.GameNightEvents
       _db.GameNightEvents.Add(gameNightEvent);
       await _db.SaveChangesAsync();
 
+      // Notify all playgroup members except the creator
+      var memberUserIds = await _db.PlaygroupMembers
+        .Where(m => m.PlaygroupId == playgroupId && m.UserId != userId)
+        .Select(m => m.UserId)
+        .ToListAsync();
+
+      var memberProfiles = await _db.Set<UserProfile>()
+        .Where(p => memberUserIds.Contains(p.UserId))
+        .ToListAsync();
+
+      foreach (var profile in memberProfiles)
+      {
+        _db.Set<Notification>().Add(new Notification
+        {
+          UserProfileId = profile.Id,
+          Type = "GameNightEvent",
+          Title = "New Game Night Event",
+          Message = $"A new event '{gameNightEvent.Title}' was created in your playgroup!",
+          ActionUrl = $"/GameNightEvent/Details/{gameNightEvent.Id}",
+          RelatedEntityId = gameNightEvent.Id,
+          CreatedAt = DateTime.UtcNow
+        });
+      }
+
+      await _db.SaveChangesAsync();
+
       return gameNightEvent;
     }
 
@@ -285,6 +311,14 @@ namespace BoredGamers.Services.GameNightEvents
         .AsNoTracking()
         .Where(r => r.GameNightEventId == eventId)
         .ToListAsync();
+    }
+
+    public async Task<Dictionary<string, string>> GetResponderNamesAsync(List<EventResponse> responses)
+    {
+        var userIds = responses.Select(r => r.UserId).Distinct().ToList();
+        return await _db.Users
+            .Where(u => userIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.UserName ?? "Unknown");
     }
   }
 }

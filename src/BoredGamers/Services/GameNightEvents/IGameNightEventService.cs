@@ -24,5 +24,6 @@ namespace BoredGamers.Services.GameNightEvents
     Task<bool> RespondToEventAsync(int eventId, string userId, ResponseStatus status);
     Task<EventResponse?> GetUserResponseAsync(int eventId, string userId);
     Task<List<EventResponse>> GetEventResponsesAsync(int eventId);
+    Task<Dictionary<string, string>> GetResponderNamesAsync(List<EventResponse> responses);
   }
 }

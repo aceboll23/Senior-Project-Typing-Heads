@@ -54,6 +54,12 @@
                                 @await Component.InvokeAsync("UnreadMessages")
                             </a>
 
+                            <!-- Notifications -->
+                            <a asp-controller="Playgroup" asp-action="Notifications" class="btn btn-outline-light position-relative" title="Notifications">
+                                <i class="bi bi-bell"></i>
+                                @await Component.InvokeAsync("UnreadNotifications")
+                            </a>
+
                             <!-- User Dropdown -->
                             <div class="dropdown">
                                 <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">

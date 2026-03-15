@@ -110,6 +110,7 @@ public class GameNightEventController : Controller
     ViewData["NotGoingCount"] = responses.Count(r => r.Status == ResponseStatus.NotGoing);
     ViewData["Responses"] = responses;
     ViewData["CurrentUserId"] = userId;
+    ViewData["ResponderNames"] = await _gameNightEventService.GetResponderNamesAsync(responses);
 
     return View(gameNightEvent);
   }
