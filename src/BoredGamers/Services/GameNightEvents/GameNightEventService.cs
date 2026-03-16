@@ -38,6 +38,32 @@ namespace BoredGamers.Services.GameNightEvents
       _db.GameNightEvents.Add(gameNightEvent);
       await _db.SaveChangesAsync();
 
+      // Notify all playgroup members except the creator
+      var memberUserIds = await _db.PlaygroupMembers
+        .Where(m => m.PlaygroupId == playgroupId && m.UserId != userId)
+        .Select(m => m.UserId)
+        .ToListAsync();
+
+      var memberProfiles = await _db.Set<UserProfile>()
+        .Where(p => memberUserIds.Contains(p.UserId))
+        .ToListAsync();
+
+      foreach (var profile in memberProfiles)
+      {
+        _db.Set<Notification>().Add(new Notification
+        {
+          UserProfileId = profile.Id,
+          Type = "GameNightEvent",
+          Title = "New Game Night Event",
+          Message = $"A new event '{gameNightEvent.Title}' was created in your playgroup!",
+          ActionUrl = $"/GameNightEvent/Details/{gameNightEvent.Id}",
+          RelatedEntityId = gameNightEvent.Id,
+          CreatedAt = DateTime.UtcNow
+        });
+      }
+
+      await _db.SaveChangesAsync();
+
       return gameNightEvent;
     }
 
@@ -244,6 +270,55 @@ namespace BoredGamers.Services.GameNightEvents
       var rowsChanged = await _db.SaveChangesAsync();
 
       return rowsChanged > 0;
+    }
+    public async Task<bool> RespondToEventAsync(int eventId, string userId, ResponseStatus status)
+    {
+      var canAccess = await UserCanAccessEventAsync(eventId, userId);
+      if (!canAccess) return false;
+
+      var existing = await _db.EventResponses
+        .FirstOrDefaultAsync(r => r.GameNightEventId == eventId && r.UserId == userId);
+
+      if (existing != null)
+      {
+        existing.Status = status;
+        existing.RespondedAt = DateTime.UtcNow;
+      }
+      else
+      {
+        _db.EventResponses.Add(new EventResponse
+        {
+          GameNightEventId = eventId,
+          UserId = userId,
+          Status = status,
+          RespondedAt = DateTime.UtcNow
+        });
+      }
+
+      return await _db.SaveChangesAsync() > 0;
+    }
+
+    public async Task<EventResponse?> GetUserResponseAsync(int eventId, string userId)
+    {
+      return await _db.EventResponses
+        .AsNoTracking()
+        .FirstOrDefaultAsync(r => r.GameNightEventId == eventId && r.UserId == userId);
+    }
+
+    public async Task<List<EventResponse>> GetEventResponsesAsync(int eventId)
+    {
+      return await _db.EventResponses
+        .AsNoTracking()
+        .Where(r => r.GameNightEventId == eventId)
+        .ToListAsync();
+    }
+
+    public async Task<Dictionary<string, string>> GetResponderNamesAsync(List<EventResponse> responses)
+    {
+        var userIds = responses.Select(r => r.UserId).Distinct().ToList();
+        return await _db.Users
+            .Where(u => userIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.UserName ?? "Unknown");
     }
   }
 }

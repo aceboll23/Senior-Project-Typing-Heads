@@ -1,11 +1,13 @@
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 using BoredGamers.Data;
 using BoredGamers.Models;
 using BoredGamers.Services.GameNightEvents;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+
 
 namespace BoredGamers.Tests.Services.GameNightEvents
 {
@@ -465,6 +467,188 @@ namespace BoredGamers.Tests.Services.GameNightEvents
       Assert.That(cancelled, Is.True);
       Assert.That(await db.GameNightEvents.CountAsync(), Is.EqualTo(0));
       Assert.That(await db.GameNightEventGames.CountAsync(), Is.EqualTo(0));
+    }
+  
+
+  [Test]
+    public async Task CreateEvent_NotifiesAllOtherPlaygroupMembers()
+    {
+      // Arrange
+      await using var conn = new SqliteConnection("DataSource=:memory:");
+      await conn.OpenAsync();
+      await using var db = await CreateSqliteDbAsync(conn);
+
+      var creator = new User { Id = "creator-1", UserName = "creator@test.com", Email = "creator@test.com" };
+      var member2 = new User { Id = "member-2", UserName = "member2@test.com", Email = "member2@test.com" };
+      var member3 = new User { Id = "member-3", UserName = "member3@test.com", Email = "member3@test.com" };
+      db.Users.Add(creator);
+      db.Users.Add(member2);
+      db.Users.Add(member3);
+
+      // Create UserProfiles for each (needed for notifications)
+      var creatorProfile = new UserProfile { UserId = creator.Id, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+      var member2Profile = new UserProfile { UserId = member2.Id, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+      var member3Profile = new UserProfile { UserId = member3.Id, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+      db.Set<UserProfile>().Add(creatorProfile);
+      db.Set<UserProfile>().Add(member2Profile);
+      db.Set<UserProfile>().Add(member3Profile);
+
+      var playgroup = new Playgroup
+      {
+        Name = "Notification Test Group",
+        CreatedByUserId = creator.Id,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+      };
+      db.Playgroups.Add(playgroup);
+      await db.SaveChangesAsync();
+
+      db.PlaygroupMembers.Add(new PlaygroupMember { PlaygroupId = playgroup.Id, UserId = creator.Id, Role = PlaygroupRole.Owner, JoinedAt = DateTime.UtcNow });
+      db.PlaygroupMembers.Add(new PlaygroupMember { PlaygroupId = playgroup.Id, UserId = member2.Id, Role = PlaygroupRole.Member, JoinedAt = DateTime.UtcNow });
+      db.PlaygroupMembers.Add(new PlaygroupMember { PlaygroupId = playgroup.Id, UserId = member3.Id, Role = PlaygroupRole.Member, JoinedAt = DateTime.UtcNow });
+      await db.SaveChangesAsync();
+
+      var svc = new GameNightEventService(db);
+
+      // Act
+      var createdEvent = await svc.CreateEventAsync(playgroup.Id, creator.Id, "Friday Game Night", DateTime.UtcNow.AddDays(3), "Bring snacks");
+
+      // Assert — exactly 2 notifications (one per non-creator member)
+      var notifications = await db.Set<Notification>().ToListAsync();
+      Assert.That(notifications.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task CreateEvent_DoesNotNotifyCreator()
+    {
+      // Arrange
+      await using var conn = new SqliteConnection("DataSource=:memory:");
+      await conn.OpenAsync();
+      await using var db = await CreateSqliteDbAsync(conn);
+
+      var creator = new User { Id = "creator-1", UserName = "creator@test.com", Email = "creator@test.com" };
+      var member2 = new User { Id = "member-2", UserName = "member2@test.com", Email = "member2@test.com" };
+      db.Users.Add(creator);
+      db.Users.Add(member2);
+
+      var creatorProfile = new UserProfile { UserId = creator.Id, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+      var member2Profile = new UserProfile { UserId = member2.Id, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+      db.Set<UserProfile>().Add(creatorProfile);
+      db.Set<UserProfile>().Add(member2Profile);
+
+      var playgroup = new Playgroup
+      {
+        Name = "No Self-Notify Group",
+        CreatedByUserId = creator.Id,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+      };
+      db.Playgroups.Add(playgroup);
+      await db.SaveChangesAsync();
+
+      db.PlaygroupMembers.Add(new PlaygroupMember { PlaygroupId = playgroup.Id, UserId = creator.Id, Role = PlaygroupRole.Owner, JoinedAt = DateTime.UtcNow });
+      db.PlaygroupMembers.Add(new PlaygroupMember { PlaygroupId = playgroup.Id, UserId = member2.Id, Role = PlaygroupRole.Member, JoinedAt = DateTime.UtcNow });
+      await db.SaveChangesAsync();
+
+      var svc = new GameNightEventService(db);
+
+      // Act
+      await svc.CreateEventAsync(playgroup.Id, creator.Id, "Saturday Games", DateTime.UtcNow.AddDays(1), null);
+
+      // Assert — no notification for the creator's profile
+      var notifications = await db.Set<Notification>().ToListAsync();
+      var creatorNotifications = notifications.Where(n => n.UserProfileId == creatorProfile.Id).ToList();
+      Assert.That(creatorNotifications.Count, Is.EqualTo(0), "Creator should not receive a notification for their own event");
+    }
+
+    [Test]
+    public async Task CreateEvent_NotificationHasCorrectContent()
+    {
+      // Arrange
+      await using var conn = new SqliteConnection("DataSource=:memory:");
+      await conn.OpenAsync();
+      await using var db = await CreateSqliteDbAsync(conn);
+
+      var creator = new User { Id = "creator-1", UserName = "creator@test.com", Email = "creator@test.com" };
+      var member2 = new User { Id = "member-2", UserName = "member2@test.com", Email = "member2@test.com" };
+      db.Users.Add(creator);
+      db.Users.Add(member2);
+
+      var creatorProfile = new UserProfile { UserId = creator.Id, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+      var member2Profile = new UserProfile { UserId = member2.Id, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+      db.Set<UserProfile>().Add(creatorProfile);
+      db.Set<UserProfile>().Add(member2Profile);
+
+      var playgroup = new Playgroup
+      {
+        Name = "Content Check Group",
+        CreatedByUserId = creator.Id,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+      };
+      db.Playgroups.Add(playgroup);
+      await db.SaveChangesAsync();
+
+      db.PlaygroupMembers.Add(new PlaygroupMember { PlaygroupId = playgroup.Id, UserId = creator.Id, Role = PlaygroupRole.Owner, JoinedAt = DateTime.UtcNow });
+      db.PlaygroupMembers.Add(new PlaygroupMember { PlaygroupId = playgroup.Id, UserId = member2.Id, Role = PlaygroupRole.Member, JoinedAt = DateTime.UtcNow });
+      await db.SaveChangesAsync();
+
+      var svc = new GameNightEventService(db);
+
+      // Act
+      var createdEvent = await svc.CreateEventAsync(playgroup.Id, creator.Id, "Catan Tournament", DateTime.UtcNow.AddDays(5), "Bring your A-game");
+
+      // Assert
+      var notification = await db.Set<Notification>().FirstAsync();
+      Assert.That(notification.Type, Is.EqualTo("GameNightEvent"));
+      Assert.That(notification.Title, Is.EqualTo("New Game Night Event"));
+      Assert.That(notification.Message, Does.Contain("Catan Tournament"));
+      Assert.That(notification.ActionUrl, Is.EqualTo($"/GameNightEvent/Details/{createdEvent.Id}"));
+      Assert.That(notification.RelatedEntityId, Is.EqualTo(createdEvent.Id));
+      Assert.That(notification.IsRead, Is.False);
+    }
+
+    [Test]
+    public async Task CreateEvent_UsesUserProfileId_NotUserId()
+    {
+      // Arrange
+      await using var conn = new SqliteConnection("DataSource=:memory:");
+      await conn.OpenAsync();
+      await using var db = await CreateSqliteDbAsync(conn);
+
+      var creator = new User { Id = "creator-1", UserName = "creator@test.com", Email = "creator@test.com" };
+      var member2 = new User { Id = "member-2", UserName = "member2@test.com", Email = "member2@test.com" };
+      db.Users.Add(creator);
+      db.Users.Add(member2);
+
+      var creatorProfile = new UserProfile { UserId = creator.Id, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+      var member2Profile = new UserProfile { UserId = member2.Id, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+      db.Set<UserProfile>().Add(creatorProfile);
+      db.Set<UserProfile>().Add(member2Profile);
+
+      var playgroup = new Playgroup
+      {
+        Name = "Profile ID Test Group",
+        CreatedByUserId = creator.Id,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+      };
+      db.Playgroups.Add(playgroup);
+      await db.SaveChangesAsync();
+
+      db.PlaygroupMembers.Add(new PlaygroupMember { PlaygroupId = playgroup.Id, UserId = creator.Id, Role = PlaygroupRole.Owner, JoinedAt = DateTime.UtcNow });
+      db.PlaygroupMembers.Add(new PlaygroupMember { PlaygroupId = playgroup.Id, UserId = member2.Id, Role = PlaygroupRole.Member, JoinedAt = DateTime.UtcNow });
+      await db.SaveChangesAsync();
+
+      var svc = new GameNightEventService(db);
+
+      // Act
+      await svc.CreateEventAsync(playgroup.Id, creator.Id, "Profile Bridge Test", DateTime.UtcNow.AddDays(2), null);
+
+      // Assert — notification uses UserProfileId (int), not UserId (string)
+      var notification = await db.Set<Notification>().FirstAsync();
+      Assert.That(notification.UserProfileId, Is.EqualTo(member2Profile.Id),
+        "Notification must use the int UserProfileId from UserProfile, not the string UserId");
     }
   }
 }
