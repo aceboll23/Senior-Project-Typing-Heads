@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BoredGamers.Data;
 using BoredGamers.Models;
+using BoredGamers.Services.Bgg;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoredGamers.Services.Games
@@ -13,10 +14,12 @@ namespace BoredGamers.Services.Games
   public class GameService : IGameService
   {
     private readonly ApplicationDbContext _db;
+    private readonly IBggClient _bgg;
 
-    public GameService(ApplicationDbContext db)
+    public GameService(ApplicationDbContext db, IBggClient bgg)
     {
       _db = db;
+      _bgg = bgg;
     }
 
     public async Task<IReadOnlyList<Game>> GetTopGamesAsync(int limit = 100)
@@ -33,7 +36,7 @@ namespace BoredGamers.Services.Games
         .ToListAsync();
     }
 
-    public async Task<IReadOnlyList<Game>> SearchGamesAsync(string query, int limit)
+    public async Task<IReadOnlyList<GameSearchResult>> SearchGamesAsync(string query, int limit)
     {
       query = (query ?? string.Empty).Trim();
 
@@ -42,24 +45,57 @@ namespace BoredGamers.Services.Games
 
       if (string.IsNullOrWhiteSpace(query))
       {
-        return new List<Game>();
+        return new List<GameSearchResult>();
       }
 
-      //Simple MVP search: name contains query (DB-only)
-      //Later we can upgrade to full-text search or ranking logic
-      return await _db.Games
+      var localResults = await _db.Games
         .AsNoTracking()
         .Where(g => g.Name.ToLower().Contains(query.ToLower()))
         .OrderByDescending(g => (double?)g.AverageRating)
         .ThenBy(g => g.Name)
         .Take(limit)
         .ToListAsync();
+
+      if (localResults.Any())
+      {
+        return localResults.Select(g => new GameSearchResult
+        {
+          Id = g.Id,
+          BggGameId = g.BggGameId,
+          Name = g.Name,
+          YearPublished = g.YearPublished,
+          ThumbnailUrl = g.ThumbnailUrl,
+          ImageUrl = g.ImageUrl,
+          BggNumVoters = g.BggNumVoters,
+          AverageRating = g.AverageRating,
+          IsLocal = true
+        }).ToList();
+      }
+
+      var apiResults = await _bgg.SearchGamesAsync(query, limit);
+
+
+      return apiResults.Select(g => new GameSearchResult
+      {
+        Id = null,
+        BggGameId = g.BggGameId,
+        Name = g.Name ?? string.Empty,
+        YearPublished = g.YearPublished,
+        ThumbnailUrl = g.ThumbnailUrl,
+        ImageUrl = g.ImageUrl,
+        BggNumVoters = g.UsersRated,
+        AverageRating = g.AverageRating,
+        IsLocal = false
+      }).ToList();
+
     }
 
      public async Task<Game?> GetGameByIdAsync(int id)
     {
       return await _db.Games
         .AsNoTracking() //we're just reading, not editing
+        .Include(g => g.Reviews)
+          .ThenInclude(r => r.User)
         .FirstOrDefaultAsync(g => g.Id == id);
     }
     public async Task<IReadOnlyList<Game>> SearchGamesFilteredAsync(
@@ -93,6 +129,50 @@ namespace BoredGamers.Services.Games
         .ThenBy(g => g.Name)
         .Take(limit)
         .ToListAsync();
+    }
+
+    public async Task<Game?> SaveGameFromBggAsync(int bggGameId)
+    {
+      if (bggGameId <= 0)
+      {
+        return null;
+      }
+
+      var existingGame = await _db.Games
+        .FirstOrDefaultAsync(g => g.BggGameId == bggGameId);
+
+      if (existingGame != null)
+      {
+        return existingGame;
+      }
+
+      var details = await _bgg.GetGameDetailsAsync(new[] { bggGameId });
+
+      if (!details.TryGetValue(bggGameId, out var bggGame) || string.IsNullOrWhiteSpace(bggGame.Name))
+      {
+        return null;
+      }
+
+      var game = new Game
+      {
+        BggGameId = bggGame.BggGameId,
+        Name = bggGame.Name,
+        YearPublished = bggGame.YearPublished,
+        ThumbnailUrl = bggGame.ThumbnailUrl,
+        ImageUrl = bggGame.ImageUrl,
+        AverageRating = bggGame.AverageRating,
+        BggNumVoters = bggGame.UsersRated,
+        Description = bggGame.Description,
+        MinPlayers = bggGame.MinPlayers,
+        MaxPlayers = bggGame.MaxPlayers,
+        PlayTime = bggGame.PlayTime,
+        LastSyncedAt = DateTime.UtcNow
+      };
+
+      _db.Games.Add(game);
+      await _db.SaveChangesAsync();
+
+      return game;
     }
   }
 }

@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using BoredGamers.Data;
 using BoredGamers.Models;
 using BoredGamers.Services.Games;
+using BoredGamers.Tests.TestDoubles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
 using NUnit.Framework;
@@ -87,7 +88,7 @@ public class GameDetailsTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         // Get the first game's Id (assigned by the database)
         var allGames = await db.Games.ToListAsync();
@@ -106,7 +107,7 @@ public class GameDetailsTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var result = await service.GetGameByIdAsync(99999);
 
@@ -119,7 +120,7 @@ public class GameDetailsTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var allGames = await db.Games.ToListAsync();
         var gloomhaven = allGames[1]; // Gloomhaven
@@ -146,7 +147,7 @@ public class GameDetailsTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var allGames = await db.Games.ToListAsync();
         var dewan = allGames[2]; // Dewan has several null fields

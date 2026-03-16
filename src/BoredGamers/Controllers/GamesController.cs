@@ -64,7 +64,10 @@ namespace BoredGamers.Controllers
         g.Name,
         g.YearPublished,
         g.ThumbnailUrl,
-        g.BggNumVoters
+        g.BggNumVoters,
+        g.AverageRating,
+        g.IsLocal,
+        g.SourceLabel
       }));
     }
     
@@ -95,6 +98,36 @@ namespace BoredGamers.Controllers
         g.MaxPlayers,
         g.PlayTime
       }));
+    }
+
+    [HttpPost("import/{bggGameId}")]
+    public async Task<IActionResult> ImportFromBgg(int bggGameId)
+    {
+      var game = await _games.SaveGameFromBggAsync(bggGameId);
+
+      if (game == null)
+      {
+        return NotFound(new
+        {
+          message = "Unable to import that game from BoardGameGeek."
+        });
+      }
+
+      return Ok(new
+      {
+        game.Id,
+        game.BggGameId,
+        game.Name,
+        game.YearPublished,
+        game.ThumbnailUrl,
+        game.ImageUrl,
+        game.BggNumVoters,
+        game.AverageRating,
+        game.Description,
+        game.MinPlayers,
+        game.MaxPlayers,
+        game.PlayTime
+      });
     }
   }
 }

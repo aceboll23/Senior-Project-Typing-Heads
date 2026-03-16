@@ -1,0 +1,49 @@
+@using BoredGamers.Models
+@model List<User>
+@{
+    ViewData["Title"] = "Friends";
+}
+
+<section class="py-4">
+    <div class="container">
+        <h2 class="mb-4">
+            <i class="bi bi-people me-2"></i>Friends
+            <span class="text-muted fs-5 ms-2">@Model.Count</span>
+        </h2>
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-people display-1 mb-3"></i>
+                <p class="lead">You haven't added any friends yet.</p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                    Find People to Add
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="list-group">
+                @foreach (var friend in Model)
+                {
+                    <a href="/Profile/@friend.UserName"
+                       class="list-group-item list-group-item-action bg-dark d-flex align-items-center gap-3">
+                        @if (!string.IsNullOrEmpty(friend.Profile?.AvatarUrl))
+                        {
+                            <img src="@friend.Profile.AvatarUrl" class="rounded-circle"
+                                 style="width:48px;height:48px;object-fit:cover;">
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width:48px;height:48px;font-size:1.2rem;">
+                                @friend.UserName?.Substring(0, 1).ToUpper()
+                            </div>
+                        }
+                        <span class="fw-bold">@friend.UserName</span>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</section>

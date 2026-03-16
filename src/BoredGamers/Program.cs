@@ -3,6 +3,7 @@ using BoredGamers.Services.Bgg;
 using BoredGamers.Services.Games;
 using BoredGamers.Services.Email;
 using BoredGamers.Services.Collections;
+using BoredGamers.Services.GameNightEvents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
@@ -65,9 +66,12 @@ builder.Services.AddHttpClient<IBggClient, BggClient>();
 //
 
 builder.Services.AddScoped<IUserCollectionService, UserCollectionService>();
+builder.Services.AddScoped<ReviewService>();
 
 //Register GameService
 builder.Services.AddScoped<IGameService, GameService>();
+//Register GameNightEventService
+builder.Services.AddScoped<IGameNightEventService, GameNightEventService>();
 //Sync Service that imports/upserts BGG games into our local database
 builder.Services.AddScoped<IGameSyncService, GameSyncService>();
 
@@ -93,9 +97,24 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 app.MapControllerRoute(
+    name: "conversation",
+    pattern: "Messages/Conversation/{username}",
+    defaults: new { controller = "Messages", action = "Conversation" });
+
+app.MapControllerRoute(
+    name: "deleteAccount",
+    pattern: "Settings/DeleteAccount",
+    defaults: new { controller = "Settings", action = "DeleteAccount" });
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+app.MapControllerRoute(
+    name: "settings",
+    pattern: "Settings",
+    defaults: new { controller = "Settings", action = "Index" });
 
 // Map Identity endpoints (Razor Pages)
 app.MapRazorPages();
@@ -105,6 +124,8 @@ app.MapControllerRoute(
     name: "profile",
     pattern: "Profile/{username}",
     defaults: new { controller = "Profile", action = "Index" });
+
+
 
 if (app.Environment.IsDevelopment())
 {

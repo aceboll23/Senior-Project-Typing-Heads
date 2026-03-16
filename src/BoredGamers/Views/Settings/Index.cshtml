@@ -1,0 +1,92 @@
+@model BoredGamers.Models.SettingsViewModel
+@{
+    ViewData["Title"] = "Account Settings";
+    var pendingEmail = ViewData["PendingEmail"] as string;
+    var successMessage = ViewData["SuccessMessage"] as string;
+}
+
+<section class="bg-dark text-white py-5">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="text-center mb-4">
+                    <h1 class="display-5 fw-bold mb-3">Account Settings</h1>
+                    <p class="lead">Update your username or email address</p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(successMessage))
+                {
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>@successMessage
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(pendingEmail))
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-envelope me-2"></i>
+                        A verification email has been sent to <strong>@pendingEmail</strong>.
+                        Your email will not change until you click the link in that email.
+                    </div>
+                }
+
+                <div class="card bg-dark border-secondary">
+                    <div class="card-body p-4">
+                        <form asp-action="Index" method="post">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="Username" class="form-label">Username</label>
+                                <input asp-for="Username" class="form-control" />
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label">Email</label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <div class="form-text text-muted">
+                                    Changing your email will require verification before it takes effect.
+                                </div>
+                            </div>
+
+                            <hr class="border-secondary my-4" />
+
+                            <div class="mb-4">
+                                <label asp-for="CurrentPassword" class="form-label">Current Password</label>
+                                <input asp-for="CurrentPassword" class="form-control"
+                                       placeholder="Required to save any changes" />
+                                <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+                            </div>
+                            <!-- DANGER ZONE / ACCOUNT DELETION :O -->
+                            <div class="col-md-6 col-lg-5 mx-auto mt-4">
+                                <div class="card bg-dark border-danger">
+                                    <div class="card-body p-4">
+                                        <h5 class="text-danger mb-2">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>!!DANGER!!
+                                        </h5>
+                                        <p class="text-muted small mb-3">
+                                            Permanently delete your account and all associated data.
+                                            This action cannot be undone.
+                                        </p>
+                                        <a asp-action="DeleteAccount" class="btn btn-outline-danger">
+                                            Delete Account
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

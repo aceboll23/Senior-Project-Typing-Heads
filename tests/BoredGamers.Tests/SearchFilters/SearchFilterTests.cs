@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using BoredGamers.Data;
 using BoredGamers.Models;
 using BoredGamers.Services.Games;
+using BoredGamers.Tests.TestDoubles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
 using NUnit.Framework;
@@ -126,7 +127,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, maxPlayTime: 29, minPlayTime: null,
@@ -143,7 +144,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient ());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: 30, maxPlayTime: 60,
@@ -162,7 +163,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient ());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: 61, maxPlayTime: 120,
@@ -178,7 +179,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: 121, maxPlayTime: null,
@@ -198,7 +199,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: null, maxPlayTime: null,
@@ -215,7 +216,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: null, maxPlayTime: null,
@@ -232,7 +233,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: null, maxPlayTime: null,
@@ -252,7 +253,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: null, maxPlayTime: null,
@@ -269,7 +270,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: null, maxPlayTime: null,
@@ -288,7 +289,7 @@ public class SearchFilterTests
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: null, maxPlayTime: 60,
@@ -305,7 +306,7 @@ Assert.That(results.Select(g => g.Name),
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: null, maxPlayTime: 120,
@@ -326,7 +327,7 @@ Assert.That(results.Select(g => g.Name),
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: "t", minPlayTime: null, maxPlayTime: null,
@@ -348,7 +349,7 @@ Assert.That(results.Select(g => g.Name),
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         var results = await service.SearchGamesFilteredAsync(
             query: null, minPlayTime: null, maxPlayTime: null,
@@ -367,7 +368,7 @@ Assert.That(results.Select(g => g.Name),
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         // 10 players + rating >= 9 — no game matches both
         var results = await service.SearchGamesFilteredAsync(
@@ -387,7 +388,7 @@ Assert.That(results.Select(g => g.Name),
     {
         await using var db = await CreateSqliteInMemoryDbAsync();
         await SeedGamesAsync(db);
-        var service = new GameService(db);
+        var service = new GameService(db, new FakeBggClient());
 
         // Get all games with any play time filter — null PlayTime games should be excluded
         var results = await service.SearchGamesFilteredAsync(
