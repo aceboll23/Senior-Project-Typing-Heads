@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoredGamers.Tests", "tests\BoredGamers.Tests\BoredGamers.Tests.csproj", "{2EEB8F08-78EE-439D-B1CD-176E0E0306C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Senior-Project-Typing-Heads.BddTests", "Senior-Project-Typing-Heads.BddTests\Senior-Project-Typing-Heads.BddTests.csproj", "{DAD410F7-3F20-4C64-A924-1ACBBF58171B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,18 @@ Global
 		{2EEB8F08-78EE-439D-B1CD-176E0E0306C3}.Release|x64.Build.0 = Release|Any CPU
 		{2EEB8F08-78EE-439D-B1CD-176E0E0306C3}.Release|x86.ActiveCfg = Release|Any CPU
 		{2EEB8F08-78EE-439D-B1CD-176E0E0306C3}.Release|x86.Build.0 = Release|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Debug|x64.Build.0 = Debug|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Debug|x86.Build.0 = Debug|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Release|x64.ActiveCfg = Release|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Release|x64.Build.0 = Release|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Release|x86.ActiveCfg = Release|Any CPU
+		{DAD410F7-3F20-4C64-A924-1ACBBF58171B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
