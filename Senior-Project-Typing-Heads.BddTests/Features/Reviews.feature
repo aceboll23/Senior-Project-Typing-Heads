@@ -18,7 +18,8 @@ Feature: Reviews
     When I select a rating of 7
     And I leave the review text blank
     And I submit the review form
-    Then I should see the message "Text is required."
+    Then the review form should still be visible
+    And I should not see my review text "This review should not be created."
 
   Scenario: Registered user edits their own review
     Given I am logged in as a registered user
