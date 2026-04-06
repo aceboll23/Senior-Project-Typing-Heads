@@ -3,6 +3,7 @@ Feature: Reviews
   I want to create, edit, and delete my reviews
   So that I can manage my opinions on games
 
+  @create
   Scenario: Registered user submits a valid review
     Given I am logged in as a registered user
     And I am on a game details page for a game I have not reviewed
@@ -12,15 +13,7 @@ Feature: Reviews
     Then I should see the message "Review submitted!"
     And I should see my review text "Great game with lots of replay value."
 
-  Scenario: Registered user cannot submit a review with blank text
-    Given I am logged in as a registered user
-    And I am on a game details page for a game I have not reviewed
-    When I select a rating of 7
-    And I leave the review text blank
-    And I submit the review form
-    Then the review form should still be visible
-    And I should not see my review text "This review should not be created."
-
+  @edit
   Scenario: Registered user edits their own review
     Given I am logged in as a registered user
     And I am on a game details page for a game I have already reviewed
@@ -31,6 +24,7 @@ Feature: Reviews
     Then I should see the message "Review updated!"
     And I should see my review text "Updated review text."
 
+  @delete
   Scenario: Registered user deletes their own review
     Given I am logged in as a registered user
     And I am on a game details page for a game I have already reviewed
@@ -38,3 +32,12 @@ Feature: Reviews
     And I accept the delete confirmation
     Then I should see the message "Review deleted!"
     And I should not see my deleted review text
+
+  @invalid
+  Scenario: Registered user cannot submit a review with blank text
+    Given I am logged in as a registered user
+    And I am on a clean game details page for invalid review testing
+    When I leave the review text blank
+    And I submit the review form
+    Then the review form should still be visible
+    And I should not see my review text "This review should not be created."

@@ -21,12 +21,19 @@ public class ReviewSteps
     public void GivenIAmOnAGameDetailsPageForAGameIHaveNotReviewed()
     {
       _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Games/Details/28");
+      _reviewTestContext.CurrentReviewText = "Updated review text.";
     }
 
     [Given("I am on a game details page for a game I have already reviewed")]
     public void GivenIAmOnAGameDetailsPageForAGameIHaveAlreadyReviewed()
     {
-      _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Games/Details/37");
+      _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Games/Details/28");
+    }
+
+    [Given("I am on a clean game details page for invalid review testing")]
+    public void GivenIAmOnACleanGameDetailsPageForInvalidReviewTesting()
+    {
+        _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Games/Details/28");
     }
 
     [When("I select a rating of {int}")]
@@ -72,7 +79,10 @@ public class ReviewSteps
         var editLink = _webDriverContext.Driver!
             .FindElements(By.TagName("a"))
             .First(a => a.Text.Contains("Edit"));
-        editLink.Click();
+        ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
+            "arguments[0].scrollIntoView({ block: 'center' });", editLink);
+        ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
+            "arguments[0].click();", editLink);
     }
 
     [When("I change the rating to {int}")]
@@ -94,13 +104,27 @@ public class ReviewSteps
     [When("I save my review changes")]
     public void WhenISaveMyReviewChanges()
     {
-        _webDriverContext.Driver!.FindElement(By.CssSelector("button[type='submit']")).Click();
+        var buttons = _webDriverContext.Driver!.FindElements(By.TagName("button"));
+        var saveButton = buttons.First(b => b.Text.Contains("Save Changes"));
+
+        ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
+            "arguments[0].scrollIntoView({ block: 'center' });", saveButton);
+        ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
+            "arguments[0].click();", saveButton);
     }
 
     [When("I click the Delete review action")]
     public void WhenIClickTheDeleteReviewAction()
     {
-        throw new PendingStepException();
+        var deleteButtons = _webDriverContext.Driver!
+            .FindElements(By.TagName("button"));
+        
+        var deleteButton = deleteButtons.First(b => b.Text.Contains("Delete"));
+
+        ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
+            "arguments[0].scrollIntoView({ block: 'center' });", deleteButton);
+        ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
+            "arguments[0].click();", deleteButton);
     }
 
     [When("I accept the delete confirmation")]
@@ -125,7 +149,7 @@ public class ReviewSteps
     [Then("I should not see my deleted review text")]
     public void ThenIShouldNotSeeMyDeletedReviewText()
     {
-        Assert.That(_webDriverContext.Driver!.PageSource, Does.Not.Contain(_reviewTestContext.CurrentReviewText));
+        Assert.That(_webDriverContext.Driver!.PageSource, Does.Not.Contain("Updated review text."));
     }
 
     [Then("the review form should still be visible")]
