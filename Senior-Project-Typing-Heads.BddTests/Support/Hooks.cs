@@ -20,6 +20,12 @@ public class Hooks
         var options = new ChromeOptions();
         options.AddArgument("--start-maximized");
 
+        // Disable password manager and breach warning popups
+        options.AddArgument("--disable-save-password-bubble");
+        options.AddUserProfilePreference("credentials_enable_service", false);
+        options.AddUserProfilePreference("profile.password_manager_enabled", false);
+        options.AddUserProfilePreference("profile.password_manager_leak_detection", false);
+
         var runHeadless = Environment.GetEnvironmentVariable("BDD_HEADLESS");
 
         if (!string.IsNullOrWhiteSpace(runHeadless) &&
