@@ -87,19 +87,6 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
-    app.MapPost("/dev/bdd/reset-review-data", async (BddTestDataService bddTestDataService) =>
-    {
-        var result = await bddTestDataService.ResetAndSeedReviewTestDataAsync();
-
-        return Results.Ok(new
-        {
-            result.Username,
-            result.Password,
-            result.CreateGameId,
-            result.ExistingReviewGameId,
-            result.SeededReviewText
-        });
-    });
 }
 
 app.UseHttpsRedirection();
@@ -155,6 +142,20 @@ if (app.Environment.IsDevelopment())
 
         var updated = await sync.BackfillBggNumVotersAsync(ct);
         return Results.Ok(new { Updated = updated });
+    });
+
+        app.MapPost("/dev/bdd/reset-review-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedReviewTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.CreateGameId,
+            result.ExistingReviewGameId,
+            result.SeededReviewText
+        });
     });
 }
 app.Run();
