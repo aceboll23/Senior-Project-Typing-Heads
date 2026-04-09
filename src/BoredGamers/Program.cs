@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
 using BoredGamers.Services;
+using BoredGamers.Services.Bdd;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -16,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<BddTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -85,6 +87,19 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+    app.MapPost("/dev/bdd/reset-review-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedReviewTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.CreateGameId,
+            result.ExistingReviewGameId,
+            result.SeededReviewText
+        });
+    });
 }
 
 app.UseHttpsRedirection();
