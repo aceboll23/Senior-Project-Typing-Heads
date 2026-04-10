@@ -20,12 +20,14 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Reviews")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
+    [global::NUnit.Framework.CategoryAttribute("reviews")]
     public partial class ReviewsFeature
     {
         
         private global::Reqnroll.ITestRunner testRunner;
         
-        private static string[] featureTags = ((string[])(null));
+        private static string[] featureTags = new string[] {
+                "reviews"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features", "Reviews", "  As a registered user\r\n  I want to create, edit, and delete my reviews\r\n  So tha" +
                 "t I can manage my opinions on games", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
@@ -121,7 +123,7 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Registered user submits a valid review", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 7
+#line 8
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -131,25 +133,25 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 8
+#line 9
     await testRunner.GivenAsync("I am logged in as a registered user", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 9
+#line 10
     await testRunner.AndAsync("I am on a game details page for a game I have not reviewed", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 10
+#line 11
     await testRunner.WhenAsync("I select a rating of 8", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 11
+#line 12
     await testRunner.AndAsync("I enter review text \"Great game with lots of replay value.\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 12
+#line 13
     await testRunner.AndAsync("I submit the review form", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 13
+#line 14
     await testRunner.ThenAsync("I should see the message \"Review submitted!\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
-#line 14
+#line 15
     await testRunner.AndAsync("I should see my review text \"Great game with lots of replay value.\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
@@ -168,7 +170,7 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Registered user edits their own review", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 17
+#line 18
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -178,28 +180,28 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 18
+#line 19
     await testRunner.GivenAsync("I am logged in as a registered user", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 19
+#line 20
     await testRunner.AndAsync("I am on a game details page for a game I have already reviewed", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 20
+#line 21
     await testRunner.WhenAsync("I click the Edit review action", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 21
+#line 22
     await testRunner.AndAsync("I change the rating to 9", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 22
+#line 23
     await testRunner.AndAsync("I change the review text to \"Updated review text.\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 23
+#line 24
     await testRunner.AndAsync("I save my review changes", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 24
+#line 25
     await testRunner.ThenAsync("I should see the message \"Review updated!\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
-#line 25
+#line 26
     await testRunner.AndAsync("I should see my review text \"Updated review text.\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
@@ -218,7 +220,7 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Registered user deletes their own review", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 28
+#line 29
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -228,22 +230,22 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 29
+#line 30
     await testRunner.GivenAsync("I am logged in as a registered user", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 30
+#line 31
     await testRunner.AndAsync("I am on a game details page for a game I have already reviewed", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 31
+#line 32
     await testRunner.WhenAsync("I click the Delete review action", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 32
+#line 33
     await testRunner.AndAsync("I accept the delete confirmation", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 33
+#line 34
     await testRunner.ThenAsync("I should see the message \"Review deleted!\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
-#line 34
+#line 35
     await testRunner.AndAsync("I should not see my deleted review text", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }
@@ -262,7 +264,7 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             global::Reqnroll.ScenarioInfo scenarioInfo = new global::Reqnroll.ScenarioInfo("Registered user cannot submit a review with blank text", null, tagsOfScenario, argumentsOfScenario, featureTags, pickleIndex);
             string[] tagsOfRule = ((string[])(null));
             global::Reqnroll.RuleInfo ruleInfo = null;
-#line 37
+#line 38
   this.ScenarioInitialize(scenarioInfo, ruleInfo);
 #line hidden
             if ((global::Reqnroll.TagHelper.ContainsIgnoreTag(scenarioInfo.CombinedTags) || global::Reqnroll.TagHelper.ContainsIgnoreTag(featureTags)))
@@ -272,22 +274,22 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             else
             {
                 await this.ScenarioStartAsync();
-#line 38
+#line 39
     await testRunner.GivenAsync("I am logged in as a registered user", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
-#line 39
+#line 40
     await testRunner.AndAsync("I am on a clean game details page for invalid review testing", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 40
+#line 41
     await testRunner.WhenAsync("I leave the review text blank", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
-#line 41
+#line 42
     await testRunner.AndAsync("I submit the review form", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
-#line 42
+#line 43
     await testRunner.ThenAsync("the review form should still be visible", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
-#line 43
+#line 44
     await testRunner.AndAsync("I should not see my review text \"This review should not be created.\"", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
             }

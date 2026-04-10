@@ -1,3 +1,4 @@
+@reviews
 Feature: Reviews
   As a registered user
   I want to create, edit, and delete my reviews
