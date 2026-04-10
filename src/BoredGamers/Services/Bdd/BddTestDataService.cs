@@ -152,7 +152,28 @@ public class BddTestDataService
 
     if (existingUser != null)
     {
+      var existingEvents = await _db.GameNightEvents
+        .Where(e => e.CreatedByUserId == existingUser.Id)
+        .ToListAsync();
+
+      if (existingEvents.Count > 0)
+      {
+        _db.GameNightEvents.RemoveRange(existingEvents);
+        await _db.SaveChangesAsync();
+      }
+
+      var existingMemberships = await _db.PlaygroupMembers
+        .Where(m => m.UserId == existingUser.Id)
+        .ToListAsync();
+
+      if (existingMemberships.Count > 0)
+      {
+        _db.PlaygroupMembers.RemoveRange(existingMemberships);
+        await _db.SaveChangesAsync();
+      }
+
       await _userManager.DeleteAsync(existingUser);
+  
     }
 
     var user = new User

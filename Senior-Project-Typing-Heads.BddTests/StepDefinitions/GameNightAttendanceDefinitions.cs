@@ -27,4 +27,24 @@ public class GameNightAttendanceDefinitions
     );
   }
 
+  [Given("a game night event exists for my playgroup")]
+  public void GivenAGameNightEventExistsForMyPlaygroup()
+  {
+    _webDriverContext.Driver!.Navigate().GoToUrl(
+      $"{TestSettings.BaseUrl}/GameNightEvent/Details/{_bddSeedDataContext.GameNightEventId}"
+    );
+  }
+
+  [When("I mark my attendance as {string}")]
+  public void WhenIMarkMyAttendanceAs(string attendanceStatus)
+  {
+    throw new PendingStepException();
+  }
+
+  [Then("my attendance for that event should be saved as {string}")]
+  public void ThenMyAttendanceForThatEventShouldBeSavedAs(string attendanceStatus)
+  {
+    throw new PendingStepException();
+  }
+
 }

@@ -47,7 +47,7 @@ builder.Services
     .AddDefaultIdentity<User>(options =>  // Changed from IdentityUser to User
     {
         options.SignIn.RequireConfirmedAccount = false;
-        
+
         // Configure password requirements
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
@@ -56,7 +56,7 @@ builder.Services
         options.Password.RequiredLength = 8;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
-        
+
 //
 //HTTP Clients
 //
@@ -144,17 +144,29 @@ if (app.Environment.IsDevelopment())
         return Results.Ok(new { Updated = updated });
     });
 
-        app.MapPost("/dev/bdd/reset-review-data", async (BddTestDataService bddTestDataService) =>
+    app.MapPost("/dev/bdd/reset-review-data", async (BddTestDataService bddTestDataService) =>
     {
         var result = await bddTestDataService.ResetAndSeedReviewTestDataAsync();
 
         return Results.Ok(new
         {
+        result.Username,
+        result.Password,
+        result.CreateGameId,
+        result.ExistingReviewGameId,
+        result.SeededReviewText
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-gamenight-attendance-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedGameNightAttendanceTestDataAsync();
+
+        return Results.Ok(new
+        {
             result.Username,
             result.Password,
-            result.CreateGameId,
-            result.ExistingReviewGameId,
-            result.SeededReviewText
+            result.GameNightEventId
         });
     });
 }

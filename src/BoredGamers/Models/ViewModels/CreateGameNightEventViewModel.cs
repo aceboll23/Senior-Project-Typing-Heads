@@ -22,5 +22,6 @@ namespace BoredGamers.Models.ViewModels
 
     public bool ConfirmDuplicateDate { get; set; } = false;
     public string? WarningMessage { get; set; } 
+
   }
 }
