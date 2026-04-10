@@ -2,6 +2,7 @@ using BoredGamers.Data;
 using BoredGamers.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace BoredGamers.Services.Bdd;
 
@@ -139,6 +140,77 @@ public class BddTestDataService
       CreateGameId = createGame.Id,
       ExistingReviewGameId = existingReviewGame.Id,
       SeededReviewText = seededReview.Text
+    };
+  }
+
+  public async Task<BddGameNightAttendanceSeedResult> ResetAndSeedGameNightAttendanceTestDataAsync()
+  {
+    var existingUser = await _db.Users
+      .OfType<User>()
+      .Include(u => u.Profile)
+      .FirstOrDefaultAsync(u => u.UserName == ReviewTestUserName);
+
+    if (existingUser != null)
+    {
+      await _userManager.DeleteAsync(existingUser);
+    }
+
+    var user = new User
+    {
+      UserName = ReviewTestUserName,
+      Email = ReviewTestEmail,
+      EmailConfirmed = true
+    };
+
+    var createUserResult = await _userManager.CreateAsync(user, ReviewTestPassword);
+    if (!createUserResult.Succeeded)
+    {
+      var errors = string.Join("; ", createUserResult.Errors.Select(e => e.Description));
+      throw new InvalidOperationException($"Failed to create seeded BDD user: {errors}");
+    }
+
+    var playgroup = new Playgroup
+    {
+      Name = "BDD Attendance Playgroup",
+      Description = "Seeded playgroup for game night attendance BDD tests.",
+      CreatedByUserId = user.Id,
+      IsPrivate = true,
+      CreatedAt = DateTime.UtcNow,
+      UpdatedAt = DateTime.UtcNow
+    };
+
+    _db.Playgroups.Add(playgroup);
+    await _db.SaveChangesAsync();
+
+    var playgroupMember = new PlaygroupMember
+    {
+      PlaygroupId = playgroup.Id,
+      UserId = user.Id,
+      Role = PlaygroupRole.Owner,
+      JoinedAt = DateTime.UtcNow
+    };
+
+    _db.PlaygroupMembers.Add(playgroupMember);
+    await _db.SaveChangesAsync();
+
+    var gameNightEvent = new GameNightEvent
+    {
+      PlaygroupId = playgroup.Id,
+      CreatedByUserId = user.Id,
+      Title = "BDD Attendance Game Night",
+      EventDateTime = DateTime.UtcNow.AddDays(7),
+      Description = "Seeded game night event for attendance BDD tests.",
+      CreatedAt = DateTime.UtcNow
+    };
+
+    _db.GameNightEvents.Add(gameNightEvent);
+    await _db.SaveChangesAsync();
+
+    return new BddGameNightAttendanceSeedResult
+    {
+      Username = ReviewTestUserName,
+      Password = ReviewTestPassword,
+      GameNightEventId = gameNightEvent.Id
     };
   }
 }

@@ -5,4 +5,5 @@ public class BddSeedDataContext
   public int CreateGameId { get; set; }
   public int ExistingReviewGameId { get; set; }
   public string SeededReviewText { get; set; } = "";
+  public int GameNightEventId { get; set; }
 }
