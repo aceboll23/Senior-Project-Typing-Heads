@@ -10,30 +10,35 @@ public class ReviewSteps
 {
     private readonly WebDriverContext _webDriverContext;
     private readonly ReviewTestContext _reviewTestContext;
+    private readonly BddSeedDataContext _bddSeedDataContext;
 
-    public ReviewSteps(WebDriverContext webDriverContext, ReviewTestContext reviewTestContext)
+    public ReviewSteps(WebDriverContext webDriverContext, ReviewTestContext reviewTestContext, BddSeedDataContext bddSeedDataContext)
     {
         _webDriverContext = webDriverContext;
         _reviewTestContext = reviewTestContext;
+        _bddSeedDataContext = bddSeedDataContext;
     }
 
     [Given("I am on a game details page for a game I have not reviewed")]
     public void GivenIAmOnAGameDetailsPageForAGameIHaveNotReviewed()
     {
-      _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Games/Details/28");
-      _reviewTestContext.CurrentReviewText = "Updated review text.";
+      _webDriverContext.Driver!.Navigate().GoToUrl(
+        $"{TestSettings.BaseUrl}/Games/Details/{_bddSeedDataContext.CreateGameId}");
     }
 
     [Given("I am on a game details page for a game I have already reviewed")]
     public void GivenIAmOnAGameDetailsPageForAGameIHaveAlreadyReviewed()
     {
-      _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Games/Details/28");
+      _webDriverContext.Driver!.Navigate().GoToUrl(
+        $"{TestSettings.BaseUrl}/Games/Details/{_bddSeedDataContext.ExistingReviewGameId}");
+      _reviewTestContext.CurrentReviewText = _bddSeedDataContext.SeededReviewText;
     }
 
     [Given("I am on a clean game details page for invalid review testing")]
     public void GivenIAmOnACleanGameDetailsPageForInvalidReviewTesting()
     {
-        _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Games/Details/28");
+        _webDriverContext.Driver!.Navigate().GoToUrl(
+          $"{TestSettings.BaseUrl}/Games/Details/{_bddSeedDataContext.CreateGameId}");
     }
 
     [When("I select a rating of {int}")]
@@ -149,7 +154,10 @@ public class ReviewSteps
     [Then("I should not see my deleted review text")]
     public void ThenIShouldNotSeeMyDeletedReviewText()
     {
-        Assert.That(_webDriverContext.Driver!.PageSource, Does.Not.Contain("Updated review text."));
+        Assert.That(
+            _webDriverContext.Driver!.PageSource,
+            Does.Not.Contain(_reviewTestContext.CurrentReviewText));
+        
     }
 
     [Then("the review form should still be visible")]
