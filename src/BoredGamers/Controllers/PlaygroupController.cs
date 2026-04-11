@@ -524,4 +524,54 @@ public class PlaygroupController : Controller
         return RedirectToAction("Index");
     }
 
+    // GET /Playgroup/Collection/5
+    public async Task<IActionResult> Collection(int id)
+    {
+        var userId = GetUserId();
+
+        var playgroup = await _db.Playgroups
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.Id == id);
+
+        if (playgroup == null)
+            return NotFound();
+
+        //nonmembers cannot access the collection page
+        if (!playgroup.IsMember(userId))
+            return NotFound();
+
+        //get all member user IDs
+        var memberUserIds = playgroup.Members.Select(m => m.UserId).ToList();
+
+        //load all game collection entries for all members, including the game details
+        var collectionEntries = await _db.UserGameCollections
+            .Where(c => memberUserIds.Contains(c.UserId))
+            .Include(c => c.Game)
+            .ToListAsync();
+
+        //get usernames for display
+        var memberNames = await _userManager.Users
+            .Where(u => memberUserIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.UserName ?? "Unknown");
+
+        //group by game, collecting which members own each one
+        var combinedCollection = collectionEntries
+            .GroupBy(c => c.GameId)
+            .Select(g => new
+            {
+                Game = g.First().Game,
+                Owners = g.Select(c => memberNames.GetValueOrDefault(c.UserId, "Unknown"))
+                        .OrderBy(name => name)
+                        .ToList()
+            })
+            .OrderBy(x => x.Game.Name)
+            .ToList();
+
+        ViewData["PlaygroupId"] = id;
+        ViewData["PlaygroupName"] = playgroup.Name;
+        ViewData["CombinedCollection"] = combinedCollection;
+
+        return View();
+    }
+
 }
