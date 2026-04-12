@@ -5,5 +5,8 @@
 <h1>Browse Games</h1>
 
 <ul>
-    <li>Games will appear here</li>
+    @foreach (var game in Model)
+    {
+        <li>@game.Name</li>
+    }
 </ul>

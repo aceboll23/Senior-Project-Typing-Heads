@@ -34,9 +34,10 @@ namespace BoredGamers.Controllers
         }
 
         [Route("Games")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var games = await _gameService.GetBrowseGamesAsync(20);
+            return View(games);
         }
 
 
