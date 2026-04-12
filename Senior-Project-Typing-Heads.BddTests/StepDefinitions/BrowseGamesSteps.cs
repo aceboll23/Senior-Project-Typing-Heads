@@ -40,6 +40,6 @@ namespace Senior_Project_Typing_Heads.BddTests.StepDefinitions;
   public void ThenIShouldSeeAListOfGamesFromTheDatabase()
   {
     Assert.That(_webDriverContext.Driver!.PageSource, Does.Contain("<ul>"));
-    Assert.That(_webDriverContext.Driver!.PageSource, Does.Contain("Games will appear here"));
+    Assert.That(_webDriverContext.Driver!.PageSource, Does.Not.Contain("Games will appear here"));
   }
 }
