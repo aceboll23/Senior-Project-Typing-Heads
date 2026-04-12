@@ -33,6 +33,12 @@ namespace BoredGamers.Controllers
             return View();
         }
 
+        [Route("Games")]
+        public IActionResult Index()
+        {
+            return View();
+        }
+
 
         // Example: GET /Games/Details/5 (5 being a game id)
         [Route("Games/Details/{id}")]
