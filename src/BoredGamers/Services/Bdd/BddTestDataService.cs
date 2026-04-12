@@ -234,6 +234,195 @@ public class BddTestDataService
       GameNightEventId = gameNightEvent.Id
     };
   }
+
+
+  
+
+  private const string CollectionMemberUserName = "bdd_collection_member";
+  private const string CollectionMemberEmail = "bdd_collection_member@local.test";
+  private const string CollectionMemberPassword = "BddCollection123";
+
+  private const string CollectionOwnerUserName = "bdd_collection_owner";
+  private const string CollectionOwnerEmail = "bdd_collection_owner@local.test";
+  private const string CollectionOwnerPassword = "BddCollection123";
+
+  private const string NonMemberUserName = "bdd_non_member";
+  private const string NonMemberEmail = "bdd_non_member@local.test";
+  private const string NonMemberPassword = "BddCollection123";
+
+  public async Task<BddCollectionSeedResult> ResetAndSeedCollectionTestDataAsync()
+  {
+      // Clean up existing test users and their related data
+      foreach (var username in new[] { CollectionMemberUserName, CollectionOwnerUserName, NonMemberUserName })
+      {
+          var existingUser = await _db.Users
+              .OfType<User>()
+              .FirstOrDefaultAsync(u => u.UserName == username);
+
+          if (existingUser != null)
+          {
+              var memberships = await _db.PlaygroupMembers
+                  .Where(m => m.UserId == existingUser.Id)
+                  .ToListAsync();
+              if (memberships.Count > 0)
+              {
+                  _db.PlaygroupMembers.RemoveRange(memberships);
+                  await _db.SaveChangesAsync();
+              }
+
+              var collections = await _db.UserGameCollections
+                  .Where(c => c.UserId == existingUser.Id)
+                  .ToListAsync();
+              if (collections.Count > 0)
+              {
+                  _db.UserGameCollections.RemoveRange(collections);
+                  await _db.SaveChangesAsync();
+              }
+
+              await _userManager.DeleteAsync(existingUser);
+          }
+      }
+
+      // Clean up old test playgroups
+      var oldPlaygroups = await _db.Playgroups
+          .Where(p => p.Name == "BDD Collection Playgroup" || p.Name == "BDD Empty Playgroup")
+          .ToListAsync();
+      if (oldPlaygroups.Count > 0)
+      {
+          _db.Playgroups.RemoveRange(oldPlaygroups);
+          await _db.SaveChangesAsync();
+      }
+
+      // Create member user
+      var memberUser = new User
+      {
+          UserName = CollectionMemberUserName,
+          Email = CollectionMemberEmail,
+          EmailConfirmed = true
+      };
+      var memberResult = await _userManager.CreateAsync(memberUser, CollectionMemberPassword);
+      if (!memberResult.Succeeded)
+          throw new InvalidOperationException($"Failed to create member user: {string.Join("; ", memberResult.Errors.Select(e => e.Description))}");
+
+      // Create owner user
+      var ownerUser = new User
+      {
+          UserName = CollectionOwnerUserName,
+          Email = CollectionOwnerEmail,
+          EmailConfirmed = true
+      };
+      var ownerResult = await _userManager.CreateAsync(ownerUser, CollectionOwnerPassword);
+      if (!ownerResult.Succeeded)
+          throw new InvalidOperationException($"Failed to create owner user: {string.Join("; ", ownerResult.Errors.Select(e => e.Description))}");
+
+      // Create non-member user
+      var nonMemberUser = new User
+      {
+          UserName = NonMemberUserName,
+          Email = NonMemberEmail,
+          EmailConfirmed = true
+      };
+      var nonMemberResult = await _userManager.CreateAsync(nonMemberUser, NonMemberPassword);
+      if (!nonMemberResult.Succeeded)
+          throw new InvalidOperationException($"Failed to create non-member user: {string.Join("; ", nonMemberResult.Errors.Select(e => e.Description))}");
+
+      // Ensure the test game exists
+      var testGame = await _db.Games.FirstOrDefaultAsync(g => g.BggGameId == 900010);
+      if (testGame == null)
+      {
+          testGame = new Game
+          {
+              BggGameId = 900010,
+              Name = "BDD Collection Test Game",
+              YearPublished = 2024,
+              Description = "Seeded game for BDD collection tests.",
+              MinPlayers = 2,
+              MaxPlayers = 4,
+              PlayTime = 60,
+              AverageRating = 7.50m,
+              BggNumVoters = 100
+          };
+          _db.Games.Add(testGame);
+          await _db.SaveChangesAsync();
+      }
+
+      // Create playgroup with games (owner + member)
+      var collectionPlaygroup = new Playgroup
+      {
+          Name = "BDD Collection Playgroup",
+          Description = "Seeded playgroup for BDD collection tests.",
+          CreatedByUserId = ownerUser.Id,
+          IsPrivate = false,
+          CreatedAt = DateTime.UtcNow,
+          UpdatedAt = DateTime.UtcNow
+      };
+      _db.Playgroups.Add(collectionPlaygroup);
+      await _db.SaveChangesAsync();
+
+      // Create empty playgroup (member only)
+      var emptyPlaygroup = new Playgroup
+      {
+          Name = "BDD Empty Playgroup",
+          Description = "Seeded playgroup with no game collections.",
+          CreatedByUserId = memberUser.Id,
+          IsPrivate = false,
+          CreatedAt = DateTime.UtcNow,
+          UpdatedAt = DateTime.UtcNow
+      };
+      _db.Playgroups.Add(emptyPlaygroup);
+      await _db.SaveChangesAsync();
+
+      // Add members to collection playgroup
+      _db.PlaygroupMembers.AddRange(
+          new PlaygroupMember
+          {
+              PlaygroupId = collectionPlaygroup.Id,
+              UserId = ownerUser.Id,
+              Role = PlaygroupRole.Owner,
+              JoinedAt = DateTime.UtcNow
+          },
+          new PlaygroupMember
+          {
+              PlaygroupId = collectionPlaygroup.Id,
+              UserId = memberUser.Id,
+              Role = PlaygroupRole.Member,
+              JoinedAt = DateTime.UtcNow
+          }
+      );
+
+      // Add member to empty playgroup
+      _db.PlaygroupMembers.Add(new PlaygroupMember
+      {
+          PlaygroupId = emptyPlaygroup.Id,
+          UserId = memberUser.Id,
+          Role = PlaygroupRole.Owner,
+          JoinedAt = DateTime.UtcNow
+      });
+
+      await _db.SaveChangesAsync();
+
+      // Add game to owner's collection
+      _db.UserGameCollections.Add(new UserGameCollection
+      {
+          UserId = ownerUser.Id,
+          GameId = testGame.Id,
+          DateAdded = DateTime.UtcNow
+      });
+
+      await _db.SaveChangesAsync();
+
+      return new BddCollectionSeedResult
+      {
+          MemberUsername = CollectionMemberUserName,
+          MemberPassword = CollectionMemberPassword,
+          NonMemberUsername = NonMemberUserName,
+          NonMemberPassword = NonMemberPassword,
+          OwnerUsername = CollectionOwnerUserName,
+          CollectionPlaygroupId = collectionPlaygroup.Id,
+          EmptyPlaygroupId = emptyPlaygroup.Id,
+          CollectionGameName = testGame.Name
+      };
+  }
 }
 
 public class BddReviewSeedResult

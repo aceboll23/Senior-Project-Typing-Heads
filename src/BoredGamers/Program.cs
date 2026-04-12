@@ -174,5 +174,21 @@ if (app.Environment.IsDevelopment())
             result.GameNightEventId
         });
     });
+
+    app.MapPost("/dev/bdd/reset-collection-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedCollectionTestDataAsync();
+        return Results.Ok(new
+        {
+            result.MemberUsername,
+            result.MemberPassword,
+            result.NonMemberUsername,
+            result.NonMemberPassword,
+            result.OwnerUsername,
+            result.CollectionPlaygroupId,
+            result.EmptyPlaygroupId,
+            result.CollectionGameName
+        });
+    });
 }
 app.Run();
