@@ -127,6 +127,11 @@ app.MapControllerRoute(
     pattern: "Profile/{username}",
     defaults: new { controller = "Profile", action = "Index" });
 
+app.MapControllerRoute(
+    name: "playgroupCollection",
+    pattern: "Playgroup/Collection/{id}",
+    defaults: new { controller = "Playgroup", action = "Collection" });
+
 
 
 if (app.Environment.IsDevelopment())
