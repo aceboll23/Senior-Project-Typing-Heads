@@ -38,13 +38,22 @@ public class GameNightAttendanceDefinitions
   [When("I mark my attendance as {string}")]
   public void WhenIMarkMyAttendanceAs(string attendanceStatus)
   {
-    throw new PendingStepException();
+    var buttons = _webDriverContext.Driver!.FindElements(By.TagName("button"));
+    var button = buttons.First(b => b.Text.Contains(attendanceStatus));
+
+    ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
+      "arguments[0].scrollIntoView({ block: 'center' });", button);
+
+    ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
+      "arguments[0].click();", button);
   }
 
   [Then("my attendance for that event should be saved as {string}")]
   public void ThenMyAttendanceForThatEventShouldBeSavedAs(string attendanceStatus)
   {
-    throw new PendingStepException();
+    Assert.That(_webDriverContext.Driver!.PageSource, Does.Contain("Your response has been saved."));
+    Assert.That(_webDriverContext.Driver!.PageSource, Does.Contain($"Your response:"));
+    Assert.That(_webDriverContext.Driver!.PageSource, Does.Contain($"<strong>{attendanceStatus}</strong>"));
   }
 
 }
