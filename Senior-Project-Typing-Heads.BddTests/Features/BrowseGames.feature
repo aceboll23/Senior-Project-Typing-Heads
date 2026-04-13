@@ -10,3 +10,11 @@ Feature: Browse games
     When I click the "Games" link
     Then I should be taken to the browse games page
     And I should see a list of games from the database
+
+  Scenario: User filters browse games by minimum rating
+    Given I am on the home page
+    When I click the "Games" link
+    And I enter a minimum rating of "8.0"
+    And I apply the browse filters
+    Then I should be taken to the browse games page
+    And I should see filtered browse game results
