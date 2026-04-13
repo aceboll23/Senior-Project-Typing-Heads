@@ -26,8 +26,14 @@ builder.Services.AddRazorPages();
 //Database
 //
 
+var useBddDatabase = builder.Configuration.GetValue<bool>("UseBddDatabase");
+var connectionStringName = useBddDatabase ? "BddConnection" : "DefaultConnection";
+var connectionString = builder.Configuration.GetConnectionString(connectionStringName);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//   options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 /*
  * Register ApplicationDbContext with dependency injection.
@@ -156,11 +162,11 @@ if (app.Environment.IsDevelopment())
 
         return Results.Ok(new
         {
-        result.Username,
-        result.Password,
-        result.CreateGameId,
-        result.ExistingReviewGameId,
-        result.SeededReviewText
+            result.Username,
+            result.Password,
+            result.CreateGameId,
+            result.ExistingReviewGameId,
+            result.SeededReviewText
         });
     });
 
@@ -204,6 +210,16 @@ if (app.Environment.IsDevelopment())
             result.GameAlreadyOnWishlistId,
             result.GameNotOnWishlistName,
             result.GameAlreadyOnWishlistName
+        });
+    });
+
+    app.MapGet("/dev/bdd/config-check", (IConfiguration config) =>
+    {
+        return Results.Ok(new
+        {
+            UseBddDatabase = config["UseBddDatabase"],
+            DefaultConnectionFound = !string.IsNullOrWhiteSpace(config.GetConnectionString("DefaultConnection")),
+            BddConnectionFound = !string.IsNullOrWhiteSpace(config.GetConnectionString("BddConnection"))
         });
     });
 
