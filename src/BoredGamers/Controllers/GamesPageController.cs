@@ -53,15 +53,19 @@ namespace BoredGamers.Controllers
                 {
                     ViewBag.IsInCollection = await _collectionService
                         .IsInCollectionAsync(userId, game.Id);
+                    ViewBag.IsOnWishlist = await _collectionService
+                        .IsOnWishlistAsync(userId, game.Id);
                 }
                 else
                 {
                     ViewBag.IsInCollection = false;
+                    ViewBag.IsOnWishlist = false;
                 }
             }
             else
             {
                 ViewBag.IsInCollection = false;
+                ViewBag.IsOnWishlist = false;
             }
 
             // Pass the game to Views/GamesPage/Details.cshtml

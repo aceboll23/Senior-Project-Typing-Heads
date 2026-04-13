@@ -11,6 +11,8 @@ namespace BoredGamers.Services.Collections
     {
         Task<bool> AddToCollectionAsync(string userId, int gameId, CancellationToken ct = default);
         Task<bool> IsInCollectionAsync(string userId, int gameId, CancellationToken ct = default);
+        Task<bool> AddToWishlistAsync(string userId, int gameId, CancellationToken ct = default);
+        Task<bool> IsOnWishlistAsync(string userId, int gameId, CancellationToken ct = default);
     }
 
     public class UserCollectionService : IUserCollectionService
@@ -25,30 +27,76 @@ namespace BoredGamers.Services.Collections
         public async Task<bool> IsInCollectionAsync(string userId, int gameId, CancellationToken ct = default)
         {
             return await _db.UserGameCollections
-                .AnyAsync(x => x.UserId == userId && x.GameId == gameId, ct);
+                .AnyAsync(x => x.UserId == userId && x.GameId == gameId && x.Status == CollectionStatus.Owned, ct);
+        }
+
+        public async Task<bool> IsOnWishlistAsync(string userId, int gameId, CancellationToken ct = default)
+        {
+            return await _db.UserGameCollections
+                .AnyAsync(x => x.UserId == userId && x.GameId == gameId && x.Status == CollectionStatus.Wishlist, ct);
         }
 
         public async Task<bool> AddToCollectionAsync(string userId, int gameId, CancellationToken ct = default)
         {
-            // Fast path: already exists
+            // If already owned, nothing to do
             if (await IsInCollectionAsync(userId, gameId, ct))
+                return false;
+
+            // If wishlisted, promote to owned instead of creating a new record
+            var existing = await _db.UserGameCollections
+                .FirstOrDefaultAsync(x => x.UserId == userId && x.GameId == gameId, ct);
+
+            if (existing != null)
+            {
+                existing.Status = CollectionStatus.Owned;
+                await _db.SaveChangesAsync(ct);
+                return true;
+            }
+
+            _db.UserGameCollections.Add(new UserGameCollection
+            {
+                UserId = userId,
+                GameId = gameId,
+                DateAdded = DateTime.UtcNow,
+                Status = CollectionStatus.Owned
+            });
+
+            try
+            {
+                await _db.SaveChangesAsync(ct);
+                return true;
+            }
+            catch (DbUpdateException)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> AddToWishlistAsync(string userId, int gameId, CancellationToken ct = default)
+        {
+            // Already owned — don't allow wishlisting something you own
+            if (await IsInCollectionAsync(userId, gameId, ct))
+                return false;
+
+            // Already wishlisted — no duplicates
+            if (await IsOnWishlistAsync(userId, gameId, ct))
                 return false;
 
             _db.UserGameCollections.Add(new UserGameCollection
             {
                 UserId = userId,
                 GameId = gameId,
-                DateAdded = DateTime.UtcNow
+                DateAdded = DateTime.UtcNow,
+                Status = CollectionStatus.Wishlist
             });
 
             try
             {
                 await _db.SaveChangesAsync(ct);
-                return true; // added
+                return true;
             }
             catch (DbUpdateException)
             {
-                // Handles race condition / double-click / duplicate request
                 return false;
             }
         }
