@@ -2,6 +2,12 @@ using System;
 
 namespace BoredGamers.Models
 {
+    public enum CollectionStatus
+    {
+        Owned,
+        Wishlist
+    }
+
     public class UserGameCollection
     {
         public int Id { get; set; }
@@ -13,6 +19,8 @@ namespace BoredGamers.Models
         public int GameId { get; set; }
 
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
+
+        public CollectionStatus Status { get; set; } = CollectionStatus.Owned;
 
         // Navigation properties (optional but recommended)
         public Game Game { get; set; } = null!;

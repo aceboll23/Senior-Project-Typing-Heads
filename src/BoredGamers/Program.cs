@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
 using BoredGamers.Services;
+using BoredGamers.Services.Bdd;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -16,6 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<BddTestDataService>();
+builder.Services.AddScoped<BddWishlistTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -141,5 +144,63 @@ if (app.Environment.IsDevelopment())
         var updated = await sync.BackfillBggNumVotersAsync(ct);
         return Results.Ok(new { Updated = updated });
     });
+
+    app.MapPost("/dev/bdd/reset-review-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedReviewTestDataAsync();
+
+        return Results.Ok(new
+        {
+        result.Username,
+        result.Password,
+        result.CreateGameId,
+        result.ExistingReviewGameId,
+        result.SeededReviewText
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-gamenight-attendance-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedGameNightAttendanceTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameNightEventId
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-collection-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedCollectionTestDataAsync();
+        return Results.Ok(new
+        {
+            result.MemberUsername,
+            result.MemberPassword,
+            result.NonMemberUsername,
+            result.NonMemberPassword,
+            result.OwnerUsername,
+            result.CollectionPlaygroupId,
+            result.EmptyPlaygroupId,
+            result.CollectionGameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-wishlist-data", async (BddWishlistTestDataService bddWishlistTestDataService) =>
+    {
+        var result = await bddWishlistTestDataService.ResetAndSeedWishlistTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameNotOnWishlistId,
+            result.GameAlreadyOnWishlistId,
+            result.GameNotOnWishlistName,
+            result.GameAlreadyOnWishlistName
+        });
+    });
+
 }
 app.Run();
