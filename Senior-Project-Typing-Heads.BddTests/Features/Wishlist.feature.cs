@@ -130,16 +130,16 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             {
                 await this.ScenarioStartAsync();
 #line 7
-    await testRunner.GivenAsync("I am logged in as PersonThree", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+    await testRunner.GivenAsync("I am logged in as a BDD wishlist user", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 8
-    await testRunner.WhenAsync("I navigate to the Dune game details page", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+    await testRunner.WhenAsync("I navigate to the game not on my wishlist", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 9
     await testRunner.AndAsync("I click the Add to Wishlist button", ((string)(null)), ((global::Reqnroll.Table)(null)), "And ");
 #line hidden
 #line 10
-    await testRunner.ThenAsync("the Dune game appears in my wishlist", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
+    await testRunner.ThenAsync("the game appears in my wishlist", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
 #line hidden
             }
             await this.ScenarioCleanupAsync();
@@ -166,10 +166,10 @@ namespace Senior_Project_Typing_Heads.BddTests.Features
             {
                 await this.ScenarioStartAsync();
 #line 13
-    await testRunner.GivenAsync("I am logged in as PersonThree", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+    await testRunner.GivenAsync("I am logged in as a BDD wishlist user", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 14
-    await testRunner.WhenAsync("I navigate to the Dune game details page", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
+    await testRunner.WhenAsync("I navigate to the game already on my wishlist", ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");
 #line hidden
 #line 15
     await testRunner.ThenAsync("the Add to Wishlist button is disabled or shows On Wishlist", ((string)(null)), ((global::Reqnroll.Table)(null)), "Then ");
