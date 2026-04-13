@@ -37,7 +37,7 @@ namespace BoredGamers.Tests.Services.Games
       var service = new GameService(db, bgg.Object);
 
       //Act
-      var results = await service.GetBrowseGamesAsync(2);
+      var results = await service.GetBrowseGamesAsync(1, 2);
 
       //Assert
       Assert.That(results.Count, Is.EqualTo(2));

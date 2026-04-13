@@ -131,15 +131,19 @@ namespace BoredGamers.Services.Games
         .ToListAsync();
     }
 
-    public async Task<IReadOnlyList<Game>> GetBrowseGamesAsync(int limit)
+    public async Task<IReadOnlyList<Game>> GetBrowseGamesAsync(int page, int pageSize)
     {
-      if (limit < 1) limit = 1;
-      if (limit > 50) limit = 50;
+      if (page < 1) page = 1;
+      if (pageSize < 1) pageSize = 1;
+      if (pageSize > 50) pageSize = 50;
+
+      var skip = (page - 1) * pageSize;
 
       return await _db.Games
         .AsNoTracking()
         .OrderBy(g => g.Name)
-        .Take(limit)
+        .Skip(skip)
+        .Take(pageSize)
         .ToListAsync();
     }    
     public async Task<Game?> SaveGameFromBggAsync(int bggGameId)
