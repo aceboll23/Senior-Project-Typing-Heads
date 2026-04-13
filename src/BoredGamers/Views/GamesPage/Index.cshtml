@@ -1,12 +1,63 @@
+@model IReadOnlyList<BoredGamers.Models.Game>
+
 @{
     ViewData["Title"] = "Browse Games";
 }
 
-<h1>Browse Games</h1>
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Browse Games</h1>
+        </div>
 
-<ul>
-    @foreach (var game in Model)
-    {
-        <li>@game.Name</li>
-    }
-</ul>
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-secondary" role="alert">
+                No games available yet.
+            </div>
+        }
+        else
+        {
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+                @foreach (var game in Model)
+                {
+                    <div class="col">
+                        <a asp-controller="Games"
+                           asp-action="Details"
+                           asp-route-id="@game.Id"
+                           class="card bg-dark text-white text-decoration-none h-100">
+
+                            @{
+                                var img = string.IsNullOrWhiteSpace(game.ThumbnailUrl)
+                                    ? Url.Content("~/images/game-placeholder.png")
+                                    : game.ThumbnailUrl;
+                            }
+
+                            <img src="@img" class="card-img-top" alt="@game.Name" style="height: 260px; object-fit: cover;" />
+
+                            <div class="card-body">
+                                <h6 class="card-title">@game.Name</h6>
+
+                                <small class="text-muted">
+                                    @(game.BggNumVoters?.ToString() ?? "—") BGG voters
+                                    @if (game.YearPublished.HasValue)
+                                    {
+                                        <span> | @game.YearPublished</span>
+                                    }
+                                </small>
+
+                                @if (game.AverageRating.HasValue)
+                                {
+                                    <div class="mt-2">
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <span>@game.AverageRating.Value.ToString("0.0")/10</span>
+                                    </div>
+                                }
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
