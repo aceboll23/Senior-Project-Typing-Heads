@@ -11,6 +11,13 @@ namespace BoredGamers.Services.Games
     Task<Game?> GetGameByIdAsync(int id);
     Task<IReadOnlyList<Game>> SearchGamesFilteredAsync(string? query, int? minPlayTime, int? maxPlayTime, int? playerCount, decimal? minRating, int limit);
     Task<IReadOnlyList<Game>> GetBrowseGamesAsync(int limit, int pageSize);
+    Task<IReadOnlyList<Game>> GetBrowseGamesFilteredAsync(
+      int page,
+      int pageSize,
+      int? minPlayTime,
+      int? maxPlayTime,
+      int? playerCount,
+      decimal? minRating);
     Task<Game?> SaveGameFromBggAsync(int bggGameId);
   }
 }
