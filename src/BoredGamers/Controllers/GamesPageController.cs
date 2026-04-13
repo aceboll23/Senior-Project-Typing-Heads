@@ -34,10 +34,24 @@ namespace BoredGamers.Controllers
         }
 
         [Route("Games")]
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(
+            int page = 1,
+            int? maxPlayTime = null,
+            int? playerCount = null,
+            decimal? minRating = null)
         {
-            var games = await _gameService.GetBrowseGamesAsync(page, 20);
+            var games = await _gameService.GetBrowseGamesFilteredAsync(
+                page,
+                20,
+                maxPlayTime,
+                playerCount,
+                minRating);
+            
             ViewData["CurrentPage"] = page;
+            ViewData["MaxPlayTime"] = maxPlayTime;
+            ViewData["PlayerCount"] = playerCount;
+            ViewData["MinRating"] = minRating;
+
             return View(games);
         }
 

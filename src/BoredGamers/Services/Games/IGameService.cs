@@ -14,7 +14,6 @@ namespace BoredGamers.Services.Games
     Task<IReadOnlyList<Game>> GetBrowseGamesFilteredAsync(
       int page,
       int pageSize,
-      int? minPlayTime,
       int? maxPlayTime,
       int? playerCount,
       decimal? minRating);
