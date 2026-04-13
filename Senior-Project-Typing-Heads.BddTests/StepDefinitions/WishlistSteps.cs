@@ -95,4 +95,59 @@ public class WishlistSteps
         var showsOnWishlist = button.Text.Contains("On Wishlist");
         Assert.That(isDisabled || showsOnWishlist, Is.True, "Button should be disabled or show 'On Wishlist'");
     }
+
+    [Then("the wishlisted game appears in the wishlist section but not the owned section")]
+    public void ThenTheWishlistedGameAppearsInTheWishlistSectionButNotTheOwnedSection()
+    {
+        _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Collection");
+        var body = _webDriverContext.Driver.FindElement(By.TagName("body")).Text;
+
+        var wishlistHeadingIndex = body.IndexOf("My Wishlist", StringComparison.OrdinalIgnoreCase);
+        Assert.That(wishlistHeadingIndex, Is.GreaterThan(0), "My Wishlist section should exist on the page");
+
+        var ownedSection = body.Substring(0, wishlistHeadingIndex);
+        var wishlistSection = body.Substring(wishlistHeadingIndex);
+
+        Assert.That(wishlistSection, Does.Contain(_wishlistSeedDataContext.GameNotOnWishlistName),
+            "Wishlisted game should appear in the wishlist section");
+        Assert.That(ownedSection, Does.Not.Contain(_wishlistSeedDataContext.GameNotOnWishlistName),
+            "Wishlisted game should not appear in the owned section");
+    }
+
+    [Given("I am not logged in")]
+    public void GivenIAmNotLoggedIn()
+    {
+        // Delete all cookies to ensure no active session
+        _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}");
+        _webDriverContext.Driver.Manage().Cookies.DeleteAllCookies();
+    }
+
+    [When("I navigate to the game not on my wishlist as a guest")]
+    public void WhenINavigateToTheGameNotOnMyWishlistAsAGuest()
+    {
+        using var httpClient = new HttpClient();
+        var resetResponse = httpClient
+            .PostAsync($"{TestSettings.BaseUrl}/dev/bdd/reset-wishlist-data", null)
+            .GetAwaiter()
+            .GetResult();
+        resetResponse.EnsureSuccessStatusCode();
+
+        var seedData = resetResponse.Content
+            .ReadFromJsonAsync<ResetWishlistDataResponse>()
+            .GetAwaiter()
+            .GetResult();
+
+        ArgumentNullException.ThrowIfNull(seedData);
+        _wishlistSeedDataContext.GameNotOnWishlistId = seedData.GameNotOnWishlistId;
+
+        _webDriverContext.Driver!.Navigate().GoToUrl(
+            $"{TestSettings.BaseUrl}/Games/Details/{_wishlistSeedDataContext.GameNotOnWishlistId}");
+    }
+
+    [Then("the Add to Wishlist button is not visible")]
+    public void ThenTheAddToWishlistButtonIsNotVisible()
+    {
+        var buttons = _webDriverContext.Driver!.FindElements(By.Id("addToWishlistBtn"));
+        Assert.That(buttons.Count, Is.EqualTo(0), "Add to Wishlist button should not be visible to unauthenticated users");
+    }
 }
