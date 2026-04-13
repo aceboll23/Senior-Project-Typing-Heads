@@ -49,6 +49,14 @@ public class BddTestDataService
         _db.UserGameCollections.RemoveRange(existingCollections);
       }
 
+      var existingGameNightEvents = await _db.GameNightEvents
+        .Where(e => e.CreatedByUserId == existingUser.Id)
+        .ToListAsync();
+
+      if (existingGameNightEvents.Count > 0)
+      {
+        _db.GameNightEvents.RemoveRange(existingGameNightEvents);
+      }
       await _db.SaveChangesAsync();
 
       await _userManager.DeleteAsync(existingUser);

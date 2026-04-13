@@ -9,6 +9,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <ReqnrollGenerateFeatureFiles>true</ReqnrollGenerateFeatureFiles>
+    <ParallelizeWorkers>0</ParallelizeWorkers>
   </PropertyGroup>
 
   <ItemGroup>

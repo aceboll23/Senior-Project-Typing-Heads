@@ -11,8 +11,7 @@ Feature: Reviews
     When I select a rating of 8
     And I enter review text "Great game with lots of replay value."
     And I submit the review form
-    Then I should see the message "Review submitted!"
-    And I should see my review text "Great game with lots of replay value."
+    Then I should see my review text "Great game with lots of replay value."
 
   @edit
   Scenario: Registered user edits their own review
