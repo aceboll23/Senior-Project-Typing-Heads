@@ -18,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<BddTestDataService>();
+builder.Services.AddScoped<BddWishlistTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -190,5 +191,21 @@ if (app.Environment.IsDevelopment())
             result.CollectionGameName
         });
     });
+
+    app.MapPost("/dev/bdd/reset-wishlist-data", async (BddWishlistTestDataService bddWishlistTestDataService) =>
+    {
+        var result = await bddWishlistTestDataService.ResetAndSeedWishlistTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameNotOnWishlistId,
+            result.GameAlreadyOnWishlistId,
+            result.GameNotOnWishlistName,
+            result.GameAlreadyOnWishlistName
+        });
+    });
+
 }
 app.Run();

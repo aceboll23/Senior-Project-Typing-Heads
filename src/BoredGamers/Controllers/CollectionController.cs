@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Linq;
+using BoredGamers.Models;
 
 namespace BoredGamers.Controllers
 {
@@ -36,6 +37,19 @@ namespace BoredGamers.Controllers
 
       return RedirectToAction("Details", "GamesPage", new { id = gameId });
     }
+
+    [HttpPost("add-to-wishlist")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddToWishlist(int gameId, CancellationToken ct)
+    {
+      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      if (string.IsNullOrWhiteSpace(userId))
+        return Unauthorized();
+
+      await _collections.AddToWishlistAsync(userId, gameId, ct);
+
+      return RedirectToAction("Details", "GamesPage", new { id = gameId });
+    }
     
     [HttpGet("")]
     public async Task<IActionResult> Index(int page = 1, CancellationToken ct = default)
@@ -47,26 +61,36 @@ namespace BoredGamers.Controllers
       const int pageSize = 20;
       if (page < 1) page = 1;
 
-      var baseQuery = _db.UserGameCollections
+      var ownedQuery = _db.UserGameCollections
           .AsNoTracking()
-          .Where(c => c.UserId == userId)
+          .Where(c => c.UserId == userId && c.Status == CollectionStatus.Owned)
           .Include(c => c.Game)
           .OrderByDescending(c => c.DateAdded)
           .Select(c => c.Game);
 
-      var totalCount = await baseQuery.CountAsync(ct);
+      var wishlistQuery = _db.UserGameCollections
+          .AsNoTracking()
+          .Where(c => c.UserId == userId && c.Status == CollectionStatus.Wishlist)
+          .Include(c => c.Game)
+          .OrderByDescending(c => c.DateAdded)
+          .Select(c => c.Game);
+
+      var totalCount = await ownedQuery.CountAsync(ct);
       var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-      var games = await baseQuery
+      var ownedGames = await ownedQuery
           .Skip((page - 1) * pageSize)
           .Take(pageSize)
           .ToListAsync(ct);
 
+      var wishlistGames = await wishlistQuery.ToListAsync(ct);
+
       ViewData["Page"] = page;
       ViewData["TotalPages"] = totalPages;
       ViewData["TotalCount"] = totalCount;
+      ViewData["WishlistGames"] = wishlistGames;
 
-      return View(games);
+      return View(ownedGames);
     }
   }
 }
