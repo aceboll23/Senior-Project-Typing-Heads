@@ -19,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<BddTestDataService>();
 builder.Services.AddScoped<BddWishlistTestDataService>();
+builder.Services.AddScoped<BddPlaygroupTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -210,6 +211,17 @@ if (app.Environment.IsDevelopment())
             result.GameAlreadyOnWishlistId,
             result.GameNotOnWishlistName,
             result.GameAlreadyOnWishlistName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-playgroup-data", async (BddPlaygroupTestDataService bddPlaygroupTestDataService) =>
+    {
+        var result = await bddPlaygroupTestDataService.ResetAndSeedPlaygroupTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password
         });
     });
 
