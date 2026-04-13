@@ -131,6 +131,56 @@ namespace BoredGamers.Services.Games
         .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<Game>> GetBrowseGamesAsync(int page, int pageSize)
+    {
+      if (page < 1) page = 1;
+      if (pageSize < 1) pageSize = 1;
+      if (pageSize > 50) pageSize = 50;
+
+      var skip = (page - 1) * pageSize;
+
+      return await _db.Games
+        .AsNoTracking()
+        .OrderBy(g => g.Name)
+        .Skip(skip)
+        .Take(pageSize)
+        .ToListAsync();
+    }  
+
+    public async Task<IReadOnlyList<Game>> GetBrowseGamesFilteredAsync(
+      int page,
+      int pageSize,
+      int? maxPlayTime,
+      int? playerCount,
+      decimal? minRating)
+    {
+      if (page < 1) page = 1;
+      if (pageSize < 1) pageSize = 1;
+      if (pageSize > 50) pageSize = 50;
+
+      var skip = (page - 1) * pageSize;
+
+      var games = _db.Games
+        .AsNoTracking()
+        .AsQueryable();
+
+      if (maxPlayTime.HasValue)
+        games= games.Where(g => g.PlayTime.HasValue && g.PlayTime.Value <= maxPlayTime.Value);
+
+      if (playerCount.HasValue)
+        games = games.Where(g => g.MinPlayers.HasValue && g.MaxPlayers.HasValue
+          && g.MinPlayers.Value <= playerCount.Value
+          && g.MaxPlayers.Value >= playerCount.Value);
+      if (minRating.HasValue)
+        games = games.Where(g => g.AverageRating.HasValue && g.AverageRating.Value >= minRating.Value);
+
+      return await games
+        .OrderBy(g => g.Name)
+        .Skip(skip)
+        .Take(pageSize)
+        .ToListAsync();
+    }
+      
     public async Task<Game?> SaveGameFromBggAsync(int bggGameId)
     {
       if (bggGameId <= 0)
