@@ -85,7 +85,7 @@
             <div class="d-flex justify-content-between mt-4">
                 @if (currentPage > 1)
                 {
-                    <a href="/Games?page=@(currentPage - 1)" class="btn btn-outline-light">
+                    <a href="/Games?page=@(currentPage - 1)&maxPlayTime=@maxPlayTime&playerCount=@playerCount&minRating=@minRating" class="btn btn-outline-light">
                         Previous
                     </a>
                 }
@@ -96,7 +96,7 @@
 
                 <span class="text-muted">Page @currentPage</span>
 
-                <a href="/Games?page=@(currentPage + 1)" class="btn btn-outline-light">
+                <a href="/Games?page=@(currentPage + 1)&maxPlayTime=@maxPlayTime&playerCount=@playerCount&minRating=@minRating" class="btn btn-outline-light">
                     Next
                 </a>
             </div>
