@@ -143,7 +143,7 @@ function initSearchResults() {
         if (playTime) {
             var parts = playTime.split('-');
             if (parts.length === 2) {
-                apiUrl += '&minPlayTime=' + parts[0] + '&maxPlayTime' + parts[1];
+                apiUrl += '&minPlayTime=' + parts[0] + '&maxPlayTime=' + parts[1];
             }
         }
 
