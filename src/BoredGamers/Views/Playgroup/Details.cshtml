@@ -70,6 +70,13 @@
                                     <i class="bi bi-calendar-event me-1"></i>Create Game Night Event    
                                 </a>
                             </div>
+
+                            <!-- Combined Collection Link -->
+                            <div class="mb-3">
+                                <a href="/Playgroup/Collection/@Model.Id" class="btn btn-outline-light">
+                                    <i class="bi bi-collection me-1"></i>View Combined Collection
+                                </a>
+                            </div>
                             @if (isOwner)
                             {
                                 <a asp-action="InviteFriends" asp-route-id="@Model.Id"

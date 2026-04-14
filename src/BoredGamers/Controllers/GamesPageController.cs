@@ -33,6 +33,28 @@ namespace BoredGamers.Controllers
             return View();
         }
 
+        [Route("Games")]
+        public async Task<IActionResult> Index(
+            int page = 1,
+            int? maxPlayTime = null,
+            int? playerCount = null,
+            decimal? minRating = null)
+        {
+            var games = await _gameService.GetBrowseGamesFilteredAsync(
+                page,
+                20,
+                maxPlayTime,
+                playerCount,
+                minRating);
+            
+            ViewData["CurrentPage"] = page;
+            ViewData["MaxPlayTime"] = maxPlayTime;
+            ViewData["PlayerCount"] = playerCount;
+            ViewData["MinRating"] = minRating;
+
+            return View(games);
+        }
+
 
         // Example: GET /Games/Details/5 (5 being a game id)
         [Route("Games/Details/{id}")]
@@ -53,15 +75,19 @@ namespace BoredGamers.Controllers
                 {
                     ViewBag.IsInCollection = await _collectionService
                         .IsInCollectionAsync(userId, game.Id);
+                    ViewBag.IsOnWishlist = await _collectionService
+                        .IsOnWishlistAsync(userId, game.Id);
                 }
                 else
                 {
                     ViewBag.IsInCollection = false;
+                    ViewBag.IsOnWishlist = false;
                 }
             }
             else
             {
                 ViewBag.IsInCollection = false;
+                ViewBag.IsOnWishlist = false;
             }
 
             // Pass the game to Views/GamesPage/Details.cshtml

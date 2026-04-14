@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = ViewData["PlaygroupName"] + " — Combined Collection";
+    var playgroupId = (int)ViewData["PlaygroupId"]!;
+    var playgroupName = ViewData["PlaygroupName"] as string;
+
+    // The anonymous type needs to be read via reflection the same way we do elsewhere
+    var rawCollection = ViewData["CombinedCollection"];
+    var entries = rawCollection as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var entryList = entries.ToList();
+}
+
+<section class="py-4">
+    <div class="container">
+
+        <!-- Header -->
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <a href="/Playgroup/Details/@playgroupId" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h2 class="mb-0">
+                <i class="bi bi-collection me-2"></i>@playgroupName — Combined Collection
+            </h2>
+        </div>
+
+        @if (!entryList.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-collection" style="font-size: 3rem;"></i>
+                <p class="mt-3 lead">No games owned yet.</p>
+                <p class="small">Members can add games to their collection from the Games page.</p>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted mb-3">
+                @entryList.Count unique game(s) owned across all members.
+            </p>
+            <div class="list-group">
+                @foreach (var entry in entryList)
+                {
+                    var game = entry.Game;
+                    var owners = entry.Owners as List<string> ?? new List<string>();
+
+                    <div class="list-group-item bg-dark d-flex align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            @if (!string.IsNullOrEmpty((string?)game.ThumbnailUrl))
+                            {
+                                <img src="@game.ThumbnailUrl" alt="@game.Name"
+                                     class="rounded"
+                                     style="width:48px;height:48px;object-fit:cover;">
+                            }
+                            else
+                            {
+                                <div class="rounded bg-secondary d-flex align-items-center justify-content-center flex-shrink-0"
+                                     style="width:48px;height:48px;">
+                                    <i class="bi bi-controller"></i>
+                                </div>
+                            }
+                            <span class="fw-bold">@game.Name</span>
+                        </div>
+                        <div class="text-muted small text-end">
+                            Owned by:
+                            @foreach (var owner in owners)
+                            {
+                                <a href="/Profile/@owner" class="text-white-50 text-decoration-none ms-1">
+                                    @owner
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

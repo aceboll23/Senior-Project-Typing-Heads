@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
 using BoredGamers.Services;
+using BoredGamers.Services.Bdd;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -16,6 +17,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<BddTestDataService>();
+builder.Services.AddScoped<BddWishlistTestDataService>();
+builder.Services.AddScoped<BddPlaygroupTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -23,8 +27,14 @@ builder.Services.AddRazorPages();
 //Database
 //
 
+var useBddDatabase = builder.Configuration.GetValue<bool>("UseBddDatabase");
+var connectionStringName = useBddDatabase ? "BddConnection" : "DefaultConnection";
+var connectionString = builder.Configuration.GetConnectionString(connectionStringName);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//   options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 /*
  * Register ApplicationDbContext with dependency injection.
@@ -45,7 +55,7 @@ builder.Services
     .AddDefaultIdentity<User>(options =>  // Changed from IdentityUser to User
     {
         options.SignIn.RequireConfirmedAccount = false;
-        
+
         // Configure password requirements
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
@@ -54,7 +64,7 @@ builder.Services
         options.Password.RequiredLength = 8;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
-        
+
 //
 //HTTP Clients
 //
@@ -125,6 +135,11 @@ app.MapControllerRoute(
     pattern: "Profile/{username}",
     defaults: new { controller = "Profile", action = "Index" });
 
+app.MapControllerRoute(
+    name: "playgroupCollection",
+    pattern: "Playgroup/Collection/{id}",
+    defaults: new { controller = "Playgroup", action = "Collection" });
+
 
 
 if (app.Environment.IsDevelopment())
@@ -141,5 +156,84 @@ if (app.Environment.IsDevelopment())
         var updated = await sync.BackfillBggNumVotersAsync(ct);
         return Results.Ok(new { Updated = updated });
     });
+
+    app.MapPost("/dev/bdd/reset-review-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedReviewTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.CreateGameId,
+            result.ExistingReviewGameId,
+            result.SeededReviewText
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-gamenight-attendance-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedGameNightAttendanceTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameNightEventId
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-collection-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedCollectionTestDataAsync();
+        return Results.Ok(new
+        {
+            result.MemberUsername,
+            result.MemberPassword,
+            result.NonMemberUsername,
+            result.NonMemberPassword,
+            result.OwnerUsername,
+            result.CollectionPlaygroupId,
+            result.EmptyPlaygroupId,
+            result.CollectionGameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-wishlist-data", async (BddWishlistTestDataService bddWishlistTestDataService) =>
+    {
+        var result = await bddWishlistTestDataService.ResetAndSeedWishlistTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameNotOnWishlistId,
+            result.GameAlreadyOnWishlistId,
+            result.GameNotOnWishlistName,
+            result.GameAlreadyOnWishlistName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-playgroup-data", async (BddPlaygroupTestDataService bddPlaygroupTestDataService) =>
+    {
+        var result = await bddPlaygroupTestDataService.ResetAndSeedPlaygroupTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password
+        });
+    });
+
+    app.MapGet("/dev/bdd/config-check", (IConfiguration config) =>
+    {
+        return Results.Ok(new
+        {
+            UseBddDatabase = config["UseBddDatabase"],
+            DefaultConnectionFound = !string.IsNullOrWhiteSpace(config.GetConnectionString("DefaultConnection")),
+            BddConnectionFound = !string.IsNullOrWhiteSpace(config.GetConnectionString("BddConnection"))
+        });
+    });
+
 }
 app.Run();
