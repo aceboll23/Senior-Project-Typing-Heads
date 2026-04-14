@@ -150,6 +150,7 @@ namespace BoredGamers.Services.Games
     public async Task<IReadOnlyList<Game>> GetBrowseGamesFilteredAsync(
       int page,
       int pageSize,
+      int? minPlayTime,
       int? maxPlayTime,
       int? playerCount,
       decimal? minRating)
@@ -164,8 +165,11 @@ namespace BoredGamers.Services.Games
         .AsNoTracking()
         .AsQueryable();
 
+      if (minPlayTime.HasValue)
+        games = games.Where(g => g.PlayTime.HasValue && g.PlayTime.Value >= minPlayTime.Value);
+
       if (maxPlayTime.HasValue)
-        games= games.Where(g => g.PlayTime.HasValue && g.PlayTime.Value <= maxPlayTime.Value);
+        games = games.Where(g => g.PlayTime.HasValue && g.PlayTime.Value <= maxPlayTime.Value);
 
       if (playerCount.HasValue)
         games = games.Where(g => g.MinPlayers.HasValue && g.MaxPlayers.HasValue
