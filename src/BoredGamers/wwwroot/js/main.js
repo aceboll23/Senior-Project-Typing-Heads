@@ -148,7 +148,7 @@ function initSearchResults() {
         }
 
         if (playerCount) apiUrl += '&playerCount=' + playerCount;
-        if (minRating) apiUrl += '&minRting' + minRating;
+        if (minRating) apiUrl += '&minRating=' + minRating;
     }
     //If it's just a normal text ssearch, use the new DB-first + BGG fallback search
     else {
