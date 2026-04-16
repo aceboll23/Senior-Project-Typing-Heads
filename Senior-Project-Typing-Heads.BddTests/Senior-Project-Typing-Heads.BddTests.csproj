@@ -10,6 +10,7 @@
     <IsTestProject>true</IsTestProject>
     <ReqnrollGenerateFeatureFiles>true</ReqnrollGenerateFeatureFiles>
     <ParallelizeWorkers>0</ParallelizeWorkers>
+    <UserSecretsId>c1c513ed-35e6-42f6-ba01-8b7a9544e3a6</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
