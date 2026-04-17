@@ -1,4 +1,7 @@
 
+# Claude Code local memory
+.claude/
+
 # Build results
 
 src/BoredGamers/bin/
