@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - BoredGamers</title>
 
+    <!-- Apply saved theme before render to prevent flash -->
+    <script>
+        (function () {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <!-- Bootstrap Icons -->
@@ -44,6 +53,11 @@
 
                 <!-- Right Side Actions -->
                 <div class="d-flex align-items-center gap-2">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="theme-toggle" title="Toggle theme" onclick="toggleTheme()">
+                        <i class="bi bi-sun icon-sun"></i>
+                        <i class="bi bi-moon icon-moon"></i>
+                    </button>
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         <!-- Logged In: Icons and User Menu -->
@@ -202,6 +216,7 @@
     <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/main.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
