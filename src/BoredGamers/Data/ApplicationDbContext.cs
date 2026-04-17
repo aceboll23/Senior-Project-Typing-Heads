@@ -29,6 +29,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<GameNightEvent> GameNightEvents { get; set; }
     public DbSet<GameNightEventGame> GameNightEventGames { get; set; } 
     public DbSet<PlaygroupInvite> PlaygroupInvites { get; set; }
+    public DbSet<GameVote> GameVotes { get; set; }
 
     public DbSet<EventResponse> EventResponses { get; set; }
     public DbSet<ProfilePost> ProfilePosts { get; set; }
@@ -325,6 +326,32 @@ public class ApplicationDbContext : IdentityDbContext
                 .IsUnique();
 
             entity.Property(r => r.RespondedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Game Night Voting
+        modelBuilder.Entity<GameVote>(entity =>
+        {
+            entity.HasOne(v => v.GameNightEvent)
+                .WithMany(e => e.GameVotes)
+                .HasForeignKey(v => v.GameNightEventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(v => v.GameNightEventGame)
+                .WithMany()
+                .HasForeignKey(v => v.GameNightEventGameId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(v => v.User)
+                .WithMany()
+                .HasForeignKey(v => v.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // One rank per user per game per event
+            entity.HasIndex(v => new { v.GameNightEventId, v.GameNightEventGameId, v.UserId })
+                .IsUnique();
+
+            entity.Property(v => v.SubmittedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 
