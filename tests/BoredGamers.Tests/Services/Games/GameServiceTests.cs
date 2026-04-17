@@ -74,6 +74,7 @@ namespace BoredGamers.Tests.Services.Games
       var results = await service.GetBrowseGamesFilteredAsync(
         page: 1,
         pageSize: 20,
+        minPlayTime: null,
         maxPlayTime: null,
         playerCount: null,
         minRating: 7.0m);
