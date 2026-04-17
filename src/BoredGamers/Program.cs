@@ -5,6 +5,7 @@ using BoredGamers.Services.Email;
 using BoredGamers.Services.Collections;
 using BoredGamers.Services.GameNightEvents;
 using BoredGamers.Services.Posts;
+using BoredGamers.Services.SocialFeed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
@@ -22,6 +23,7 @@ builder.Services.AddScoped<BddTestDataService>();
 builder.Services.AddScoped<BddWishlistTestDataService>();
 builder.Services.AddScoped<BddPlaygroupTestDataService>();
 builder.Services.AddScoped<BddPostTestDataService>();
+builder.Services.AddScoped<BddSocialFeedTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -77,6 +79,8 @@ builder.Services.AddScoped<IGameSyncService, GameSyncService>();
 
 //Profile post service
 builder.Services.AddScoped<IProfilePostService, ProfilePostService>();
+//Social feed service
+builder.Services.AddScoped<ISocialFeedService, SocialFeedService>();
 
 //Email service
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -229,6 +233,23 @@ if (app.Environment.IsDevelopment())
             result.FriendUsername,
             result.FriendPassword,
             result.ExistingPostContent
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-social-feed-data", async (BddSocialFeedTestDataService bddSocialFeedTestDataService) =>
+    {
+        var result = await bddSocialFeedTestDataService.ResetAndSeedSocialFeedTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.ViewerUsername,
+            result.ViewerPassword,
+            result.FriendUsername,
+            result.FriendPassword,
+            result.FriendPostContent,
+            result.StrangerPostContent,
+            result.OlderPostContent,
+            result.NewerPostContent
         });
     });
 
