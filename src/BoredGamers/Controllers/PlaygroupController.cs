@@ -23,6 +23,9 @@ public class PlaygroupController : Controller
     }
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
+    private async Task<UserProfile?> GetUserProfileAsync(string userId) =>
+        await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == userId);
+
     // GET /Playgroup — "My Playgroups" list
     public async Task<IActionResult> Index()
     {
@@ -163,8 +166,7 @@ public class PlaygroupController : Controller
             return Forbid();
 
         // Get current user's profile to query friendships
-        var userProfile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
+        var userProfile = await GetUserProfileAsync(userId);
 
         if (userProfile == null)
             return NotFound();
@@ -259,8 +261,7 @@ public class PlaygroupController : Controller
         _db.PlaygroupInvites.Add(invite);
 
         // Create a notification for the invited user
-        var invitedProfile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == invitedUserId);
+        var invitedProfile = await GetUserProfileAsync(invitedUserId);
 
         if (invitedProfile != null)
         {
@@ -353,132 +354,6 @@ public class PlaygroupController : Controller
 
         return RedirectToAction("PendingInvites");
     }
-
-        // GET /Playgroup/Notifications
-    public async Task<IActionResult> Notifications()
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Index");
-
-        var notifications = await _db.Set<Notification>()
-            .Where(n => n.UserProfileId == profile.Id)
-            .OrderByDescending(n => n.CreatedAt)
-            .ToListAsync();
-
-        return View(notifications);
-    }
-
-    // POST /Playgroup/MarkAllNotificationsRead
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> MarkAllNotificationsRead()
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Index");
-
-        var unread = await _db.Set<Notification>()
-            .Where(n => n.UserProfileId == profile.Id && !n.IsRead)
-            .ToListAsync();
-
-        foreach (var n in unread)
-        {
-            n.IsRead = true;
-            n.ReadAt = DateTime.UtcNow;
-        }
-
-        await _db.SaveChangesAsync();
-        return RedirectToAction("Notifications");
-    }
-
-        // POST /Playgroup/MarkNotificationRead/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> MarkNotificationRead(int id)
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Index");
-
-        var notification = await _db.Set<Notification>()
-            .FirstOrDefaultAsync(n => n.Id == id && n.UserProfileId == profile.Id);
-
-        if (notification != null && !notification.IsRead)
-        {
-            notification.IsRead = true;
-            notification.ReadAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
-        }
-
-        return RedirectToAction("Notifications");
-    }
-
-        // POST /Playgroup/ViewNotification/5
-    // Marks as read then redirects to the notification's ActionUrl
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ViewNotification(int id)
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Notifications");
-
-        var notification = await _db.Set<Notification>()
-            .FirstOrDefaultAsync(n => n.Id == id && n.UserProfileId == profile.Id);
-
-        if (notification == null)
-            return RedirectToAction("Notifications");
-
-        if (!notification.IsRead)
-        {
-            notification.IsRead = true;
-            notification.ReadAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
-        }
-
-        if (!string.IsNullOrEmpty(notification.ActionUrl))
-            return Redirect(notification.ActionUrl);
-
-        return RedirectToAction("Notifications");
-    }
-
-    // POST /Playgroup/DeleteNotification/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteNotification(int id)
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Index");
-
-        var notification = await _db.Set<Notification>()
-            .FirstOrDefaultAsync(n => n.Id == id && n.UserProfileId == profile.Id);
-
-        if (notification != null)
-        {
-            _db.Set<Notification>().Remove(notification);
-            await _db.SaveChangesAsync();
-        }
-
-        return RedirectToAction("Notifications");
-    }
-
 
         // GET /Playgroup/DeletePlaygroup/5
     public async Task<IActionResult> DeletePlaygroup(int id)

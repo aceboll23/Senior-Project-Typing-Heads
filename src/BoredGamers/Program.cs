@@ -33,18 +33,6 @@ var connectionString = builder.Configuration.GetConnectionString(connectionStrin
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//   options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-/*
- * Register ApplicationDbContext with dependency injection.
- * The connection string is read from appsettings.json (or user-secrets).
- *
- * IMPORTANT:
- *  - Local development can use SQL Server LocalDB
- *  - Azure SQL will replace this connection string later
- */
-// Register BGG client for Top games sync (HTTP-based)
 
 //
 //Identity
