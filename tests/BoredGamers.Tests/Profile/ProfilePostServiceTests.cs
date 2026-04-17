@@ -40,14 +40,16 @@ public class ProfilePostServiceTests
             Id = "owner-1",
             UserName = "PostOwner",
             Email = "owner@test.com",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
         _other = new User
         {
             Id = "other-1",
             UserName = "OtherUser",
             Email = "other@test.com",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
         _db.Users.AddRange(_owner, _other);
         await _db.SaveChangesAsync();

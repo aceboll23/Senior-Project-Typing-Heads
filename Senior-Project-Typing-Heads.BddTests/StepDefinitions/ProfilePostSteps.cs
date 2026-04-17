@@ -97,8 +97,12 @@ public class ProfilePostSteps
         var btn = _webDriverContext.Driver!.FindElement(By.Id("post-submit-btn"));
         ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
             "arguments[0].scrollIntoView({ block: 'center' });", btn);
-        ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
-            "arguments[0].click();", btn);
+        btn.Click();
+        new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(10))
+            .Until(d => {
+                try { var _ = btn.TagName; return false; }
+                catch (StaleElementReferenceException) { return true; }
+            });
         new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(10))
             .Until(d => d.FindElements(By.Id("post-submit-btn")).Count > 0);
     }
@@ -128,8 +132,12 @@ public class ProfilePostSteps
         var btn = _webDriverContext.Driver!.FindElement(By.Id("post-submit-btn"));
         ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
             "arguments[0].scrollIntoView({ block: 'center' });", btn);
-        ((IJavaScriptExecutor)_webDriverContext.Driver).ExecuteScript(
-            "arguments[0].click();", btn);
+        btn.Click();
+        new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(10))
+            .Until(d => {
+                try { var _ = btn.TagName; return false; }
+                catch (StaleElementReferenceException) { return true; }
+            });
         new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(10))
             .Until(d => d.FindElements(By.Id("post-submit-btn")).Count > 0);
     }
