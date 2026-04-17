@@ -1,4 +1,5 @@
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Reqnroll;
 using System.Net.Http.Json;
 using Senior_Project_Typing_Heads.BddTests.Support;
@@ -10,11 +11,13 @@ public class WishlistSteps
 {
     private readonly WebDriverContext _webDriverContext;
     private readonly BddWishlistSeedDataContext _wishlistSeedDataContext;
+    private readonly LoginHelper _loginHelper;
 
-    public WishlistSteps(WebDriverContext webDriverContext, BddWishlistSeedDataContext wishlistSeedDataContext)
+    public WishlistSteps(WebDriverContext webDriverContext, BddWishlistSeedDataContext wishlistSeedDataContext, LoginHelper loginHelper)
     {
         _webDriverContext = webDriverContext;
         _wishlistSeedDataContext = wishlistSeedDataContext;
+        _loginHelper = loginHelper;
     }
 
     private class ResetWishlistDataResponse
@@ -51,11 +54,7 @@ public class WishlistSteps
         _wishlistSeedDataContext.GameNotOnWishlistName = seedData.GameNotOnWishlistName;
         _wishlistSeedDataContext.GameAlreadyOnWishlistName = seedData.GameAlreadyOnWishlistName;
 
-        _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Account/Login");
-        _webDriverContext.Driver.FindElement(By.Id("UsernameOrEmail")).SendKeys(seedData.Username);
-        _webDriverContext.Driver.FindElement(By.Id("Password")).SendKeys(seedData.Password);
-        _webDriverContext.Driver.FindElement(By.CssSelector("button[type='submit']")).Click();
-        Thread.Sleep(1000);
+        _loginHelper.Login(seedData.Username, seedData.Password);
     }
 
     [When("I navigate to the game not on my wishlist")]
@@ -75,8 +74,15 @@ public class WishlistSteps
     [When("I click the Add to Wishlist button")]
     public void WhenIClickTheAddToWishlistButton()
     {
-        _webDriverContext.Driver!.FindElement(By.Id("addToWishlistBtn")).Click();
-        Thread.Sleep(1000);
+        var driver = _webDriverContext.Driver!;
+        driver.FindElement(By.Id("addToWishlistBtn")).Click();
+
+        new WebDriverWait(driver, TimeSpan.FromSeconds(10))
+            .Until(d =>
+            {
+                var btn = d.FindElement(By.Id("addToWishlistBtn"));
+                return !btn.Enabled || btn.GetAttribute("disabled") != null || btn.Text.Contains("On Wishlist");
+            });
     }
 
     [Then("the game appears in my wishlist")]

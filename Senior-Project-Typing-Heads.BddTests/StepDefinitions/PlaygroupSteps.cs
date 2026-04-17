@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Reqnroll;
 using Senior_Project_Typing_Heads.BddTests.Support;
 using System.Net.Http.Json;
@@ -11,6 +12,7 @@ public class PlaygroupSteps
 {
     private readonly WebDriverContext _webDriverContext;
     private readonly BddPlaygroupSeedDataContext _playgroupSeedDataContext;
+    private readonly LoginHelper _loginHelper;
     private string _createdPlaygroupName = string.Empty;
 
     private class ResetPlaygroupDataResponse
@@ -19,10 +21,11 @@ public class PlaygroupSteps
         public string Password { get; set; } = "";
     }
 
-    public PlaygroupSteps(WebDriverContext webDriverContext, BddPlaygroupSeedDataContext playgroupSeedDataContext)
+    public PlaygroupSteps(WebDriverContext webDriverContext, BddPlaygroupSeedDataContext playgroupSeedDataContext, LoginHelper loginHelper)
     {
         _webDriverContext = webDriverContext;
         _playgroupSeedDataContext = playgroupSeedDataContext;
+        _loginHelper = loginHelper;
     }
 
     [Given("I am logged in as PersonThree")]
@@ -47,13 +50,7 @@ public class PlaygroupSteps
         _playgroupSeedDataContext.Username = seedData.Username;
         _playgroupSeedDataContext.Password = seedData.Password;
 
-        var driver = _webDriverContext.Driver!;
-        driver.Navigate().GoToUrl(TestSettings.BaseUrl + "/Account/Login");
-        driver.FindElement(By.Id("UsernameOrEmail")).SendKeys(seedData.Username);
-        driver.FindElement(By.Id("Password")).SendKeys(seedData.Password);
-        driver.FindElement(By.CssSelector("button[type='submit']")).Click();
-
-        System.Threading.Thread.Sleep(1000);
+        _loginHelper.Login(seedData.Username, seedData.Password);
     }
 
     [When("I navigate to the Create Playgroup page")]
@@ -80,7 +77,9 @@ public class PlaygroupSteps
     public void WhenISubmitTheCreatePlaygroupForm()
     {
         _webDriverContext.Driver!.FindElement(By.CssSelector(".btn-primary[type='submit']")).Click();
-        System.Threading.Thread.Sleep(1000);
+
+        new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(10))
+            .Until(d => d.Url.Contains("/Playgroup/Details"));
     }
 
     [Then("I am redirected to the playgroup detail page")]

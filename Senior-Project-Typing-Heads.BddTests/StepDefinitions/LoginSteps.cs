@@ -10,11 +10,13 @@ public class LoginSteps
 {
     private readonly WebDriverContext _webDriverContext;
     private readonly BddSeedDataContext _bddSeedDataContext;
+    private readonly LoginHelper _loginHelper;
 
-    public LoginSteps(WebDriverContext webDriverContext, BddSeedDataContext bddSeedDataContext)
+    public LoginSteps(WebDriverContext webDriverContext, BddSeedDataContext bddSeedDataContext, LoginHelper loginHelper)
     {
         _webDriverContext = webDriverContext;
         _bddSeedDataContext = bddSeedDataContext;
+        _loginHelper = loginHelper;
     }
 
     private class ResetReviewDataResponse
@@ -30,7 +32,7 @@ public class LoginSteps
     {
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
-        public int GameNightEventId { get; set; } 
+        public int GameNightEventId { get; set; }
     }
 
     [Given("I am logged in as a registered user")]
@@ -59,11 +61,7 @@ public class LoginSteps
         _bddSeedDataContext.ExistingReviewGameId = seedData.ExistingReviewGameId;
         _bddSeedDataContext.SeededReviewText = seedData.SeededReviewText;
 
-        _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Account/Login");
-
-        _webDriverContext.Driver.FindElement(By.Id("UsernameOrEmail")).SendKeys(seedData.Username);
-        _webDriverContext.Driver.FindElement(By.Id("Password")).SendKeys(seedData.Password);
-        _webDriverContext.Driver.FindElement(By.CssSelector("button[type='submit']")).Click();
+        _loginHelper.Login(seedData.Username, seedData.Password);
     }
 
     [Given("I am a logged-in member of the playgroup for the event")]
@@ -75,7 +73,7 @@ public class LoginSteps
             .PostAsync($"{TestSettings.BaseUrl}/dev/bdd/reset-gamenight-attendance-data", null)
             .GetAwaiter()
             .GetResult();
-        
+
         resetResponse.EnsureSuccessStatusCode();
 
         var seedData = resetResponse.Content
@@ -90,9 +88,6 @@ public class LoginSteps
 
         _bddSeedDataContext.GameNightEventId = seedData.GameNightEventId;
 
-        _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Account/Login");
-        _webDriverContext.Driver.FindElement(By.Id("UsernameOrEmail")).SendKeys(seedData.Username);
-        _webDriverContext.Driver.FindElement(By.Id("Password")).SendKeys(seedData.Password);
-        _webDriverContext.Driver.FindElement(By.CssSelector("button[type='submit']")).Click();
+        _loginHelper.Login(seedData.Username, seedData.Password);
     }
 }

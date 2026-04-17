@@ -12,13 +12,16 @@ public class PlaygroupCollectionSteps
 {
     private readonly WebDriverContext _webDriverContext;
     private readonly BddSeedDataContext _bddSeedDataContext;
+    private readonly LoginHelper _loginHelper;
 
     public PlaygroupCollectionSteps(
         WebDriverContext webDriverContext,
-        BddSeedDataContext bddSeedDataContext)
+        BddSeedDataContext bddSeedDataContext,
+        LoginHelper loginHelper)
     {
         _webDriverContext = webDriverContext;
         _bddSeedDataContext = bddSeedDataContext;
+        _loginHelper = loginHelper;
     }
 
     private class ResetCollectionDataResponse
@@ -53,16 +56,6 @@ public class PlaygroupCollectionSteps
         return seedData;
     }
 
-    private void LoginAs(string username, string password)
-    {
-        var driver = _webDriverContext.Driver!;
-        driver.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Account/Login");
-        driver.FindElement(By.Id("UsernameOrEmail")).SendKeys(username);
-        driver.FindElement(By.Id("Password")).SendKeys(password);
-        driver.FindElement(By.CssSelector("button[type='submit']")).Click();
-        System.Threading.Thread.Sleep(1000);
-    }
-
     [Given("I am a logged-in member of the collection playgroup")]
     public void GivenIAmALoggedInMemberOfTheCollectionPlaygroup()
     {
@@ -73,7 +66,7 @@ public class PlaygroupCollectionSteps
         _bddSeedDataContext.CollectionGameName = seedData.CollectionGameName;
         _bddSeedDataContext.OwnerUsername = seedData.OwnerUsername;
 
-        LoginAs(seedData.MemberUsername, seedData.MemberPassword);
+        _loginHelper.Login(seedData.MemberUsername, seedData.MemberPassword);
     }
 
     [Given("I am logged in as a non-member")]
@@ -86,7 +79,7 @@ public class PlaygroupCollectionSteps
         _bddSeedDataContext.CollectionGameName = seedData.CollectionGameName;
         _bddSeedDataContext.OwnerUsername = seedData.OwnerUsername;
 
-        LoginAs(seedData.NonMemberUsername, seedData.NonMemberPassword);
+        _loginHelper.Login(seedData.NonMemberUsername, seedData.NonMemberPassword);
     }
 
     [Given("I am a logged-in member of the empty playgroup")]
@@ -99,7 +92,7 @@ public class PlaygroupCollectionSteps
         _bddSeedDataContext.CollectionGameName = seedData.CollectionGameName;
         _bddSeedDataContext.OwnerUsername = seedData.OwnerUsername;
 
-        LoginAs(seedData.MemberUsername, seedData.MemberPassword);
+        _loginHelper.Login(seedData.MemberUsername, seedData.MemberPassword);
     }
 
     [When("I navigate to the playgroup details page")]
