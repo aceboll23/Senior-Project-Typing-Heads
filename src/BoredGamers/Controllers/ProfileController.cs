@@ -1,5 +1,6 @@
 using BoredGamers.Data;
 using BoredGamers.Models;
+using BoredGamers.Services.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +13,13 @@ public class ProfileController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<User> _userManager;
+    private readonly IProfilePostService _postService;
 
-    public ProfileController(ApplicationDbContext db, UserManager<User> userManager)
+    public ProfileController(ApplicationDbContext db, UserManager<User> userManager, IProfilePostService postService)
     {
         _db = db;
         _userManager = userManager;
+        _postService = postService;
     }
 
     // GET /Profile/{username}
@@ -120,6 +123,9 @@ public class ProfileController : Controller
                 ViewData["PendingRequests"] = requestsWithUsers;
             }
         }
+
+        var posts = await _postService.GetPostsByUserIdAsync(profileUser.Id);
+        ViewData["ProfilePosts"] = posts;
 
         return View();
     }

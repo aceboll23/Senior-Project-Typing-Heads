@@ -31,6 +31,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<PlaygroupInvite> PlaygroupInvites { get; set; }
 
     public DbSet<EventResponse> EventResponses { get; set; }
+    public DbSet<ProfilePost> ProfilePosts { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
 
@@ -294,6 +295,22 @@ public class ApplicationDbContext : IdentityDbContext
 
             entity.HasIndex(eg => new { eg.GameNightEventId, eg.GameId })
                 .IsUnique();
+        });
+
+        // Configure ProfilePost
+        modelBuilder.Entity<ProfilePost>(entity =>
+        {
+            entity.HasOne(p => p.UserProfile)
+                .WithMany(up => up.Posts)
+                .HasForeignKey(p => p.UserProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(p => p.UserProfileId);
+
+            entity.Property(p => p.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(p => p.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
         });
 
         // Configure EventResponse

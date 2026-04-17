@@ -4,6 +4,7 @@ using BoredGamers.Services.Games;
 using BoredGamers.Services.Email;
 using BoredGamers.Services.Collections;
 using BoredGamers.Services.GameNightEvents;
+using BoredGamers.Services.Posts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
@@ -20,6 +21,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<BddTestDataService>();
 builder.Services.AddScoped<BddWishlistTestDataService>();
 builder.Services.AddScoped<BddPlaygroupTestDataService>();
+builder.Services.AddScoped<BddPostTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -72,6 +74,9 @@ builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameNightEventService, GameNightEventService>();
 //Sync Service that imports/upserts BGG games into our local database
 builder.Services.AddScoped<IGameSyncService, GameSyncService>();
+
+//Profile post service
+builder.Services.AddScoped<IProfilePostService, ProfilePostService>();
 
 //Email service
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -210,6 +215,20 @@ if (app.Environment.IsDevelopment())
         {
             result.Username,
             result.Password
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-post-data", async (BddPostTestDataService bddPostTestDataService) =>
+    {
+        var result = await bddPostTestDataService.ResetAndSeedPostTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.OwnerUsername,
+            result.OwnerPassword,
+            result.FriendUsername,
+            result.FriendPassword,
+            result.ExistingPostContent
         });
     });
 
