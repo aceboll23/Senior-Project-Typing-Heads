@@ -25,11 +25,13 @@ namespace BoredGamers.Controllers
       _collections = collections;
     }
 
+    private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
     [HttpPost("add")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Add(int gameId, CancellationToken ct)
     {
-      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      var userId = GetUserId();
       if (string.IsNullOrWhiteSpace(userId))
         return Unauthorized();
 
@@ -42,7 +44,7 @@ namespace BoredGamers.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddToWishlist(int gameId, CancellationToken ct)
     {
-      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      var userId = GetUserId();
       if (string.IsNullOrWhiteSpace(userId))
         return Unauthorized();
 
@@ -54,7 +56,7 @@ namespace BoredGamers.Controllers
     [HttpGet("")]
     public async Task<IActionResult> Index(int page = 1, CancellationToken ct = default)
     {
-      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      var userId = GetUserId();
       if (string.IsNullOrWhiteSpace(userId))
         return Unauthorized();
 
