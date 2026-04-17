@@ -19,14 +19,6 @@ public class GameNightAttendanceDefinitions
     _bddSeedDataContext = bddSeedDataContext;
   }
 
-  [Given("a game night exists for my playgroup")]
-  public void GivenAGameNightExistsForMyPlaygroup()
-  {
-    _webDriverContext.Driver!.Navigate().GoToUrl(
-        $"{TestSettings.BaseUrl}/GameNightEvent/Details/{_bddSeedDataContext.GameNightEventId}"
-    );
-  }
-
   [Given("a game night event exists for my playgroup")]
   public void GivenAGameNightEventExistsForMyPlaygroup()
   {
