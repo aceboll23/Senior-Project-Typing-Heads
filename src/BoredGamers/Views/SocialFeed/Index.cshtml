@@ -1,0 +1,56 @@
+@model IReadOnlyList<BoredGamers.Models.ViewModels.SocialFeedPostViewModel>
+@{
+    ViewData["Title"] = "Social Feed";
+}
+
+<section class="py-4">
+    <div class="container">
+        <h3 class="mb-4"><i class="bi bi-newspaper me-2"></i>Social Feed</h3>
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-people display-4 text-muted"></i>
+                <p class="text-muted mt-3">No posts yet. Add some friends and check back!</p>
+            </div>
+        }
+        else
+        {
+            <div id="social-feed-list">
+                @foreach (var post in Model)
+                {
+                    <div class="card bg-dark mb-3 social-feed-post">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                @if (!string.IsNullOrEmpty(post.AuthorAvatarUrl))
+                                {
+                                    <img src="@post.AuthorAvatarUrl" alt="@post.AuthorUsername"
+                                         class="rounded-circle me-2"
+                                         style="width:36px;height:36px;object-fit:cover;">
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2"
+                                         style="width:36px;height:36px;font-size:1rem;">
+                                        @post.AuthorUsername.Substring(0, 1).ToUpper()
+                                    </div>
+                                }
+                                <div>
+                                    <a asp-controller="Profile" asp-action="Index"
+                                       asp-route-username="@post.AuthorUsername"
+                                       class="fw-bold text-white text-decoration-none">
+                                        @post.AuthorUsername
+                                    </a>
+                                    <div class="text-muted small">
+                                        @post.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy 'at' h:mm tt")
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mb-0">@post.Content</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

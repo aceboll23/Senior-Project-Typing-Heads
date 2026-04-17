@@ -1,0 +1,51 @@
+using BoredGamers.Data;
+using BoredGamers.Models;
+using BoredGamers.Models.ViewModels;
+using Microsoft.EntityFrameworkCore;
+
+namespace BoredGamers.Services.SocialFeed;
+
+public class SocialFeedService : ISocialFeedService
+{
+    private readonly ApplicationDbContext _db;
+
+    public SocialFeedService(ApplicationDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<IReadOnlyList<SocialFeedPostViewModel>> GetFeedForUserAsync(string userId)
+    {
+        var profile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == userId);
+        if (profile == null)
+            return Array.Empty<SocialFeedPostViewModel>();
+
+        // Collect profile IDs of accepted friends (friendship works both directions)
+        var friendProfileIds = await _db.Set<Friendship>()
+            .Where(f =>
+                (f.RequesterProfileId == profile.Id || f.ReceiverProfileId == profile.Id)
+                && f.Status == FriendshipStatus.Accepted)
+            .Select(f => f.RequesterProfileId == profile.Id
+                ? f.ReceiverProfileId
+                : f.RequesterProfileId)
+            .ToListAsync();
+
+        if (friendProfileIds.Count == 0)
+            return Array.Empty<SocialFeedPostViewModel>();
+
+        return await _db.ProfilePosts
+            .Where(p => friendProfileIds.Contains(p.UserProfileId))
+            .Include(p => p.UserProfile)
+                .ThenInclude(up => up.User)
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new SocialFeedPostViewModel
+            {
+                PostId = p.Id,
+                Content = p.Content,
+                CreatedAt = p.CreatedAt,
+                AuthorUsername = p.UserProfile.User.UserName ?? "Unknown",
+                AuthorAvatarUrl = p.UserProfile.AvatarUrl
+            })
+            .ToListAsync();
+    }
+}
