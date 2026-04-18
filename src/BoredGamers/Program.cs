@@ -263,5 +263,20 @@ if (app.Environment.IsDevelopment())
         });
     });
 
+    app.MapPost("/dev/bdd/reset-voting-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedVotingTestDataAsync();
+        return Results.Ok(new
+        {
+            result.CreatorUsername,
+            result.CreatorPassword,
+            result.MemberUsername,
+            result.MemberPassword,
+            result.EventId,
+            result.EventGameId,
+            result.GameName
+        });
+    });
+
 }
 app.Run();
