@@ -109,6 +109,17 @@ public class GameNightEventController : Controller
     ViewData["MaybeCount"] = responses.Count(r => r.Status == ResponseStatus.Maybe);
     ViewData["NotGoingCount"] = responses.Count(r => r.Status == ResponseStatus.NotGoing);
     ViewData["Responses"] = responses;
+    // Voting data
+    var userRankings = await _gameNightEventService.GetUserRankingsAsync(id, userId);
+    ViewData["VotingStatus"] = gameNightEvent.VotingStatus;
+    ViewData["UserRankings"] = userRankings;
+
+    if (gameNightEvent.VotingStatus == VotingStatus.Closed)
+    {
+      var results = await _gameNightEventService.GetVotingResultsAsync(id);
+      ViewData["VotingResults"] = results;
+    }
+     
     ViewData["CurrentUserId"] = userId;
     ViewData["ResponderNames"] = await _gameNightEventService.GetResponderNamesAsync(responses);
 
@@ -322,7 +333,7 @@ public class GameNightEventController : Controller
 
     return RedirectToAction("Details", "Playgroup", new { id = playgroupId, status = "event-cancelled" });
   }
-    // POST /GameNightEvent/Respond
+  // POST /GameNightEvent/Respond
   [HttpPost]
   [ValidateAntiForgeryToken]
   public async Task<IActionResult> Respond(int eventId, ResponseStatus status)
@@ -336,5 +347,47 @@ public class GameNightEventController : Controller
     }
 
     return RedirectToAction("Details", new { id = eventId, status = "responded" });
+  }
+
+  // POST /GameNightEvent/OpenVoting
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> OpenVoting(int eventId)
+  {
+      var userId = GetUserId();
+      var opened = await _gameNightEventService.OpenVotingAsync(eventId, userId);
+      return RedirectToAction("Details", new
+      {
+          id = eventId,
+          status = opened ? "voting-opened" : "voting-open-error"
+      });
+  }
+
+  // POST /GameNightEvent/CloseVoting
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> CloseVoting(int eventId)
+  {
+      var userId = GetUserId();
+      var closed = await _gameNightEventService.CloseVotingAsync(eventId, userId);
+      return RedirectToAction("Details", new
+      {
+          id = eventId,
+          status = closed ? "voting-closed" : "voting-close-error"
+      });
+  }
+
+  // POST /GameNightEvent/SubmitRankings
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> SubmitRankings(int eventId, [FromForm] Dictionary<int, int> gameRanks)
+  {
+      var userId = GetUserId();
+      var submitted = await _gameNightEventService.SubmitRankingsAsync(eventId, userId, gameRanks);
+      return RedirectToAction("Details", new
+      {
+          id = eventId,
+          status = submitted ? "rankings-submitted" : "rankings-error"
+      });
   }
 }
