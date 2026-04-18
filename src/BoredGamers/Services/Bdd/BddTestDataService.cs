@@ -446,10 +446,9 @@ public class BddTestDataService
       {
           var existing = await _db.Users.OfType<User>()
               .FirstOrDefaultAsync(u => u.UserName == username);
-
           if (existing != null)
           {
-              // Remove votes
+              // Remove votes submitted by this user
               var votes = await _db.GameVotes
                   .Where(v => v.UserId == existing.Id)
                   .ToListAsync();
@@ -457,6 +456,25 @@ public class BddTestDataService
               {
                   _db.GameVotes.RemoveRange(votes);
                   await _db.SaveChangesAsync();
+              }
+
+              // Remove votes on event games added by this user
+              // (votes from OTHER users referencing this user's event games)
+              var eventGameIds = await _db.GameNightEventGames
+                  .Where(eg => eg.UserId == existing.Id)
+                  .Select(eg => eg.Id)
+                  .ToListAsync();
+
+              if (eventGameIds.Count > 0)
+              {
+                  var eventGameVotes = await _db.GameVotes
+                      .Where(v => eventGameIds.Contains(v.GameNightEventGameId))
+                      .ToListAsync();
+                  if (eventGameVotes.Count > 0)
+                  {
+                      _db.GameVotes.RemoveRange(eventGameVotes);
+                      await _db.SaveChangesAsync();
+                  }
               }
 
               // Remove event games
