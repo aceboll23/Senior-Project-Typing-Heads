@@ -105,45 +105,15 @@ public class GameVotingSteps
     [Given("voting is already open for the event")]
     public void GivenVotingIsAlreadyOpenForTheEvent()
     {
-        // Log in as creator, open voting, then the test continues as the original user
-        // We do this through the UI to stay consistent with the BDD pattern
-        var driver = _webDriverContext.Driver!;
-        var currentUrl = driver.Url;
+        using var httpClient = new HttpClient();
+        var response = httpClient
+            .PostAsync(
+                $"{TestSettings.BaseUrl}/dev/bdd/open-voting/{_bddSeedDataContext.VotingEventId}",
+                null)
+            .GetAwaiter()
+            .GetResult();
 
-        // Navigate to event and open voting as creator
-        driver.Navigate().GoToUrl(
-            $"{TestSettings.BaseUrl}/Account/Login");
-        driver.FindElement(By.Id("UsernameOrEmail")).SendKeys(
-            _bddSeedDataContext.VotingCreatorUsername);
-        driver.FindElement(By.Id("Password")).SendKeys(
-            _bddSeedDataContext.VotingCreatorPassword);
-        driver.FindElement(By.CssSelector("button[type='submit']")).Click();
-        System.Threading.Thread.Sleep(1000);
-
-        driver.Navigate().GoToUrl(
-            $"{TestSettings.BaseUrl}/GameNightEvent/Details/{_bddSeedDataContext.VotingEventId}");
-
-        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-        var openBtn = wait.Until(d =>
-        {
-            var buttons = d.FindElements(By.CssSelector("button[type='submit']"));
-            return buttons.FirstOrDefault(b =>
-                b.Text.Contains("Open Voting", StringComparison.OrdinalIgnoreCase));
-        });
-        ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].click();", openBtn);
-        System.Threading.Thread.Sleep(1000);
-
-        // Log back in as the member if that's who the test needs
-        if (!string.IsNullOrEmpty(_bddSeedDataContext.VotingMemberUsername))
-        {
-            driver.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Account/Login");
-            driver.FindElement(By.Id("UsernameOrEmail")).SendKeys(
-                _bddSeedDataContext.VotingMemberUsername);
-            driver.FindElement(By.Id("Password")).SendKeys(
-                _bddSeedDataContext.VotingMemberPassword);
-            driver.FindElement(By.CssSelector("button[type='submit']")).Click();
-            System.Threading.Thread.Sleep(1000);
-        }
+        response.EnsureSuccessStatusCode();
     }
 
     [When("I navigate to the voting event details page")]
@@ -176,6 +146,10 @@ public class GameVotingSteps
         var driver = _webDriverContext.Driver!;
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
+        // Pre-accept any confirm dialogs
+        ((IJavaScriptExecutor)driver).ExecuteScript(
+            "window.confirm = function() { return true; }");
+
         var button = wait.Until(d =>
         {
             var buttons = d.FindElements(By.CssSelector("button[type='submit']"));
@@ -184,6 +158,9 @@ public class GameVotingSteps
         });
 
         Assert.That(button, Is.Not.Null, "Close Voting button was not found.");
+        ((IJavaScriptExecutor)driver).ExecuteScript(
+            "arguments[0].scrollIntoView({ block: 'center' });", button);
+        System.Threading.Thread.Sleep(300);
         ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].click();", button);
         System.Threading.Thread.Sleep(1000);
     }

@@ -278,5 +278,16 @@ if (app.Environment.IsDevelopment())
         });
     });
 
+    app.MapPost("/dev/bdd/open-voting/{eventId:int}", async (int eventId, ApplicationDbContext db) =>
+    {
+        var gameNightEvent = await db.GameNightEvents.FindAsync(eventId);
+        if (gameNightEvent == null) return Results.NotFound();
+
+        gameNightEvent.VotingStatus = VotingStatus.Open;
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new { eventId, votingStatus = "Open" });
+    });
+
 }
 app.Run();
