@@ -5,6 +5,7 @@ using BoredGamers.Services.Email;
 using BoredGamers.Services.Collections;
 using BoredGamers.Services.GameNightEvents;
 using BoredGamers.Services.Posts;
+using BoredGamers.Services.Block;
 using BoredGamers.Services.SocialFeed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -26,6 +27,7 @@ builder.Services.AddScoped<BddPostTestDataService>();
 builder.Services.AddScoped<BddSocialFeedTestDataService>();
 builder.Services.AddScoped<BddDeleteFriendTestDataService>();
 builder.Services.AddScoped<BddFriendCollectionTestDataService>();
+builder.Services.AddScoped<BddBlockTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -83,6 +85,8 @@ builder.Services.AddScoped<IGameSyncService, GameSyncService>();
 builder.Services.AddScoped<IProfilePostService, ProfilePostService>();
 //Social feed service
 builder.Services.AddScoped<ISocialFeedService, SocialFeedService>();
+//Block service
+builder.Services.AddScoped<IBlockService, BlockService>();
 
 //Email service
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -252,6 +256,31 @@ if (app.Environment.IsDevelopment())
             result.StrangerPostContent,
             result.OlderPostContent,
             result.NewerPostContent
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-block-data", async (BddBlockTestDataService svc) =>
+    {
+        var result = await svc.ResetWithFriendshipAsync();
+        return Results.Ok(new
+        {
+            result.BlockerUsername,
+            result.BlockerPassword,
+            result.TargetUsername,
+            result.TargetPassword
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-block-data-preblocked", async (BddBlockTestDataService svc) =>
+    {
+        var result = await svc.ResetWithBlockAsync();
+        return Results.Ok(new
+        {
+            result.BlockerUsername,
+            result.BlockerPassword,
+            result.TargetUsername,
+            result.TargetPassword,
+            result.TargetPostContent
         });
     });
 

@@ -17,6 +17,9 @@
     var pendingRequests = ViewData["PendingRequests"] as List<object> ?? new List<object>();
     var profilePosts = ViewData["ProfilePosts"] as IReadOnlyList<BoredGamers.Models.ProfilePost> ?? new List<BoredGamers.Models.ProfilePost>();
     var postError = TempData["PostError"] as string;
+    var hasBlocked = ViewData["HasBlocked"] as bool? ?? false;
+    var blockSuccess = TempData["BlockSuccess"] as string;
+    var blockError = TempData["BlockError"] as string;
 }
 
 <!-- Profile Header -->
@@ -88,6 +91,15 @@
                             }
                         </div>
 
+                        @if (!string.IsNullOrEmpty(blockSuccess))
+                        {
+                            <div class="alert alert-success mt-3"><i class="bi bi-check-circle me-2"></i>@blockSuccess</div>
+                        }
+                        @if (!string.IsNullOrEmpty(blockError))
+                        {
+                            <div class="alert alert-danger mt-3"><i class="bi bi-exclamation-circle me-2"></i>@blockError</div>
+                        }
+
                         <!-- Friend Request Button (only on other users' profiles) -->
                         @if (!isOwnProfile)
                         {
@@ -116,7 +128,23 @@
                                     <button id="addFriendBtn" class="btn btn-primary">
                                         <i class="bi bi-person-plus me-1"></i>Add As Friend
                                     </button>
-                                    
+
+                                }
+
+                                @if (hasBlocked)
+                                {
+                                    <span class="badge bg-secondary ms-2">Blocked</span>
+                                }
+                                else
+                                {
+                                    <form asp-controller="Block" asp-action="Block" method="post" class="d-inline ms-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="targetUsername" value="@username" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" id="block-user-btn"
+                                                onclick="return confirm('Block @username? This will remove any existing friendship.')">
+                                            <i class="bi bi-slash-circle me-1"></i>Block User
+                                        </button>
+                                    </form>
                                 }
                             </div>
                         }

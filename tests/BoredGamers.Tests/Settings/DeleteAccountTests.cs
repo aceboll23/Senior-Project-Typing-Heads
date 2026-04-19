@@ -1,6 +1,7 @@
 using BoredGamers.Controllers;
 using BoredGamers.Data;
 using BoredGamers.Models;
+using BoredGamers.Services.Block;
 using BoredGamers.Services.Email;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -82,7 +83,8 @@ public class DeleteAccountTests
             _db,
             _userManagerMock.Object,
             _signInManagerMock.Object,
-            _emailServiceMock.Object);
+            _emailServiceMock.Object,
+            new Mock<IBlockService>().Object);
 
         _controller.ControllerContext = new ControllerContext
         {
