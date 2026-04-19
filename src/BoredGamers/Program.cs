@@ -25,6 +25,7 @@ builder.Services.AddScoped<BddPlaygroupTestDataService>();
 builder.Services.AddScoped<BddPostTestDataService>();
 builder.Services.AddScoped<BddSocialFeedTestDataService>();
 builder.Services.AddScoped<BddDeleteFriendTestDataService>();
+builder.Services.AddScoped<BddFriendCollectionTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -288,6 +289,21 @@ if (app.Environment.IsDevelopment())
             result.EventId,
             result.EventGameId,
             result.GameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-friend-collection-data", async (BddFriendCollectionTestDataService svc) =>
+    {
+        var result = await svc.ResetAndSeedAsync();
+        return Results.Ok(new
+        {
+            result.ViewerUsername,
+            result.ViewerPassword,
+            result.FriendWithGamesUsername,
+            result.FriendEmptyUsername,
+            result.OwnedGameId,
+            result.OwnedGameName,
+            result.WishlistGameName
         });
     });
 

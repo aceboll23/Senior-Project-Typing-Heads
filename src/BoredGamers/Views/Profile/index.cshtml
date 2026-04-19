@@ -79,7 +79,12 @@
                             }
                             else
                             {
-                                <span class="text-muted">Private</span>
+                                <a class="btn btn-outline-secondary btn-sm ms-2"
+                                   asp-controller="Collection"
+                                   asp-action="FriendCollection"
+                                   asp-route-username="@username">
+                                    View Collection
+                                </a>
                             }
                         </div>
 
