@@ -327,4 +327,58 @@ public class FriendRequestTests
         Assert.That(friendship, Is.Not.Null);
         Assert.That(friendship!.Status, Is.EqualTo(FriendshipStatus.Cancelled));
     }
+
+    // --- TYP-234 Delete Friend ---
+
+    [Test]
+    public async Task RemoveFriend_WhenAcceptedFriendshipExists_DeletesRow()
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(System.Guid.NewGuid().ToString()).Options;
+        await using var db = new ApplicationDbContext(options);
+
+        var store = new Mock<IUserStore<User>>();
+        var userManager = new Mock<UserManager<User>>(
+            store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+
+        var owner = new User { Id = "del-owner", UserName = "del_owner", Email = "del_owner@test.com" };
+        var friend = new User { Id = "del-friend", UserName = "del_friend", Email = "del_friend@test.com" };
+        db.Users.AddRange(owner, friend);
+        await db.SaveChangesAsync();
+
+        var ownerProfile = new UserProfile { UserId = owner.Id };
+        var friendProfile = new UserProfile { UserId = friend.Id };
+        db.Set<UserProfile>().AddRange(ownerProfile, friendProfile);
+        await db.SaveChangesAsync();
+
+        db.Set<Friendship>().Add(new Friendship
+        {
+            RequesterProfileId = ownerProfile.Id,
+            ReceiverProfileId = friendProfile.Id,
+            Status = FriendshipStatus.Accepted,
+            RequestedAt = System.DateTime.UtcNow,
+            CreatedAt = System.DateTime.UtcNow,
+            UpdatedAt = System.DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        userManager.Setup(m => m.GetUserAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(owner);
+
+        var controller = new FriendsController(db, userManager.Object);
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, owner.Id)
+                }))
+            }
+        };
+
+        await controller.RemoveFriend(friendProfile.Id);
+
+        var count = await db.Set<Friendship>().CountAsync();
+        Assert.That(count, Is.EqualTo(0));
+    }
 }

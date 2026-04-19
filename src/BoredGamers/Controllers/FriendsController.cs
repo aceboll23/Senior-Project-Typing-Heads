@@ -19,6 +19,32 @@ public class FriendsController : Controller
         _userManager = userManager;
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveFriend(int friendProfileId)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null)
+            return Challenge();
+
+        var currentProfile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+        if (currentProfile == null)
+            return Challenge();
+
+        var friendship = await _db.Set<Friendship>().FirstOrDefaultAsync(f =>
+            f.Status == FriendshipStatus.Accepted &&
+            ((f.RequesterProfileId == currentProfile.Id && f.ReceiverProfileId == friendProfileId) ||
+             (f.ReceiverProfileId == currentProfile.Id && f.RequesterProfileId == friendProfileId)));
+
+        if (friendship != null)
+        {
+            _db.Set<Friendship>().Remove(friendship);
+            await _db.SaveChangesAsync();
+        }
+
+        return RedirectToAction("Index");
+    }
+
     // GET /Friends
     public async Task<IActionResult> Index()
     {

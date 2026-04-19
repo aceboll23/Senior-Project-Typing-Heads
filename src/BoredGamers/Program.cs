@@ -24,6 +24,7 @@ builder.Services.AddScoped<BddWishlistTestDataService>();
 builder.Services.AddScoped<BddPlaygroupTestDataService>();
 builder.Services.AddScoped<BddPostTestDataService>();
 builder.Services.AddScoped<BddSocialFeedTestDataService>();
+builder.Services.AddScoped<BddDeleteFriendTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -260,6 +261,18 @@ if (app.Environment.IsDevelopment())
             UseBddDatabase = config["UseBddDatabase"],
             DefaultConnectionFound = !string.IsNullOrWhiteSpace(config.GetConnectionString("DefaultConnection")),
             BddConnectionFound = !string.IsNullOrWhiteSpace(config.GetConnectionString("BddConnection"))
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-delete-friend-data", async (BddDeleteFriendTestDataService bddDeleteFriendTestDataService) =>
+    {
+        var result = await bddDeleteFriendTestDataService.ResetAndSeedDeleteFriendTestDataAsync();
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.FriendUsername,
+            result.FriendProfileId
         });
     });
 
