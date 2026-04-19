@@ -185,6 +185,13 @@ public class MessagesController : Controller
             return BadRequest ("Cannot message yourself");
         }
 
+        // Prevent messaging if a block exists in either direction
+        var isBlocked = await _db.Set<BlockedUser>().AnyAsync(b =>
+            (b.BlockerProfileId == currentProfile.Id && b.BlockedProfileId == recipient.Profile.Id) ||
+            (b.BlockerProfileId == recipient.Profile.Id && b.BlockedProfileId == currentProfile.Id));
+        if (isBlocked)
+            return Json(new { success = false, message = "Unable to send message." });
+
         var message = new DirectMessage
         {
             SenderProfileId = currentProfile.Id,

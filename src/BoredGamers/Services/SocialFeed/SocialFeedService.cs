@@ -33,6 +33,18 @@ public class SocialFeedService : ISocialFeedService
         if (friendProfileIds.Count == 0)
             return Array.Empty<SocialFeedPostViewModel>();
 
+        // Exclude profiles blocked in either direction
+        var blockedProfileIds = await _db.Set<BlockedUser>()
+            .Where(b => b.BlockerProfileId == profile.Id || b.BlockedProfileId == profile.Id)
+            .Select(b => b.BlockerProfileId == profile.Id ? b.BlockedProfileId : b.BlockerProfileId)
+            .ToListAsync();
+
+        if (blockedProfileIds.Count > 0)
+            friendProfileIds = friendProfileIds.Except(blockedProfileIds).ToList();
+
+        if (friendProfileIds.Count == 0)
+            return Array.Empty<SocialFeedPostViewModel>();
+
         return await _db.ProfilePosts
             .Where(p => friendProfileIds.Contains(p.UserProfileId))
             .Include(p => p.UserProfile)

@@ -1,5 +1,6 @@
 using BoredGamers.Data;
 using BoredGamers.Models;
+using BoredGamers.Services.Block;
 using BoredGamers.Services.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,12 +15,14 @@ public class ProfileController : Controller
     private readonly ApplicationDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly IProfilePostService _postService;
+    private readonly IBlockService _blockService;
 
-    public ProfileController(ApplicationDbContext db, UserManager<User> userManager, IProfilePostService postService)
+    public ProfileController(ApplicationDbContext db, UserManager<User> userManager, IProfilePostService postService, IBlockService blockService)
     {
         _db = db;
         _userManager = userManager;
         _postService = postService;
+        _blockService = blockService;
     }
 
     // GET /Profile/{username}
@@ -42,6 +45,17 @@ public class ProfileController : Controller
 
         var currentUser = await _userManager.GetUserAsync(User);
         var isOwnProfile = currentUser?.Id == profileUser.Id;
+
+        // If the profile owner has blocked the current viewer, show a generic not-available page
+        if (!isOwnProfile && currentUser != null)
+        {
+            var isBlocked = await _blockService.IsBlockedByAsync(currentUser.Id, profileUser.Id);
+            if (isBlocked)
+            {
+                ViewData["ProfileUsername"] = username;
+                return View("ProfileNotAvailable");
+            }
+        }
 
         // Block access to private profiles (currently commented out because there is no setting to turn on/off private profile)
         /**
@@ -90,6 +104,11 @@ public class ProfileController : Controller
                 ViewData["FriendshipStatus"] = friendship?.Status.ToString();
                 ViewData["FriendshipRequesterId"] = friendship?.RequesterProfileId;
                 ViewData["CurrentUserProfileId"] = currentProfile.Id;
+
+                // Check if current user has blocked the target
+                var hasBlocked = await _db.Set<BlockedUser>().AnyAsync(b =>
+                    b.BlockerProfileId == currentProfile.Id && b.BlockedProfileId == targetProfile.Id);
+                ViewData["HasBlocked"] = hasBlocked;
             }
         }
 
