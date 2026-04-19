@@ -116,34 +116,46 @@
                                 : Url.Content("~/images/game-placeholder.png");
 
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <a class="text-decoration-none"
-                               asp-controller="GamesPage"
-                               asp-action="Details"
-                               asp-route-id="@g.Id">
+                            <div class="d-flex flex-column h-100">
+                                <a class="text-decoration-none flex-grow-1"
+                                   asp-controller="GamesPage"
+                                   asp-action="Details"
+                                   asp-route-id="@g.Id">
 
-                                <div class="card h-100 shadow-sm bg-dark text-light border-0">
-                                    <img src="@image" alt="@g.Name" class="card-img-top" style="height: 280px; object-fit: cover;" />
+                                    <div class="card h-100 shadow-sm bg-dark text-light border-0">
+                                        <img src="@image" alt="@g.Name" class="card-img-top" style="height: 280px; object-fit: cover;" />
 
-                                    <div class="card-body">
-                                        <h5 class="card-title mb-2">@g.Name</h5>
+                                        <div class="card-body">
+                                            <h5 class="card-title mb-2">@g.Name</h5>
 
-                                        <div class="text-muted small mb-2">
-                                            @(g.BggNumVoters.HasValue ? $"{g.BggNumVoters.Value:N0} BGG voters" : "—")
-                                            |
-                                            @(g.YearPublished.HasValue ? g.YearPublished.Value.ToString() : "—")
-                                        </div>
+                                            <div class="text-muted small mb-2">
+                                                @(g.BggNumVoters.HasValue ? $"{g.BggNumVoters.Value:N0} BGG voters" : "—")
+                                                |
+                                                @(g.YearPublished.HasValue ? g.YearPublished.Value.ToString() : "—")
+                                            </div>
 
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="text-warning">
-                                                <i class="bi bi-star-fill me-1"></i>
-                                            </span>
-                                            <span class="fw-semibold">
-                                                @(g.AverageRating.HasValue ? $"{g.AverageRating.Value:0.0}/10" : "—")
-                                            </span>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="text-warning">
+                                                    <i class="bi bi-star-fill me-1"></i>
+                                                </span>
+                                                <span class="fw-semibold">
+                                                    @(g.AverageRating.HasValue ? $"{g.AverageRating.Value:0.0}/10" : "—")
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </a>
+                                </a>
+
+                                <form asp-controller="Collection" asp-action="RemoveFromWishlist" method="post" class="mt-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="gameId" value="@g.Id" />
+                                    <button type="submit"
+                                            id="remove-wishlist-btn-@g.Id"
+                                            class="btn btn-outline-danger btn-sm w-100">
+                                        Remove from Wishlist
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     }
                 </div>

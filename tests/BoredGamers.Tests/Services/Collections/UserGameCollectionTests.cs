@@ -306,6 +306,76 @@ namespace BoredGamers.Tests.Services.Collections
       Assert.That(result, Is.True);
     }
 
+    // --- TYP-50 Remove Wishlist Tests ---
+
+    [Test]
+    public async Task RemoveFromWishlist_WhenGameIsWishlisted_ReturnsTrue_AndDeletesRecord()
+    {
+        await using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        await using var db = await CreateSqliteDbAsync(conn);
+
+        var user = new IdentityUser { Id = "user-1", UserName = "user1@test.com", Email = "user1@test.com" };
+        db.Users.Add(user);
+        var game = new Game { BggGameId = 1011, Name = "Remove Wishlist Game", LastSyncedAt = DateTime.UtcNow };
+        db.Games.Add(game);
+        await db.SaveChangesAsync();
+
+        var svc = new BoredGamers.Services.Collections.UserCollectionService(db);
+        await svc.AddToWishlistAsync(user.Id, game.Id);
+
+        var result = await svc.RemoveFromWishlistAsync(user.Id, game.Id);
+
+        Assert.That(result, Is.True);
+        var count = await db.UserGameCollections.CountAsync();
+        Assert.That(count, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task RemoveFromWishlist_WhenGameNotOnWishlist_ReturnsFalse()
+    {
+        await using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        await using var db = await CreateSqliteDbAsync(conn);
+
+        var user = new IdentityUser { Id = "user-1", UserName = "user1@test.com", Email = "user1@test.com" };
+        db.Users.Add(user);
+        var game = new Game { BggGameId = 1012, Name = "Never On Wishlist Game", LastSyncedAt = DateTime.UtcNow };
+        db.Games.Add(game);
+        await db.SaveChangesAsync();
+
+        var svc = new BoredGamers.Services.Collections.UserCollectionService(db);
+
+        var result = await svc.RemoveFromWishlistAsync(user.Id, game.Id);
+
+        Assert.That(result, Is.False);
+        var count = await db.UserGameCollections.CountAsync();
+        Assert.That(count, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task RemoveFromWishlist_WhenGameIsOwned_ReturnsFalse_AndKeepsOwnedRecord()
+    {
+        await using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        await using var db = await CreateSqliteDbAsync(conn);
+
+        var user = new IdentityUser { Id = "user-1", UserName = "user1@test.com", Email = "user1@test.com" };
+        db.Users.Add(user);
+        var game = new Game { BggGameId = 1013, Name = "Owned Not Wishlist Remove Game", LastSyncedAt = DateTime.UtcNow };
+        db.Games.Add(game);
+        await db.SaveChangesAsync();
+
+        var svc = new BoredGamers.Services.Collections.UserCollectionService(db);
+        await svc.AddToCollectionAsync(user.Id, game.Id);
+
+        var result = await svc.RemoveFromWishlistAsync(user.Id, game.Id);
+
+        Assert.That(result, Is.False);
+        var record = await db.UserGameCollections.FirstAsync();
+        Assert.That(record.Status, Is.EqualTo(CollectionStatus.Owned));
+    }
+
     [Test]
     public async Task GetOwnedGames_ReturnsOnlyOwned_NotWishlisted()
     {

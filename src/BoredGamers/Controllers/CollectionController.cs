@@ -52,6 +52,19 @@ namespace BoredGamers.Controllers
 
       return RedirectToAction("Details", "GamesPage", new { id = gameId });
     }
+
+    [HttpPost("remove-from-wishlist")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveFromWishlist(int gameId, CancellationToken ct)
+    {
+      var userId = GetUserId();
+      if (string.IsNullOrWhiteSpace(userId))
+        return Unauthorized();
+
+      await _collections.RemoveFromWishlistAsync(userId, gameId, ct);
+
+      return RedirectToAction("Index");
+    }
     
     [HttpGet("")]
     public async Task<IActionResult> Index(int page = 1, CancellationToken ct = default)
