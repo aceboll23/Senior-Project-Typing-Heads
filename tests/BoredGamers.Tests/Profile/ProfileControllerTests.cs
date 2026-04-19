@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BoredGamers.Controllers;
 using BoredGamers.Data;
 using BoredGamers.Models;
+using BoredGamers.Services.Block;
 using BoredGamers.Services.Posts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -22,6 +23,7 @@ public class ProfileControllerTests
 {
     private Mock<UserManager<User>> _mockUserManager;
     private Mock<IProfilePostService> _mockPostService;
+    private Mock<IBlockService> _mockBlockService;
     private ApplicationDbContext _db;
     private ProfileController _controller;
 
@@ -61,7 +63,9 @@ public class ProfileControllerTests
             .Setup(s => s.GetPostsByUserIdAsync(It.IsAny<string>()))
             .ReturnsAsync(Array.Empty<ProfilePost>());
 
-        _controller = new ProfileController(_db, _mockUserManager.Object, _mockPostService.Object);
+        _mockBlockService = new Mock<IBlockService>();
+
+        _controller = new ProfileController(_db, _mockUserManager.Object, _mockPostService.Object, _mockBlockService.Object);
 
         // Create two fake users
         // User model now includes IsBanned, IsDeactivated, and Profile navigation

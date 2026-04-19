@@ -1,0 +1,62 @@
+@model IReadOnlyList<BoredGamers.Models.ViewModels.BlockedUserViewModel>
+@{
+    ViewData["Title"] = "Blocked Users";
+}
+
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex align-items-center mb-4 gap-3">
+            <a asp-controller="Settings" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back to Settings
+            </a>
+            <h3 class="mb-0"><i class="bi bi-slash-circle me-2"></i>Blocked Users</h3>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-person-check display-4 text-muted"></i>
+                <p class="text-muted mt-3">You haven't blocked anyone.</p>
+            </div>
+        }
+        else
+        {
+            <div class="card bg-dark">
+                <div class="card-body p-0">
+                    @foreach (var blocked in Model)
+                    {
+                        <div class="d-flex align-items-center justify-content-between p-3 border-bottom border-secondary blocked-user-row" id="blocked-@blocked.Username">
+                            <div class="d-flex align-items-center gap-3">
+                                @if (!string.IsNullOrEmpty(blocked.AvatarUrl))
+                                {
+                                    <img src="@blocked.AvatarUrl" alt="@blocked.Username"
+                                         class="rounded-circle"
+                                         style="width:40px;height:40px;object-fit:cover;">
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                         style="width:40px;height:40px;font-size:1.1rem;">
+                                        @blocked.Username.Substring(0, 1).ToUpper()
+                                    </div>
+                                }
+                                <div>
+                                    <div class="fw-bold">@blocked.Username</div>
+                                    <div class="text-muted small">Blocked @blocked.BlockedAt.ToLocalTime().ToString("MMM dd, yyyy")</div>
+                                </div>
+                            </div>
+                            <form asp-controller="Block" asp-action="Unblock" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="targetUsername" value="@blocked.Username" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm unblock-btn"
+                                        id="unblock-btn-@blocked.Username">
+                                    <i class="bi bi-unlock me-1"></i>Unblock
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>

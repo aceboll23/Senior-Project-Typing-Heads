@@ -1,5 +1,6 @@
 using BoredGamers.Data;
 using BoredGamers.Models;
+using BoredGamers.Services.Block;
 using BoredGamers.Services.Email;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,13 +16,15 @@ public class SettingsController : Controller
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly IEmailService _emailService;
+    private readonly IBlockService _blockService;
 
-    public SettingsController(ApplicationDbContext db,UserManager<User> userManager,SignInManager<User> signInManager,IEmailService emailService)
+    public SettingsController(ApplicationDbContext db, UserManager<User> userManager, SignInManager<User> signInManager, IEmailService emailService, IBlockService blockService)
     {
         _db = db;
         _userManager = userManager;
         _signInManager = signInManager;
         _emailService = emailService;
+        _blockService = blockService;
     }
 
     // GET /Settings
@@ -224,5 +227,15 @@ public class SettingsController : Controller
         await _signInManager.RefreshSignInAsync(user);
 
         return View("VerifyEmailSuccess");
+    }
+
+    // GET /Settings/BlockedUsers
+    public async Task<IActionResult> BlockedUsers()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        var blockedUsers = await _blockService.GetBlockedUsersAsync(user.Id);
+        return View(blockedUsers);
     }
 }
