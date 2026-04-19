@@ -85,6 +85,19 @@ namespace BoredGamers.Services
         .FirstOrDefaultAsync(r => r.ReviewId == reviewId && r.UserId == userId);
     }
 
+    public async Task<decimal?> GetAverageUserRatingAsync(int gameId)
+    {
+      var ratings = await _db.Reviews
+        .Where(r => r.GameId == gameId)
+        .Select(r => r.Rating)
+        .ToListAsync();
+
+      if (ratings.Count == 0)
+        return null;
+
+      return (decimal)ratings.Average();
+    }
+
     public async Task<ServiceResult> DeleteReviewAsync(int reviewId, string userId)
     {
       if (string.IsNullOrWhiteSpace(userId))

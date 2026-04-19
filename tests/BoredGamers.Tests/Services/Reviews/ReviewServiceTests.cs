@@ -230,5 +230,28 @@ namespace BoredGamers.Tests.Services
       var reviewStillExists = await db.Reviews.FirstOrDefaultAsync(r => r.ReviewId == 1);
       Assert.That(reviewStillExists, Is.Not.Null);
     }
+
+    // --- TYP-55 View Average Rating ---
+
+    [Test]
+    public async Task GetAverageUserRatingAsync_WithMultipleReviews_ReturnsCorrectMean()
+    {
+      var db = NewDb(Guid.NewGuid().ToString());
+
+      db.Games.Add(new Game { Id = 1, Name = "Catan" });
+      db.Reviews.AddRange(
+        new Review { ReviewId = 1, GameId = 1, UserId = "user-1", Rating = 6, Text = "Meh", CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 2, GameId = 1, UserId = "user-2", Rating = 8, Text = "Good", CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 3, GameId = 1, UserId = "user-3", Rating = 10, Text = "Great", CreatedAt = DateTime.UtcNow }
+      );
+
+      await db.SaveChangesAsync();
+
+      var sut = new ReviewService(db);
+
+      var average = await sut.GetAverageUserRatingAsync(1);
+
+      Assert.That(average, Is.EqualTo(8.0m));
+    }
   }
 }

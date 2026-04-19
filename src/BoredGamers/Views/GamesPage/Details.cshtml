@@ -208,6 +208,25 @@
                             <div class="card-body">
                                 <h5 class="card-title mb-3">Reviews</h5>
 
+                                @{
+                                    var averageUserRating = ViewBag.AverageUserRating as decimal?;
+                                }
+                                @if (averageUserRating.HasValue)
+                                {
+                                    <div id="average-user-rating" class="mb-3">
+                                        <span class="badge bg-primary fs-6">
+                                            <i class="bi bi-star-fill me-1"></i>
+                                            Average User Rating: @averageUserRating.Value.ToString("0.0") / 10
+                                        </span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div id="average-user-rating" class="mb-3 text-muted">
+                                        No user ratings yet.
+                                    </div>
+                                }
+
                                 @if (TempData["ReviewSuccess"] != null)
                                 {
                                     <div class="alert alert-success">@TempData["ReviewSuccess"]</div>

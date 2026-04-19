@@ -25,6 +25,7 @@ builder.Services.AddScoped<BddPlaygroupTestDataService>();
 builder.Services.AddScoped<BddPostTestDataService>();
 builder.Services.AddScoped<BddSocialFeedTestDataService>();
 builder.Services.AddScoped<BddDeleteFriendTestDataService>();
+builder.Services.AddScoped<BddAverageRatingTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -273,6 +274,18 @@ if (app.Environment.IsDevelopment())
             result.Password,
             result.FriendUsername,
             result.FriendProfileId
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-average-rating-data", async (BddAverageRatingTestDataService bddAverageRatingTestDataService) =>
+    {
+        var result = await bddAverageRatingTestDataService.ResetAndSeedAverageRatingTestDataAsync();
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameId,
+            result.ExpectedAverage
         });
     });
 
