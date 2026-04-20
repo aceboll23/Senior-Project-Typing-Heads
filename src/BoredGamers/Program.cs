@@ -26,6 +26,8 @@ builder.Services.AddScoped<BddPlaygroupTestDataService>();
 builder.Services.AddScoped<BddPostTestDataService>();
 builder.Services.AddScoped<BddSocialFeedTestDataService>();
 builder.Services.AddScoped<BddDeleteFriendTestDataService>();
+builder.Services.AddScoped<BddAverageRatingTestDataService>();
+builder.Services.AddScoped<BddSortReviewsTestDataService>();
 builder.Services.AddScoped<BddFriendCollectionTestDataService>();
 builder.Services.AddScoped<BddBlockTestDataService>();
 // Identity UI uses Razor Pages
@@ -303,6 +305,29 @@ if (app.Environment.IsDevelopment())
             result.Password,
             result.FriendUsername,
             result.FriendProfileId
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-average-rating-data", async (BddAverageRatingTestDataService bddAverageRatingTestDataService) =>
+    {
+        var result = await bddAverageRatingTestDataService.ResetAndSeedAverageRatingTestDataAsync();
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameId,
+            result.ExpectedAverage
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-sort-reviews-data", async (BddSortReviewsTestDataService bddSortReviewsTestDataService) =>
+    {
+        var result = await bddSortReviewsTestDataService.ResetAndSeedSortReviewsTestDataAsync();
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameId
         });
     });
 

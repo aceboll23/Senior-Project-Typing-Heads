@@ -230,5 +230,66 @@ namespace BoredGamers.Tests.Services
       var reviewStillExists = await db.Reviews.FirstOrDefaultAsync(r => r.ReviewId == 1);
       Assert.That(reviewStillExists, Is.Not.Null);
     }
+
+    // --- TYP-55 View Average Rating ---
+
+    [Test]
+    public async Task GetAverageUserRatingAsync_WithMultipleReviews_ReturnsCorrectMean()
+    {
+      var db = NewDb(Guid.NewGuid().ToString());
+
+      db.Games.Add(new Game { Id = 1, Name = "Catan" });
+      db.Reviews.AddRange(
+        new Review { ReviewId = 1, GameId = 1, UserId = "user-1", Rating = 6, Text = "Meh", CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 2, GameId = 1, UserId = "user-2", Rating = 8, Text = "Good", CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 3, GameId = 1, UserId = "user-3", Rating = 10, Text = "Great", CreatedAt = DateTime.UtcNow }
+      );
+
+      await db.SaveChangesAsync();
+
+      var sut = new ReviewService(db);
+
+      var average = await sut.GetAverageUserRatingAsync(1);
+
+      Assert.That(average, Is.EqualTo(8.0m));
+    }
+
+    // --- TYP-56 Sort Reviews by Rating ---
+
+    [Test]
+    public void SortReviews_SortRatingDesc_ReturnsHighestFirst()
+    {
+      var reviews = new List<Review>
+      {
+        new Review { ReviewId = 1, Rating = 3, CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 2, Rating = 9, CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 3, Rating = 6, CreatedAt = DateTime.UtcNow }
+      };
+
+      var sut = new ReviewService(NewDb(Guid.NewGuid().ToString()));
+
+      var sorted = sut.SortReviews(reviews, "rating-desc");
+      var ratings = sorted.Select(r => r.Rating).ToList();
+
+      Assert.That(ratings, Is.EqualTo(new[] { 9, 6, 3 }));
+    }
+
+    [Test]
+    public void SortReviews_SortRatingAsc_ReturnsLowestFirst()
+    {
+      var reviews = new List<Review>
+      {
+        new Review { ReviewId = 1, Rating = 3, CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 2, Rating = 9, CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 3, Rating = 6, CreatedAt = DateTime.UtcNow }
+      };
+
+      var sut = new ReviewService(NewDb(Guid.NewGuid().ToString()));
+
+      var sorted = sut.SortReviews(reviews, "rating-asc");
+      var ratings = sorted.Select(r => r.Rating).ToList();
+
+      Assert.That(ratings, Is.EqualTo(new[] { 3, 6, 9 }));
+    }
   }
 }
