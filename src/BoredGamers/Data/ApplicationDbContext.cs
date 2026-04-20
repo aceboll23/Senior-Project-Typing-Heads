@@ -33,6 +33,7 @@ public class ApplicationDbContext : IdentityDbContext
 
     public DbSet<EventResponse> EventResponses { get; set; }
     public DbSet<ProfilePost> ProfilePosts { get; set; }
+    public DbSet<PlaygroupMessage> PlaygroupMessages { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
 
@@ -355,6 +356,24 @@ public class ApplicationDbContext : IdentityDbContext
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 
+        // Configure PlaygroupMessage
+        modelBuilder.Entity<PlaygroupMessage>(entity =>
+        {
+            entity.HasOne(m => m.Playgroup)
+                .WithMany(g => g.Messages)
+                .HasForeignKey(m => m.PlaygroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(m => m.SenderProfile)
+                .WithMany(p => p.SentGroupMessages)
+                .HasForeignKey(m => m.SenderProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(m => new { m.PlaygroupId, m.SentAt });
+
+            entity.Property(m => m.SentAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
     }
 
 }

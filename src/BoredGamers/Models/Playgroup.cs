@@ -38,5 +38,6 @@ namespace BoredGamers.Models
         public int MemberCount() => Members.Count;
         
         public ICollection<GameNightEvent> GameNightEvents { get; set; } = new List<GameNightEvent>();
+        public ICollection<PlaygroupMessage> Messages { get; set; } = new List<PlaygroupMessage>();
     }
 }

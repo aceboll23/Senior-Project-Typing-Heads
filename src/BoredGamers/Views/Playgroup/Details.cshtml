@@ -71,6 +71,13 @@
                                 </a>
                             </div>
 
+                            <!-- Chat Link -->
+                            <div class="mb-3">
+                                <a href="/Playgroup/Chat/@Model.Id" class="btn btn-outline-info">
+                                    <i class="bi bi-chat-dots me-1"></i>Group Chat
+                                </a>
+                            </div>
+
                             <!-- Combined Collection Link -->
                             <div class="mb-3">
                                 <a href="/Playgroup/Collection/@Model.Id" class="btn btn-outline-light">
@@ -95,14 +102,27 @@
                             {
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>@memberNames[member.UserId]</span>
-                                    @if (member.Role == BoredGamers.Models.PlaygroupRole.Owner)
-                                    {
-                                        <span class="badge bg-primary">Owner</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">Member</span>
-                                    }
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (member.Role == BoredGamers.Models.PlaygroupRole.Owner)
+                                        {
+                                            <span class="badge bg-primary">Owner</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Member</span>
+                                            @if (isOwner)
+                                            {
+                                                <form asp-action="RemoveMember" asp-route-playgroupId="@Model.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="targetUserId" value="@member.UserId" />
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                            onclick="return confirm('Remove @memberNames[member.UserId] from the playgroup?')">
+                                                        <i class="bi bi-person-x"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        }
+                                    </div>
                                 </li>
                             }
                         </ul>
