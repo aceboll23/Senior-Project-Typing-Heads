@@ -56,6 +56,8 @@ namespace BoredGamers.Models
         // Posts on this profile
         public ICollection<ProfilePost> Posts { get; set; } = new List<ProfilePost>();
 
+        public ICollection<PlaygroupMessage> SentGroupMessages { get; set; } = new List<PlaygroupMessage>();
+
         // Timestamps
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
