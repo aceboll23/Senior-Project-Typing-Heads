@@ -98,6 +98,16 @@ namespace BoredGamers.Services
       return (decimal)ratings.Average();
     }
 
+    public IReadOnlyList<Review> SortReviews(IEnumerable<Review> reviews, string? sort)
+    {
+      return sort switch
+      {
+        "rating-desc" => reviews.OrderByDescending(r => r.Rating).ThenByDescending(r => r.CreatedAt).ToList(),
+        "rating-asc" => reviews.OrderBy(r => r.Rating).ThenByDescending(r => r.CreatedAt).ToList(),
+        _ => reviews.OrderByDescending(r => r.CreatedAt).ToList()
+      };
+    }
+
     public async Task<ServiceResult> DeleteReviewAsync(int reviewId, string userId)
     {
       if (string.IsNullOrWhiteSpace(userId))

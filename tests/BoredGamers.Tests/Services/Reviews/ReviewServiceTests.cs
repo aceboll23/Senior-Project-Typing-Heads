@@ -253,5 +253,43 @@ namespace BoredGamers.Tests.Services
 
       Assert.That(average, Is.EqualTo(8.0m));
     }
+
+    // --- TYP-56 Sort Reviews by Rating ---
+
+    [Test]
+    public void SortReviews_SortRatingDesc_ReturnsHighestFirst()
+    {
+      var reviews = new List<Review>
+      {
+        new Review { ReviewId = 1, Rating = 3, CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 2, Rating = 9, CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 3, Rating = 6, CreatedAt = DateTime.UtcNow }
+      };
+
+      var sut = new ReviewService(NewDb(Guid.NewGuid().ToString()));
+
+      var sorted = sut.SortReviews(reviews, "rating-desc");
+      var ratings = sorted.Select(r => r.Rating).ToList();
+
+      Assert.That(ratings, Is.EqualTo(new[] { 9, 6, 3 }));
+    }
+
+    [Test]
+    public void SortReviews_SortRatingAsc_ReturnsLowestFirst()
+    {
+      var reviews = new List<Review>
+      {
+        new Review { ReviewId = 1, Rating = 3, CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 2, Rating = 9, CreatedAt = DateTime.UtcNow },
+        new Review { ReviewId = 3, Rating = 6, CreatedAt = DateTime.UtcNow }
+      };
+
+      var sut = new ReviewService(NewDb(Guid.NewGuid().ToString()));
+
+      var sorted = sut.SortReviews(reviews, "rating-asc");
+      var ratings = sorted.Select(r => r.Rating).ToList();
+
+      Assert.That(ratings, Is.EqualTo(new[] { 3, 6, 9 }));
+    }
   }
 }

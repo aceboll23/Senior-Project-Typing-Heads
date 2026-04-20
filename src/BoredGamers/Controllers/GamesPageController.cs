@@ -64,7 +64,7 @@ namespace BoredGamers.Controllers
 
         // Example: GET /Games/Details/5 (5 being a game id)
         [Route("Games/Details/{id}")]
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int id, string? sort = null)
         {
             // Fetch the game from the database by its Id
             var game = await _gameService.GetGameByIdAsync(id);
@@ -97,6 +97,9 @@ namespace BoredGamers.Controllers
             }
 
             ViewBag.AverageUserRating = await _reviewService.GetAverageUserRatingAsync(game.Id);
+            ViewBag.SortedReviews = _reviewService.SortReviews(
+                game.Reviews ?? Enumerable.Empty<BoredGamers.Models.Review>(), sort);
+            ViewBag.ReviewSort = sort ?? "newest";
 
             // Pass the game to Views/GamesPage/Details.cshtml
             return View(game);
