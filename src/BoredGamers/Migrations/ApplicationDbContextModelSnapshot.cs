@@ -290,6 +290,9 @@ namespace BoredGamers.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("VotingStatus")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedByUserId");
@@ -329,6 +332,44 @@ namespace BoredGamers.Migrations
                         .IsUnique();
 
                     b.ToTable("GameNightEventGames");
+                });
+
+            modelBuilder.Entity("BoredGamers.Models.GameVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GameNightEventGameId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GameNightEventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameNightEventGameId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("GameNightEventId", "GameNightEventGameId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("GameVotes");
                 });
 
             modelBuilder.Entity("BoredGamers.Models.Notification", b =>
@@ -494,6 +535,75 @@ namespace BoredGamers.Migrations
                         .IsUnique();
 
                     b.ToTable("PlaygroupMembers");
+                });
+
+            modelBuilder.Entity("BoredGamers.Models.PlaygroupMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsSystemMessage")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PlaygroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SenderProfileId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SentAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderProfileId");
+
+                    b.HasIndex("PlaygroupId", "SentAt");
+
+                    b.ToTable("PlaygroupMessages");
+                });
+
+            modelBuilder.Entity("BoredGamers.Models.ProfilePost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("UserProfileId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserProfileId");
+
+                    b.ToTable("ProfilePosts");
                 });
 
             modelBuilder.Entity("BoredGamers.Models.Review", b =>
@@ -1006,6 +1116,33 @@ namespace BoredGamers.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BoredGamers.Models.GameVote", b =>
+                {
+                    b.HasOne("BoredGamers.Models.GameNightEventGame", "GameNightEventGame")
+                        .WithMany()
+                        .HasForeignKey("GameNightEventGameId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BoredGamers.Models.GameNightEvent", "GameNightEvent")
+                        .WithMany("GameVotes")
+                        .HasForeignKey("GameNightEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoredGamers.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GameNightEvent");
+
+                    b.Navigation("GameNightEventGame");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BoredGamers.Models.Notification", b =>
                 {
                     b.HasOne("BoredGamers.Models.UserProfile", "UserProfile")
@@ -1037,6 +1174,35 @@ namespace BoredGamers.Migrations
                         .IsRequired();
 
                     b.Navigation("Playgroup");
+                });
+
+            modelBuilder.Entity("BoredGamers.Models.PlaygroupMessage", b =>
+                {
+                    b.HasOne("BoredGamers.Models.Playgroup", "Playgroup")
+                        .WithMany("Messages")
+                        .HasForeignKey("PlaygroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoredGamers.Models.UserProfile", "SenderProfile")
+                        .WithMany("SentGroupMessages")
+                        .HasForeignKey("SenderProfileId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Playgroup");
+
+                    b.Navigation("SenderProfile");
+                });
+
+            modelBuilder.Entity("BoredGamers.Models.ProfilePost", b =>
+                {
+                    b.HasOne("BoredGamers.Models.UserProfile", "UserProfile")
+                        .WithMany("Posts")
+                        .HasForeignKey("UserProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserProfile");
                 });
 
             modelBuilder.Entity("BoredGamers.Models.Review", b =>
@@ -1137,6 +1303,8 @@ namespace BoredGamers.Migrations
             modelBuilder.Entity("BoredGamers.Models.GameNightEvent", b =>
                 {
                     b.Navigation("EventGames");
+
+                    b.Navigation("GameVotes");
                 });
 
             modelBuilder.Entity("BoredGamers.Models.Playgroup", b =>
@@ -1144,6 +1312,8 @@ namespace BoredGamers.Migrations
                     b.Navigation("GameNightEvents");
 
                     b.Navigation("Members");
+
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("BoredGamers.Models.UserProfile", b =>
@@ -1156,11 +1326,15 @@ namespace BoredGamers.Migrations
 
                     b.Navigation("Notifications");
 
+                    b.Navigation("Posts");
+
                     b.Navigation("ReceivedFriendRequests");
 
                     b.Navigation("ReceivedMessages");
 
                     b.Navigation("SentFriendRequests");
+
+                    b.Navigation("SentGroupMessages");
 
                     b.Navigation("SentMessages");
                 });

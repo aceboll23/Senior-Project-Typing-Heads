@@ -431,6 +431,226 @@ public class BddTestDataService
           CollectionGameName = testGame.Name
       };
   }
+  private const string VotingCreatorUserName = "bdd_voting_creator";
+  private const string VotingCreatorEmail = "bdd_voting_creator@local.test";
+  private const string VotingCreatorPassword = "BddVoting123";
+
+  private const string VotingMemberUserName = "bdd_voting_member";
+  private const string VotingMemberEmail = "bdd_voting_member@local.test";
+  private const string VotingMemberPassword = "BddVoting123";
+
+  public async Task<BddVotingSeedResult> ResetAndSeedVotingTestDataAsync()
+  {
+      // Clean up existing voting test users
+      foreach (var username in new[] { VotingCreatorUserName, VotingMemberUserName })
+      {
+          var existing = await _db.Users.OfType<User>()
+              .FirstOrDefaultAsync(u => u.UserName == username);
+          if (existing != null)
+          {
+              // Remove votes submitted by this user
+              var votes = await _db.GameVotes
+                  .Where(v => v.UserId == existing.Id)
+                  .ToListAsync();
+              if (votes.Count > 0)
+              {
+                  _db.GameVotes.RemoveRange(votes);
+                  await _db.SaveChangesAsync();
+              }
+
+              // Remove votes on event games added by this user
+              // (votes from OTHER users referencing this user's event games)
+              var eventGameIds = await _db.GameNightEventGames
+                  .Where(eg => eg.UserId == existing.Id)
+                  .Select(eg => eg.Id)
+                  .ToListAsync();
+
+              if (eventGameIds.Count > 0)
+              {
+                  var eventGameVotes = await _db.GameVotes
+                      .Where(v => eventGameIds.Contains(v.GameNightEventGameId))
+                      .ToListAsync();
+                  if (eventGameVotes.Count > 0)
+                  {
+                      _db.GameVotes.RemoveRange(eventGameVotes);
+                      await _db.SaveChangesAsync();
+                  }
+              }
+
+              // Remove event games
+              var eventGames = await _db.GameNightEventGames
+                  .Where(eg => eg.UserId == existing.Id)
+                  .ToListAsync();
+              if (eventGames.Count > 0)
+              {
+                  _db.GameNightEventGames.RemoveRange(eventGames);
+                  await _db.SaveChangesAsync();
+              }
+
+              // Remove events
+              var events = await _db.GameNightEvents
+                  .Where(e => e.CreatedByUserId == existing.Id)
+                  .ToListAsync();
+              if (events.Count > 0)
+              {
+                  _db.GameNightEvents.RemoveRange(events);
+                  await _db.SaveChangesAsync();
+              }
+
+              // Remove memberships
+              var memberships = await _db.PlaygroupMembers
+                  .Where(m => m.UserId == existing.Id)
+                  .ToListAsync();
+              if (memberships.Count > 0)
+              {
+                  _db.PlaygroupMembers.RemoveRange(memberships);
+                  await _db.SaveChangesAsync();
+              }
+
+              // Remove collection
+              var collections = await _db.UserGameCollections
+                  .Where(c => c.UserId == existing.Id)
+                  .ToListAsync();
+              if (collections.Count > 0)
+              {
+                  _db.UserGameCollections.RemoveRange(collections);
+                  await _db.SaveChangesAsync();
+              }
+
+              await _userManager.DeleteAsync(existing);
+          }
+      }
+
+      // Clean up old voting test playgroups
+      var oldPlaygroups = await _db.Playgroups
+          .Where(p => p.Name == "BDD Voting Playgroup")
+          .ToListAsync();
+      if (oldPlaygroups.Count > 0)
+      {
+          _db.Playgroups.RemoveRange(oldPlaygroups);
+          await _db.SaveChangesAsync();
+      }
+
+      // Ensure the test game exists
+      var testGame = await _db.Games.FirstOrDefaultAsync(g => g.BggGameId == 900020);
+      if (testGame == null)
+      {
+          testGame = new Game
+          {
+              BggGameId = 900020,
+              Name = "BDD Voting Test Game",
+              YearPublished = 2024,
+              Description = "Seeded game for BDD voting tests.",
+              MinPlayers = 2,
+              MaxPlayers = 4,
+              PlayTime = 60,
+              AverageRating = 7.50m,
+              BggNumVoters = 100
+          };
+          _db.Games.Add(testGame);
+          await _db.SaveChangesAsync();
+      }
+
+      // Create creator
+      var creator = new User
+      {
+          UserName = VotingCreatorUserName,
+          Email = VotingCreatorEmail,
+          EmailConfirmed = true
+      };
+      var creatorResult = await _userManager.CreateAsync(creator, VotingCreatorPassword);
+      if (!creatorResult.Succeeded)
+          throw new InvalidOperationException(
+              $"Failed to create voting creator: {string.Join("; ", creatorResult.Errors.Select(e => e.Description))}");
+
+      // Create member
+      var member = new User
+      {
+          UserName = VotingMemberUserName,
+          Email = VotingMemberEmail,
+          EmailConfirmed = true
+      };
+      var memberResult = await _userManager.CreateAsync(member, VotingMemberPassword);
+      if (!memberResult.Succeeded)
+          throw new InvalidOperationException(
+              $"Failed to create voting member: {string.Join("; ", memberResult.Errors.Select(e => e.Description))}");
+
+      // Create playgroup
+      var playgroup = new Playgroup
+      {
+          Name = "BDD Voting Playgroup",
+          Description = "Seeded playgroup for BDD voting tests.",
+          CreatedByUserId = creator.Id,
+          IsPrivate = false,
+          CreatedAt = DateTime.UtcNow,
+          UpdatedAt = DateTime.UtcNow
+      };
+      _db.Playgroups.Add(playgroup);
+      await _db.SaveChangesAsync();
+
+      // Add both users as members
+      _db.PlaygroupMembers.AddRange(
+          new PlaygroupMember
+          {
+              PlaygroupId = playgroup.Id,
+              UserId = creator.Id,
+              Role = PlaygroupRole.Owner,
+              JoinedAt = DateTime.UtcNow
+          },
+          new PlaygroupMember
+          {
+              PlaygroupId = playgroup.Id,
+              UserId = member.Id,
+              Role = PlaygroupRole.Member,
+              JoinedAt = DateTime.UtcNow
+          }
+      );
+      await _db.SaveChangesAsync();
+
+      // Add game to creator's collection
+      _db.UserGameCollections.Add(new UserGameCollection
+      {
+          UserId = creator.Id,
+          GameId = testGame.Id,
+          DateAdded = DateTime.UtcNow
+      });
+      await _db.SaveChangesAsync();
+
+      // Create the event
+      var gameNightEvent = new GameNightEvent
+      {
+          PlaygroupId = playgroup.Id,
+          CreatedByUserId = creator.Id,
+          Title = "BDD Voting Game Night",
+          EventDateTime = DateTime.UtcNow.AddDays(7),
+          Description = "Seeded event for voting BDD tests.",
+          VotingStatus = VotingStatus.NotStarted,
+          CreatedAt = DateTime.UtcNow
+      };
+      _db.GameNightEvents.Add(gameNightEvent);
+      await _db.SaveChangesAsync();
+
+      // Add game to the event
+      var eventGame = new GameNightEventGame
+      {
+          GameNightEventId = gameNightEvent.Id,
+          GameId = testGame.Id,
+          UserId = creator.Id
+      };
+      _db.GameNightEventGames.Add(eventGame);
+      await _db.SaveChangesAsync();
+
+      return new BddVotingSeedResult
+      {
+          CreatorUsername = VotingCreatorUserName,
+          CreatorPassword = VotingCreatorPassword,
+          MemberUsername = VotingMemberUserName,
+          MemberPassword = VotingMemberPassword,
+          EventId = gameNightEvent.Id,
+          EventGameId = eventGame.Id,
+          GameName = testGame.Name
+      };
+  }
 }
 
 public class BddReviewSeedResult

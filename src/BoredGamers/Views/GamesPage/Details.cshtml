@@ -208,6 +208,25 @@
                             <div class="card-body">
                                 <h5 class="card-title mb-3">Reviews</h5>
 
+                                @{
+                                    var averageUserRating = ViewBag.AverageUserRating as decimal?;
+                                }
+                                @if (averageUserRating.HasValue)
+                                {
+                                    <div id="average-user-rating" class="mb-3">
+                                        <span class="badge bg-primary fs-6">
+                                            <i class="bi bi-star-fill me-1"></i>
+                                            Average User Rating: @averageUserRating.Value.ToString("0.0") / 10
+                                        </span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div id="average-user-rating" class="mb-3 text-muted">
+                                        No user ratings yet.
+                                    </div>
+                                }
+
                                 @if (TempData["ReviewSuccess"] != null)
                                 {
                                     <div class="alert alert-success">@TempData["ReviewSuccess"]</div>
@@ -266,18 +285,33 @@
 
                                 <hr class="my-4" />
 
-                                <!--Review list placeholder -->
-                                @if (Model.Reviews != null && Model.Reviews.Any())
+                                @{
+                                    var sortedReviews = ViewBag.SortedReviews as IReadOnlyList<BoredGamers.Models.Review>
+                                        ?? new List<BoredGamers.Models.Review>();
+                                    var currentSort = (ViewBag.ReviewSort as string) ?? "newest";
+                                }
+
+                                <!--Review list -->
+                                @if (sortedReviews.Any())
                                 {
+                                    <form method="get" class="mb-3 d-flex align-items-center gap-2">
+                                        <label for="review-sort" class="form-label mb-0">Sort by:</label>
+                                        <select name="sort" id="review-sort" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                                            <option value="newest" selected="@(currentSort == "newest")">Newest</option>
+                                            <option value="rating-desc" selected="@(currentSort == "rating-desc")">Rating: High to Low</option>
+                                            <option value="rating-asc" selected="@(currentSort == "rating-asc")">Rating: Low to High</option>
+                                        </select>
+                                    </form>
+
                                     <div class="d-flex flex-column gap-3">
-                                        @foreach (var r in Model.Reviews.OrderByDescending(r => r.CreatedAt))
+                                        @foreach (var r in sortedReviews)
                                         {
-                                            <div class="border rounded p-3">
+                                            <div class="border rounded p-3 review-card">
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <strong>@(r.User?.UserName ?? "Unknown user")</strong>
 
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <span class="badge bg-secondary">@r.Rating / 10</span>
+                                                        <span class="badge bg-secondary review-rating">@r.Rating / 10</span>
 
                                                         @* ADDED: only show Edit button for the current user's own reviews *@
                                                         @if (User.Identity?.IsAuthenticated == true && r.UserId == currentUserId)
@@ -296,7 +330,7 @@
 
                                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                                                     <i class ="bi bi-trash me-1"></i>Delete
-                                                                </button>   
+                                                                </button>
                                                             </form>
                                                         }
                                                     </div>

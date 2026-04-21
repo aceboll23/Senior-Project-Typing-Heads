@@ -33,5 +33,17 @@ namespace BoredGamers.Models
 
     public ICollection<GameNightEventGame> EventGames { get; set; } = new List<GameNightEventGame>();
 
+    // For playgroup game voting
+    public VotingStatus VotingStatus { get; set; } = VotingStatus.NotStarted;
+    public ICollection<GameVote> GameVotes { get; set; } = new List<GameVote>();
   }
+  // For playgroup game voting
+  public enum VotingStatus
+  {
+      NotStarted,
+      Open,
+      Closed
+  }
+  
 }
+

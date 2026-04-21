@@ -15,6 +15,11 @@
     var currentUserProfileId = ViewData["CurrentUserProfileId"] as int?;
     var isSender = friendshipRequesterId == currentUserProfileId;
     var pendingRequests = ViewData["PendingRequests"] as List<object> ?? new List<object>();
+    var profilePosts = ViewData["ProfilePosts"] as IReadOnlyList<BoredGamers.Models.ProfilePost> ?? new List<BoredGamers.Models.ProfilePost>();
+    var postError = TempData["PostError"] as string;
+    var hasBlocked = ViewData["HasBlocked"] as bool? ?? false;
+    var blockSuccess = TempData["BlockSuccess"] as string;
+    var blockError = TempData["BlockError"] as string;
 }
 
 <!-- Profile Header -->
@@ -77,9 +82,23 @@
                             }
                             else
                             {
-                                <span class="text-muted">Private</span>
+                                <a class="btn btn-outline-secondary btn-sm ms-2"
+                                   asp-controller="Collection"
+                                   asp-action="FriendCollection"
+                                   asp-route-username="@username">
+                                    View Collection
+                                </a>
                             }
                         </div>
+
+                        @if (!string.IsNullOrEmpty(blockSuccess))
+                        {
+                            <div class="alert alert-success mt-3"><i class="bi bi-check-circle me-2"></i>@blockSuccess</div>
+                        }
+                        @if (!string.IsNullOrEmpty(blockError))
+                        {
+                            <div class="alert alert-danger mt-3"><i class="bi bi-exclamation-circle me-2"></i>@blockError</div>
+                        }
 
                         <!-- Friend Request Button (only on other users' profiles) -->
                         @if (!isOwnProfile)
@@ -109,7 +128,23 @@
                                     <button id="addFriendBtn" class="btn btn-primary">
                                         <i class="bi bi-person-plus me-1"></i>Add As Friend
                                     </button>
-                                    
+
+                                }
+
+                                @if (hasBlocked)
+                                {
+                                    <span class="badge bg-secondary ms-2">Blocked</span>
+                                }
+                                else
+                                {
+                                    <form asp-controller="Block" asp-action="Block" method="post" class="d-inline ms-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="targetUsername" value="@username" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" id="block-user-btn"
+                                                onclick="return confirm('Block @username? This will remove any existing friendship.')">
+                                            <i class="bi bi-slash-circle me-1"></i>Block User
+                                        </button>
+                                    </form>
                                 }
                             </div>
                         }
@@ -174,6 +209,59 @@
         </section>
 
         
+        <!-- Profile Posts -->
+        <section class="py-4">
+            <div class="container">
+                <h4 class="mb-3">Posts</h4>
+
+                @if (!string.IsNullOrEmpty(postError))
+                {
+                    <div class="alert alert-danger">@postError</div>
+                }
+
+                @if (isOwnProfile)
+                {
+                    <form asp-controller="ProfilePost" asp-action="Create" method="post" class="mb-4">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUsername" value="@username" />
+                        <div class="mb-2">
+                            <textarea id="post-content" name="content" class="form-control"
+                                      placeholder="Share a gaming update..." rows="3" maxlength="500"></textarea>
+                        </div>
+                        <button type="submit" id="post-submit-btn" class="btn btn-primary">Post</button>
+                    </form>
+                }
+
+                @if (profilePosts.Count == 0)
+                {
+                    <p class="text-muted">No posts yet.</p>
+                }
+                else
+                {
+                    @foreach (var post in profilePosts)
+                    {
+                        <div class="card bg-dark mb-2 profile-post-item">
+                            <div class="card-body">
+                                <p class="mb-1">@post.Content</p>
+                                <small class="text-muted">@post.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy 'at' h:mm tt")</small>
+                                @if (isOwnProfile)
+                                {
+                                    <form asp-controller="ProfilePost" asp-action="Delete" method="post" class="d-inline ms-3">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="postId" value="@post.Id" />
+                                        <input type="hidden" name="returnUsername" value="@username" />
+                                        <button type="submit" id="delete-post-btn-@post.Id"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Delete this post?')">Delete</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </section>
+
         @section Scripts {
         <form id="antiForgeryForm">@Html.AntiForgeryToken()</form>
         <script>

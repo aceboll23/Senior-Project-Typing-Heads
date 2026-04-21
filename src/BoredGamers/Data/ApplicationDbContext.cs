@@ -29,8 +29,11 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<GameNightEvent> GameNightEvents { get; set; }
     public DbSet<GameNightEventGame> GameNightEventGames { get; set; } 
     public DbSet<PlaygroupInvite> PlaygroupInvites { get; set; }
+    public DbSet<GameVote> GameVotes { get; set; }
 
     public DbSet<EventResponse> EventResponses { get; set; }
+    public DbSet<ProfilePost> ProfilePosts { get; set; }
+    public DbSet<PlaygroupMessage> PlaygroupMessages { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
 
@@ -296,6 +299,22 @@ public class ApplicationDbContext : IdentityDbContext
                 .IsUnique();
         });
 
+        // Configure ProfilePost
+        modelBuilder.Entity<ProfilePost>(entity =>
+        {
+            entity.HasOne(p => p.UserProfile)
+                .WithMany(up => up.Posts)
+                .HasForeignKey(p => p.UserProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(p => p.UserProfileId);
+
+            entity.Property(p => p.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(p => p.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
         // Configure EventResponse
         modelBuilder.Entity<EventResponse>(entity =>
         {
@@ -311,6 +330,50 @@ public class ApplicationDbContext : IdentityDbContext
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 
+        // Game Night Voting
+        modelBuilder.Entity<GameVote>(entity =>
+        {
+            entity.HasOne(v => v.GameNightEvent)
+                .WithMany(e => e.GameVotes)
+                .HasForeignKey(v => v.GameNightEventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(v => v.GameNightEventGame)
+                .WithMany()
+                .HasForeignKey(v => v.GameNightEventGameId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(v => v.User)
+                .WithMany()
+                .HasForeignKey(v => v.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // One rank per user per game per event
+            entity.HasIndex(v => new { v.GameNightEventId, v.GameNightEventGameId, v.UserId })
+                .IsUnique();
+
+            entity.Property(v => v.SubmittedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure PlaygroupMessage
+        modelBuilder.Entity<PlaygroupMessage>(entity =>
+        {
+            entity.HasOne(m => m.Playgroup)
+                .WithMany(g => g.Messages)
+                .HasForeignKey(m => m.PlaygroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(m => m.SenderProfile)
+                .WithMany(p => p.SentGroupMessages)
+                .HasForeignKey(m => m.SenderProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(m => new { m.PlaygroupId, m.SentAt });
+
+            entity.Property(m => m.SentAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
     }
 
 }

@@ -15,11 +15,13 @@ namespace BoredGamers.Controllers
       _reviewService = reviewService;
     }
 
+    private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(int gameId, int rating, string text)
     {
-      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      var userId = GetUserId();
       if (string.IsNullOrWhiteSpace(userId))
         return Forbid();
 
@@ -38,7 +40,7 @@ namespace BoredGamers.Controllers
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
-      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      var userId = GetUserId();
       if (string.IsNullOrWhiteSpace(userId))
         return Forbid();
 
@@ -54,7 +56,7 @@ namespace BoredGamers.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int reviewId, int gameId, int rating, string text)
     {
-      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      var userId = GetUserId();
       if (string.IsNullOrWhiteSpace(userId))
         return Forbid();
 
@@ -74,7 +76,7 @@ namespace BoredGamers.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int reviewId, int gameId)
     {
-      var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+      var userId = GetUserId();
       if (string.IsNullOrWhiteSpace(userId))
         return Forbid();
 

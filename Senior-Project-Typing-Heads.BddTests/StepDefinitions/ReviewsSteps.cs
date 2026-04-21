@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Reqnroll;
 using Senior_Project_Typing_Heads.BddTests.Support;
 
@@ -148,6 +149,8 @@ public class ReviewSteps
     [Then("I should see my review text {string}")]
     public void ThenIShouldSeeMyReviewText(string expectedReviewText)
     {
+        new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(10))
+            .Until(d => d.PageSource.Contains(expectedReviewText));
         Assert.That(_webDriverContext.Driver!.PageSource, Does.Contain(expectedReviewText));
     }
 

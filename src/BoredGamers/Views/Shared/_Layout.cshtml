@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - BoredGamers</title>
 
+    <!-- Apply saved theme before render to prevent flash -->
+    <script>
+        (function () {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <!-- Bootstrap Icons -->
@@ -32,7 +41,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a asp-controller="Games" asp-action="Index" class="nav-link">Games</a>
+                        <a asp-controller="GamesPage" asp-action="Index" class="nav-link">Games</a>
                     </li>
                     <li class="nav-item">
                         <a asp-controller="Playgroup" asp-action="Index" class="nav-link">Groups</a>
@@ -44,6 +53,11 @@
 
                 <!-- Right Side Actions -->
                 <div class="d-flex align-items-center gap-2">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="theme-toggle" title="Toggle theme" onclick="toggleTheme()">
+                        <i class="bi bi-sun icon-sun"></i>
+                        <i class="bi bi-moon icon-moon"></i>
+                    </button>
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
                         <!-- Logged In: Icons and User Menu -->
@@ -55,7 +69,7 @@
                             </a>
 
                             <!-- Notifications -->
-                            <a asp-controller="Playgroup" asp-action="Notifications" class="btn btn-outline-light position-relative" title="Notifications">
+                            <a asp-controller="Notification" asp-action="Notifications" class="btn btn-outline-light position-relative" title="Notifications">
                                 <i class="bi bi-bell"></i>
                                 @await Component.InvokeAsync("UnreadNotifications")
                             </a>
@@ -72,6 +86,7 @@
                                     <li><a class="dropdown-item" asp-controller="Profile" asp-action="Index" asp-route-username="@User.Identity.Name"><i class="bi bi-person me-2"></i>My Profile</a></li>
                                     <li><a class="dropdown-item" asp-controller="Collection" asp-action="Index"><i class="bi bi-collection me-2"></i>My Collection</a></li>
                                     <li><a class="dropdown-item" asp-controller="Friends" asp-action="Index"><i class="bi bi-people me-2"></i>Friends</a></li>
+                                    <li><a class="dropdown-item" asp-controller="SocialFeed" asp-action="Index"><i class="bi bi-newspaper me-2"></i>Social</a></li>
                                     <li><a class="dropdown-item" asp-controller="Settings" asp-action="Index"><i class="bi bi-gear me-2"></i>Settings</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
@@ -202,6 +217,7 @@
     <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/main.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

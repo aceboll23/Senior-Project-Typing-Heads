@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using BoredGamers.Controllers;
 using BoredGamers.Data;
 using BoredGamers.Models;
+using BoredGamers.Services.Block;
+using BoredGamers.Services.Posts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +21,9 @@ namespace BoredGamers.Tests.Profile;
 [TestFixture]
 public class ProfileControllerTests
 {
-    // ProfileController now takes TWO dependencies:
-    //   1. ApplicationDbContext (for loading game collections)
-    //   2. UserManager<User> (for finding users and checking who's logged in)
     private Mock<UserManager<User>> _mockUserManager;
+    private Mock<IProfilePostService> _mockPostService;
+    private Mock<IBlockService> _mockBlockService;
     private ApplicationDbContext _db;
     private ProfileController _controller;
 
@@ -57,8 +58,14 @@ public class ProfileControllerTests
         _mockUserManager = new Mock<UserManager<User>>(
             userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
-        // ProfileController now needs both db and userManager
-        _controller = new ProfileController(_db, _mockUserManager.Object);
+        _mockPostService = new Mock<IProfilePostService>();
+        _mockPostService
+            .Setup(s => s.GetPostsByUserIdAsync(It.IsAny<string>()))
+            .ReturnsAsync(Array.Empty<ProfilePost>());
+
+        _mockBlockService = new Mock<IBlockService>();
+
+        _controller = new ProfileController(_db, _mockUserManager.Object, _mockPostService.Object, _mockBlockService.Object);
 
         // Create two fake users
         // User model now includes IsBanned, IsDeactivated, and Profile navigation

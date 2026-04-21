@@ -25,5 +25,12 @@ namespace BoredGamers.Services.GameNightEvents
     Task<EventResponse?> GetUserResponseAsync(int eventId, string userId);
     Task<List<EventResponse>> GetEventResponsesAsync(int eventId);
     Task<Dictionary<string, string>> GetResponderNamesAsync(List<EventResponse> responses);
+    // Voting
+    Task<bool> OpenVotingAsync(int eventId, string userId);
+    Task<bool> CloseVotingAsync(int eventId, string userId);
+    Task<bool> SubmitRankingsAsync(int eventId, string userId, Dictionary<int, int> gameRanks);
+    Task<List<GameVote>> GetVotesForEventAsync(int eventId);
+    Task<Dictionary<int, int>> GetUserRankingsAsync(int eventId, string userId);
+    Task<List<(GameNightEventGame EventGame, int TotalScore, bool IsWinner)>> GetVotingResultsAsync(int eventId);
   }
 }

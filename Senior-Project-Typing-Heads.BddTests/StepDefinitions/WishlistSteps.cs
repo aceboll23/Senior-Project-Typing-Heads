@@ -1,4 +1,5 @@
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Reqnroll;
 using System.Net.Http.Json;
 using Senior_Project_Typing_Heads.BddTests.Support;
@@ -10,11 +11,13 @@ public class WishlistSteps
 {
     private readonly WebDriverContext _webDriverContext;
     private readonly BddWishlistSeedDataContext _wishlistSeedDataContext;
+    private readonly LoginHelper _loginHelper;
 
-    public WishlistSteps(WebDriverContext webDriverContext, BddWishlistSeedDataContext wishlistSeedDataContext)
+    public WishlistSteps(WebDriverContext webDriverContext, BddWishlistSeedDataContext wishlistSeedDataContext, LoginHelper loginHelper)
     {
         _webDriverContext = webDriverContext;
         _wishlistSeedDataContext = wishlistSeedDataContext;
+        _loginHelper = loginHelper;
     }
 
     private class ResetWishlistDataResponse
@@ -51,11 +54,7 @@ public class WishlistSteps
         _wishlistSeedDataContext.GameNotOnWishlistName = seedData.GameNotOnWishlistName;
         _wishlistSeedDataContext.GameAlreadyOnWishlistName = seedData.GameAlreadyOnWishlistName;
 
-        _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Account/Login");
-        _webDriverContext.Driver.FindElement(By.Id("UsernameOrEmail")).SendKeys(seedData.Username);
-        _webDriverContext.Driver.FindElement(By.Id("Password")).SendKeys(seedData.Password);
-        _webDriverContext.Driver.FindElement(By.CssSelector("button[type='submit']")).Click();
-        Thread.Sleep(1000);
+        _loginHelper.Login(seedData.Username, seedData.Password);
     }
 
     [When("I navigate to the game not on my wishlist")]
@@ -75,8 +74,15 @@ public class WishlistSteps
     [When("I click the Add to Wishlist button")]
     public void WhenIClickTheAddToWishlistButton()
     {
-        _webDriverContext.Driver!.FindElement(By.Id("addToWishlistBtn")).Click();
-        Thread.Sleep(1000);
+        var driver = _webDriverContext.Driver!;
+        driver.FindElement(By.Id("addToWishlistBtn")).Click();
+
+        new WebDriverWait(driver, TimeSpan.FromSeconds(10))
+            .Until(d =>
+            {
+                var btn = d.FindElement(By.Id("addToWishlistBtn"));
+                return !btn.Enabled || btn.GetAttribute("disabled") != null || btn.Text.Contains("On Wishlist");
+            });
     }
 
     [Then("the game appears in my wishlist")]
@@ -149,5 +155,52 @@ public class WishlistSteps
     {
         var buttons = _webDriverContext.Driver!.FindElements(By.Id("addToWishlistBtn"));
         Assert.That(buttons.Count, Is.EqualTo(0), "Add to Wishlist button should not be visible to unauthenticated users");
+    }
+
+    // --- TYP-50 Remove Wishlist Steps ---
+
+    [Given("the game is already on my wishlist")]
+    public void GivenTheGameIsAlreadyOnMyWishlist()
+    {
+        Assert.That(_wishlistSeedDataContext.GameAlreadyOnWishlistId, Is.GreaterThan(0),
+            "Wishlist seed data should have been set up by the Given login step.");
+    }
+
+    [When("I navigate to my collection page")]
+    public void WhenINavigateToMyCollectionPage()
+    {
+        _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Collection");
+    }
+
+    [When("I click the Remove from Wishlist button")]
+    public void WhenIClickTheRemoveFromWishlistButton()
+    {
+        var driver = _webDriverContext.Driver!;
+        var buttonId = $"remove-wishlist-btn-{_wishlistSeedDataContext.GameAlreadyOnWishlistId}";
+
+        var button = driver.FindElement(By.Id(buttonId));
+
+        ((IJavaScriptExecutor)driver).ExecuteScript(
+            "arguments[0].scrollIntoView({ block: 'center' });", button);
+
+        ((IJavaScriptExecutor)driver).ExecuteScript(
+            "arguments[0].click();", button);
+    }
+
+    [Then("the game no longer appears in my wishlist")]
+    public void ThenTheGameNoLongerAppearsInMyWishlist()
+    {
+        var driver = _webDriverContext.Driver!;
+
+        new WebDriverWait(driver, TimeSpan.FromSeconds(10))
+            .Until(d => !d.PageSource.Contains(_wishlistSeedDataContext.GameAlreadyOnWishlistName));
+
+        var body = driver.FindElement(By.TagName("body")).Text;
+        var wishlistHeadingIndex = body.IndexOf("My Wishlist", StringComparison.OrdinalIgnoreCase);
+        Assert.That(wishlistHeadingIndex, Is.GreaterThan(0), "My Wishlist section should still exist on the page.");
+
+        var wishlistSection = body.Substring(wishlistHeadingIndex);
+        Assert.That(wishlistSection, Does.Not.Contain(_wishlistSeedDataContext.GameAlreadyOnWishlistName),
+            "Removed game should no longer appear in the wishlist section.");
     }
 }

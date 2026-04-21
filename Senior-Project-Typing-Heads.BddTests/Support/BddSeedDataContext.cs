@@ -12,4 +12,12 @@ public class BddSeedDataContext
   public int EmptyPlaygroupId { get; set; }
   public string CollectionGameName { get; set; } = "";
   public string OwnerUsername { get; set; } = "";
+  // Add these properties
+  public int VotingEventId { get; set; }
+  public int VotingEventGameId { get; set; }
+  public string VotingGameName { get; set; } = "";
+  public string VotingCreatorUsername { get; set; } = "";
+  public string VotingCreatorPassword { get; set; } = "";
+  public string VotingMemberUsername { get; set; } = "";
+  public string VotingMemberPassword { get; set; } = "";
 }

@@ -59,19 +59,159 @@ light theme colors will be if the toggle is switched on.
 
 /* Light Mode */
 [data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f2f3f5;
+  --bg-primary: #f0f2f5;
+  --bg-secondary: #ffffff;
   --bg-tertiary: #e3e5e8;
   --text-primary: #1a1a1d;
-  --text-secondary: #4f5660;
-  --text-muted: #747f8d;
-  --accent-primary: #5865f2;
+  --text-secondary: #2e3338;
+  --text-muted: #4f5660;
+  --accent-primary: #4752c4;
   --accent-secondary: #3ba55c;
   --accent-danger: #ed4245;
   --accent-warning: #faa61a;
-  --border-color: #d4d7dc;
-  --shadow: rgba(0, 0, 0, 0.1);
-  --shadow-light: rgba(0, 0, 0, 0.05);
+  --border-color: #b0b5be;
+  --shadow: rgba(0, 0, 0, 0.12);
+  --shadow-light: rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================================================
+   Light Mode Overrides
+   Fixes Bootstrap hardcoded classes that don't respond to CSS variables
+   ============================================================================ */
+
+/* Navbar */
+[data-theme="light"] .navbar {
+  background-color: #d8dce3 !important;
+  border-bottom-color: #b0b5be;
+}
+
+[data-theme="light"] .navbar-brand,
+[data-theme="light"] .navbar-nav .nav-link {
+  color: #1a1a1d !important;
+}
+
+[data-theme="light"] .navbar-nav .nav-link:hover {
+  color: #4752c4 !important;
+}
+
+[data-theme="light"] .navbar-toggler {
+  border-color: #1a1a1d;
+}
+
+[data-theme="light"] .navbar-toggler-icon {
+  filter: invert(1);
+}
+
+/* Navbar buttons (envelope, bell, user dropdown) */
+[data-theme="light"] .btn-outline-light {
+  color: #1a1a1d !important;
+  border-color: #b0b5be !important;
+  background-color: transparent !important;
+}
+
+[data-theme="light"] .btn-outline-light:hover {
+  background-color: #e3e5e8 !important;
+  color: #1a1a1d !important;
+}
+
+/* Dropdown menus */
+[data-theme="light"] .dropdown-menu {
+  background-color: #ffffff;
+  border-color: #b0b5be;
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .dropdown-item {
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .dropdown-item:hover {
+  background-color: #e3e5e8;
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .dropdown-header {
+  color: #4f5660;
+}
+
+[data-theme="light"] .dropdown-divider {
+  border-color: #b0b5be;
+}
+
+/* Form inputs */
+[data-theme="light"] .form-control {
+  background-color: #ffffff;
+  border-color: #b0b5be;
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .form-control:focus {
+  background-color: #ffffff;
+  border-color: #4752c4;
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .form-label {
+  color: #2e3338;
+}
+
+/* Dark background boxes (hardcoded Bootstrap bg-dark, bg-secondary etc) */
+[data-theme="light"] .bg-dark {
+  background-color: #e3e5e8 !important;
+  color: #1a1a1d !important;
+}
+
+[data-theme="light"] .text-white,
+[data-theme="light"] .text-white-50 {
+  color: #1a1a1d !important;
+}
+
+/* Cards */
+[data-theme="light"] .card {
+  background-color: #ffffff;
+  border-color: #b0b5be;
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .card-body,
+[data-theme="light"] .card-footer,
+[data-theme="light"] .card-header {
+  background-color: #ffffff;
+  color: #1a1a1d;
+}
+
+/* Alerts and info boxes */
+[data-theme="light"] .alert-info,
+[data-theme="light"] .alert-secondary {
+  background-color: #e3e5e8;
+  border-color: #b0b5be;
+  color: #1a1a1d;
+}
+
+/* Modal */
+[data-theme="light"] .modal-content {
+  background-color: #ffffff;
+  border-color: #b0b5be;
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .modal-header,
+[data-theme="light"] .modal-footer {
+  border-color: #b0b5be;
+}
+
+[data-theme="light"] .btn-close-white {
+  filter: invert(1);
+}
+
+/* Footer */
+[data-theme="light"] footer {
+  background-color: #d8dce3 !important;
+  border-color: #b0b5be !important;
+}
+
+[data-theme="light"] footer .text-white-50 {
+  color: #4f5660 !important;
 }
 
 /* ============================================================================

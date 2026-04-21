@@ -18,7 +18,6 @@ public class Hooks
     public void BeforeScenario()
     {
         var options = new ChromeOptions();
-        options.AddArgument("--start-maximized");
 
         // Disable password manager and breach warning popups
         options.AddArgument("--disable-save-password-bubble");
@@ -26,13 +25,17 @@ public class Hooks
         options.AddUserProfilePreference("profile.password_manager_enabled", false);
         options.AddUserProfilePreference("profile.password_manager_leak_detection", false);
 
-        var runHeadless = Environment.GetEnvironmentVariable("BDD_HEADLESS");
+        var showBrowser = Environment.GetEnvironmentVariable("BDD_SHOW_BROWSER");
 
-        if (!string.IsNullOrWhiteSpace(runHeadless) &&
-            runHeadless.Equals("true", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(showBrowser) ||
+            !showBrowser.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
             options.AddArgument("--headless=new");
             options.AddArgument("--window-size=1920,1080");
+        }
+        else
+        {
+            options.AddArgument("--start-maximized");
         }
 
         _webDriverContext.Driver = new ChromeDriver(options);

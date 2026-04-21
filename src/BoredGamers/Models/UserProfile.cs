@@ -53,6 +53,11 @@ namespace BoredGamers.Models
         public ICollection<DirectMessage> SentMessages { get; set; } = new List<DirectMessage>();
         public ICollection<DirectMessage> ReceivedMessages { get; set; } = new List<DirectMessage>();
 
+        // Posts on this profile
+        public ICollection<ProfilePost> Posts { get; set; } = new List<ProfilePost>();
+
+        public ICollection<PlaygroupMessage> SentGroupMessages { get; set; } = new List<PlaygroupMessage>();
+
         // Timestamps
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

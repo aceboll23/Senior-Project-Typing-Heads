@@ -77,6 +77,7 @@ namespace BoredGamers.Services.GameNightEvents
           .ThenInclude(eg => eg.Game)
         .Include(e => e.EventGames)
           .ThenInclude(eg => eg.User)
+        .Include(e => e.GameVotes)
         .FirstOrDefaultAsync(e => e.Id == eventId);
     }
 
@@ -319,6 +320,132 @@ namespace BoredGamers.Services.GameNightEvents
         return await _db.Users
             .Where(u => userIds.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.UserName ?? "Unknown");
+    }
+
+
+    // voting
+    public async Task<bool> OpenVotingAsync(int eventId, string userId)
+    {
+        var gameNightEvent = await _db.GameNightEvents
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.CreatedByUserId == userId);
+
+        if (gameNightEvent == null) return false;
+        if (!gameNightEvent.EventGames.Any())
+        {
+            gameNightEvent = await _db.GameNightEvents
+                .Include(e => e.EventGames)
+                .FirstOrDefaultAsync(e => e.Id == eventId);
+        }
+
+        if (gameNightEvent == null || !gameNightEvent.EventGames.Any()) return false;
+
+        gameNightEvent.VotingStatus = VotingStatus.Open;
+        return await _db.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> CloseVotingAsync(int eventId, string userId)
+    {
+        var gameNightEvent = await _db.GameNightEvents
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.CreatedByUserId == userId);
+
+        if (gameNightEvent == null) return false;
+
+        gameNightEvent.VotingStatus = VotingStatus.Closed;
+        return await _db.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> SubmitRankingsAsync(int eventId, string userId, Dictionary<int, int> gameRanks)
+    {
+        var canAccess = await UserCanAccessEventAsync(eventId, userId);
+        if (!canAccess) return false;
+
+        var gameNightEvent = await _db.GameNightEvents
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+
+        if (gameNightEvent == null || gameNightEvent.VotingStatus != VotingStatus.Open)
+            return false;
+
+        // Remove existing votes for this user on this event
+        var existing = await _db.GameVotes
+            .Where(v => v.GameNightEventId == eventId && v.UserId == userId)
+            .ToListAsync();
+
+        if (existing.Any())
+            _db.GameVotes.RemoveRange(existing);
+
+        // Add new rankings
+        foreach (var (eventGameId, rank) in gameRanks)
+        {
+            _db.GameVotes.Add(new GameVote
+            {
+                GameNightEventId = eventId,
+                GameNightEventGameId = eventGameId,
+                UserId = userId,
+                Rank = rank,
+                SubmittedAt = DateTime.UtcNow
+            });
+        }
+
+        return await _db.SaveChangesAsync() > 0;
+    }
+
+    public async Task<List<GameVote>> GetVotesForEventAsync(int eventId)
+    {
+        return await _db.GameVotes
+            .AsNoTracking()
+            .Where(v => v.GameNightEventId == eventId)
+            .ToListAsync();
+    }
+
+    public async Task<Dictionary<int, int>> GetUserRankingsAsync(int eventId, string userId)
+    {
+        return await _db.GameVotes
+            .AsNoTracking()
+            .Where(v => v.GameNightEventId == eventId && v.UserId == userId)
+            .ToDictionaryAsync(v => v.GameNightEventGameId, v => v.Rank);
+    }
+
+    public async Task<List<(GameNightEventGame EventGame, int TotalScore, bool IsWinner)>> GetVotingResultsAsync(int eventId)
+    {
+        var eventGames = await _db.GameNightEventGames
+            .AsNoTracking()
+            .Include(eg => eg.Game)
+            .Include(eg => eg.User)
+            .Where(eg => eg.GameNightEventId == eventId)
+            .ToListAsync();
+
+        var votes = await _db.GameVotes
+            .AsNoTracking()
+            .Where(v => v.GameNightEventId == eventId)
+            .ToListAsync();
+
+        // Sum ranks per game — lower is better
+        var scores = eventGames.Select(eg => new
+        {
+            EventGame = eg,
+            TotalScore = votes
+                .Where(v => v.GameNightEventGameId == eg.Id)
+                .Sum(v => v.Rank)
+        }).ToList();
+
+        if (!scores.Any())
+            return scores.Select(s => (s.EventGame, s.TotalScore, false)).ToList();
+
+        // Games with no votes get a high penalty score so they rank last
+        var maxScore = scores.Max(s => s.TotalScore);
+        var adjustedScores = scores.Select(s => new
+        {
+            s.EventGame,
+            TotalScore = s.TotalScore == 0 ? maxScore + 1 : s.TotalScore
+        }).ToList();
+
+        var lowestScore = adjustedScores.Min(s => s.TotalScore);
+
+        return adjustedScores
+            .Select(s => (s.EventGame, s.TotalScore, s.TotalScore == lowestScore))
+            .OrderBy(s => s.TotalScore)
+            .ToList();
     }
   }
 }

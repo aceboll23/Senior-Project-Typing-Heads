@@ -143,12 +143,12 @@ function initSearchResults() {
         if (playTime) {
             var parts = playTime.split('-');
             if (parts.length === 2) {
-                apiUrl += '&minPlayTime=' + parts[0] + '&maxPlayTime' + parts[1];
+                apiUrl += '&minPlayTime=' + parts[0] + '&maxPlayTime=' + parts[1];
             }
         }
 
         if (playerCount) apiUrl += '&playerCount=' + playerCount;
-        if (minRating) apiUrl += '&minRting' + minRating;
+        if (minRating) apiUrl += '&minRating=' + minRating;
     }
     //If it's just a normal text ssearch, use the new DB-first + BGG fallback search
     else {

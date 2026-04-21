@@ -4,6 +4,9 @@ using BoredGamers.Services.Games;
 using BoredGamers.Services.Email;
 using BoredGamers.Services.Collections;
 using BoredGamers.Services.GameNightEvents;
+using BoredGamers.Services.Posts;
+using BoredGamers.Services.Block;
+using BoredGamers.Services.SocialFeed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
@@ -20,6 +23,14 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<BddTestDataService>();
 builder.Services.AddScoped<BddWishlistTestDataService>();
 builder.Services.AddScoped<BddPlaygroupTestDataService>();
+builder.Services.AddScoped<BddPostTestDataService>();
+builder.Services.AddScoped<BddSocialFeedTestDataService>();
+builder.Services.AddScoped<BddDeleteFriendTestDataService>();
+builder.Services.AddScoped<BddAverageRatingTestDataService>();
+builder.Services.AddScoped<BddSortReviewsTestDataService>();
+builder.Services.AddScoped<BddFriendCollectionTestDataService>();
+builder.Services.AddScoped<BddBlockTestDataService>();
+builder.Services.AddScoped<BddChatTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -33,18 +44,6 @@ var connectionString = builder.Configuration.GetConnectionString(connectionStrin
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//   options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-/*
- * Register ApplicationDbContext with dependency injection.
- * The connection string is read from appsettings.json (or user-secrets).
- *
- * IMPORTANT:
- *  - Local development can use SQL Server LocalDB
- *  - Azure SQL will replace this connection string later
- */
-// Register BGG client for Top games sync (HTTP-based)
 
 //
 //Identity
@@ -84,6 +83,13 @@ builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameNightEventService, GameNightEventService>();
 //Sync Service that imports/upserts BGG games into our local database
 builder.Services.AddScoped<IGameSyncService, GameSyncService>();
+
+//Profile post service
+builder.Services.AddScoped<IProfilePostService, ProfilePostService>();
+//Social feed service
+builder.Services.AddScoped<ISocialFeedService, SocialFeedService>();
+//Block service
+builder.Services.AddScoped<IBlockService, BlockService>();
 
 //Email service
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -225,6 +231,62 @@ if (app.Environment.IsDevelopment())
         });
     });
 
+    app.MapPost("/dev/bdd/reset-post-data", async (BddPostTestDataService bddPostTestDataService) =>
+    {
+        var result = await bddPostTestDataService.ResetAndSeedPostTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.OwnerUsername,
+            result.OwnerPassword,
+            result.FriendUsername,
+            result.FriendPassword,
+            result.ExistingPostContent
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-social-feed-data", async (BddSocialFeedTestDataService bddSocialFeedTestDataService) =>
+    {
+        var result = await bddSocialFeedTestDataService.ResetAndSeedSocialFeedTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.ViewerUsername,
+            result.ViewerPassword,
+            result.FriendUsername,
+            result.FriendPassword,
+            result.FriendPostContent,
+            result.StrangerPostContent,
+            result.OlderPostContent,
+            result.NewerPostContent
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-block-data", async (BddBlockTestDataService svc) =>
+    {
+        var result = await svc.ResetWithFriendshipAsync();
+        return Results.Ok(new
+        {
+            result.BlockerUsername,
+            result.BlockerPassword,
+            result.TargetUsername,
+            result.TargetPassword
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-block-data-preblocked", async (BddBlockTestDataService svc) =>
+    {
+        var result = await svc.ResetWithBlockAsync();
+        return Results.Ok(new
+        {
+            result.BlockerUsername,
+            result.BlockerPassword,
+            result.TargetUsername,
+            result.TargetPassword,
+            result.TargetPostContent
+        });
+    });
+
     app.MapGet("/dev/bdd/config-check", (IConfiguration config) =>
     {
         return Results.Ok(new
@@ -233,6 +295,98 @@ if (app.Environment.IsDevelopment())
             DefaultConnectionFound = !string.IsNullOrWhiteSpace(config.GetConnectionString("DefaultConnection")),
             BddConnectionFound = !string.IsNullOrWhiteSpace(config.GetConnectionString("BddConnection"))
         });
+    });
+
+    app.MapPost("/dev/bdd/reset-delete-friend-data", async (BddDeleteFriendTestDataService bddDeleteFriendTestDataService) =>
+    {
+        var result = await bddDeleteFriendTestDataService.ResetAndSeedDeleteFriendTestDataAsync();
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.FriendUsername,
+            result.FriendProfileId
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-average-rating-data", async (BddAverageRatingTestDataService bddAverageRatingTestDataService) =>
+    {
+        var result = await bddAverageRatingTestDataService.ResetAndSeedAverageRatingTestDataAsync();
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameId,
+            result.ExpectedAverage
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-sort-reviews-data", async (BddSortReviewsTestDataService bddSortReviewsTestDataService) =>
+    {
+        var result = await bddSortReviewsTestDataService.ResetAndSeedSortReviewsTestDataAsync();
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.GameId
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-voting-data", async (BddTestDataService bddTestDataService) =>
+    {
+        var result = await bddTestDataService.ResetAndSeedVotingTestDataAsync();
+        return Results.Ok(new
+        {
+            result.CreatorUsername,
+            result.CreatorPassword,
+            result.MemberUsername,
+            result.MemberPassword,
+            result.EventId,
+            result.EventGameId,
+            result.GameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-friend-collection-data", async (BddFriendCollectionTestDataService svc) =>
+    {
+        var result = await svc.ResetAndSeedAsync();
+        return Results.Ok(new
+        {
+            result.ViewerUsername,
+            result.ViewerPassword,
+            result.FriendWithGamesUsername,
+            result.FriendEmptyUsername,
+            result.OwnedGameId,
+            result.OwnedGameName,
+            result.WishlistGameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-chat-data", async (BddChatTestDataService svc) =>
+    {
+        var result = await svc.ResetAndSeedAsync();
+        return Results.Ok(new
+        {
+            result.OwnerUsername,
+            result.OwnerPassword,
+            result.MemberUsername,
+            result.MemberPassword,
+            result.OutsiderUsername,
+            result.OutsiderPassword,
+            result.PlaygroupId,
+            result.PlaygroupName
+        });
+    });
+
+    app.MapPost("/dev/bdd/open-voting/{eventId:int}", async (int eventId, ApplicationDbContext db) =>
+    {
+        var gameNightEvent = await db.GameNightEvents.FindAsync(eventId);
+        if (gameNightEvent == null) return Results.NotFound();
+
+        gameNightEvent.VotingStatus = VotingStatus.Open;
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new { eventId, votingStatus = "Open" });
     });
 
 }

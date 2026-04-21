@@ -24,8 +24,8 @@ namespace BoredGamers.Services.Bgg
     private const string HotUrl = 
       "https://boardgamegeek.com/xmlapi2/hot?type=boardgame";
 
-    private const string ThingUrlBase = 
-      "Https://boardgamegeek.com/xmlapi2/thing?id="; 
+    private const string ThingUrlBase =
+      "https://boardgamegeek.com/xmlapi2/thing?id=";
 
     private const string ThingUrlSuffix = 
       "&stats=1";
@@ -86,11 +86,11 @@ namespace BoredGamers.Services.Bgg
           var response = await _http.SendAsync(request, ct);
           response.EnsureSuccessStatusCode();
 
-          xml = await response. Content.ReadAsStringAsync(ct);
+          xml = await response.Content.ReadAsStringAsync(ct);
         }
         catch (Exception ex)
         {
-          _logger.LogError(ex, "Failed to fetch BGG hot list (XML API). Attempt {Attempt}/{Max}", attempt, maxAttempts);;
+          _logger.LogError(ex, "Failed to fetch BGG hot list (XML API). Attempt {Attempt}/{Max}", attempt, maxAttempts);
           break; // don't spam retries if something is wrong
         }
 
@@ -118,8 +118,6 @@ namespace BoredGamers.Services.Bgg
             })
             .Where(x => x != null)
             .Cast<BggTopGame>()
-            //.OrderBy(x => x.Rank)
-            //.Take(limit)
             .ToList();
 
             foreach (var g in items)
@@ -332,7 +330,7 @@ namespace BoredGamers.Services.Bgg
         var response = await _http.SendAsync(request, ct);
         response.EnsureSuccessStatusCode();
 
-        xml = await response. Content.ReadAsStringAsync(ct);
+        xml = await response.Content.ReadAsStringAsync(ct);
       }
       catch (Exception ex)
       {

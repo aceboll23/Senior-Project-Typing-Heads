@@ -67,6 +67,27 @@
                 </div>
             </div>
         }
+
+        @if (status == "voting-opened")
+        {
+            <div class="alert alert-success">Voting is now open.</div>
+        }
+        @if (status == "voting-open-error")
+        {
+            <div class="alert alert-danger">Could not open voting. Make sure at least one game has been added.</div>
+        }
+        @if (status == "voting-closed")
+        {
+            <div class="alert alert-success">Voting has been closed. Results are now visible.</div>
+        }
+        @if (status == "rankings-submitted")
+        {
+            <div class="alert alert-success">Your rankings have been saved.</div>
+        }
+        @if (status == "rankings-error")
+        {
+            <div class="alert alert-danger">Could not save your rankings. Voting may be closed.</div>
+        }
     </div>
 
      <!-- RSVP Section -->
@@ -170,7 +191,146 @@
             </form>
         }
     </div>
+    @{
+    var votingStatus = ViewData["VotingStatus"] as VotingStatus? ?? VotingStatus.NotStarted;
+    var userRankings = ViewData["UserRankings"] as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var votingResults = ViewData["VotingResults"] as List<(GameNightEventGame EventGame, int TotalScore, bool IsWinner)>;
+    }
 
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>Game Vote
+                    @if (votingStatus == VotingStatus.Open)
+                    {
+                        <span class="badge bg-success ms-2">Voting Open</span>
+                    }
+                    else if (votingStatus == VotingStatus.Closed)
+                    {
+                        <span class="badge bg-secondary ms-2">Voting Closed</span>
+                    }
+                </h5>
+
+                @if (Model.CreatedByUserId == currentUserId)
+                {
+                    if (votingStatus == VotingStatus.NotStarted)
+                    {
+                        <form asp-action="OpenVoting" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="eventId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-play me-1"></i>Open Voting
+                            </button>
+                        </form>
+                    }
+                    else if (votingStatus == VotingStatus.Open)
+                    {
+                        <form asp-action="CloseVoting" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="eventId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-warning btn-sm"
+                                    onclick="return confirm('Close voting? Members will no longer be able to submit rankings.');">
+                                <i class="bi bi-stop me-1"></i>Close Voting
+                            </button>
+                        </form>
+                    }
+                }
+            </div>
+
+            @if (votingStatus == VotingStatus.NotStarted)
+            {
+                <p class="text-muted mb-0">
+                    Voting has not started yet.
+                    @if (Model.CreatedByUserId == currentUserId)
+                    {
+                        <span>Add games below then open voting when ready.</span>
+                    }
+                </p>
+            }
+            else if (votingStatus == VotingStatus.Open)
+            {
+                @if (!Model.EventGames.Any())
+                {
+                    <p class="text-muted">No games have been added to vote on yet.</p>
+                }
+                else
+                {
+                    <p class="text-muted small mb-3">
+                        Rank the games below in order of preference. 1 = most preferred.
+                    </p>
+                    <form asp-action="SubmitRankings" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="eventId" value="@Model.Id" />
+                        <div class="list-group mb-3">
+                            @foreach (var eventGame in Model.EventGames)
+                            {
+                                var currentRank = userRankings.ContainsKey(eventGame.Id)
+                                    ? userRankings[eventGame.Id]
+                                    : (int?)null;
+                                <div class="list-group-item bg-dark d-flex align-items-center justify-content-between gap-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        @if (!string.IsNullOrWhiteSpace(eventGame.Game?.ThumbnailUrl))
+                                        {
+                                            <img src="@eventGame.Game.ThumbnailUrl"
+                                                style="width:40px;height:40px;object-fit:cover;"
+                                                class="rounded" />
+                                        }
+                                        <span class="fw-bold">@eventGame.Game?.Name</span>
+                                    </div>
+                                    <div style="width:80px;">
+                                        <input type="number"
+                                            name="gameRanks[@eventGame.Id]"
+                                            class="form-control form-control-sm text-center"
+                                            min="1"
+                                            max="@Model.EventGames.Count"
+                                            value="@currentRank"
+                                            placeholder="#" />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2 me-1"></i>Submit Rankings
+                        </button>
+                    </form>
+                }
+            }
+            else if (votingStatus == VotingStatus.Closed && votingResults != null)
+            {
+                <p class="text-muted small mb-3">
+                    Voting is closed. Results are based on combined preference rankings — lower score wins.
+                </p>
+                <div class="list-group">
+                    @foreach (var (eventGame, totalScore, isWinner) in votingResults)
+                    {
+                        <div class="list-group-item @(isWinner ? "border-warning" : "") bg-dark d-flex align-items-center justify-content-between gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                @if (isWinner)
+                                {
+                                    <i class="bi bi-trophy-fill text-warning fs-5"></i>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(eventGame.Game?.ThumbnailUrl))
+                                {
+                                    <img src="@eventGame.Game.ThumbnailUrl"
+                                        style="width:40px;height:40px;object-fit:cover;"
+                                        class="rounded" />
+                                }
+                                <div>
+                                    <span class="fw-bold">@eventGame.Game?.Name</span>
+                                    @if (isWinner)
+                                    {
+                                        <span class="badge bg-warning text-dark ms-2">Winner</span>
+                                    }
+                                </div>
+                            </div>
+                            <span class="text-muted small">Score: @totalScore</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
     <div>
         <h2 class="mb-3">Games Members Are Bringing</h2>
 

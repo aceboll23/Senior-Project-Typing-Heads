@@ -23,6 +23,9 @@ public class PlaygroupController : Controller
     }
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
+    private async Task<UserProfile?> GetUserProfileAsync(string userId) =>
+        await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == userId);
+
     // GET /Playgroup — "My Playgroups" list
     public async Task<IActionResult> Index()
     {
@@ -141,8 +144,11 @@ public class PlaygroupController : Controller
         if (membership.Role == PlaygroupRole.Owner)
             return RedirectToAction("Details", new { id, status = "cannot-leave-owner" });
 
+        var leavingUser = await _userManager.FindByIdAsync(userId);
         _db.PlaygroupMembers.Remove(membership);
         await _db.SaveChangesAsync();
+
+        await PostSystemMessageAsync(id, $"{leavingUser?.UserName ?? "A member"} left the playgroup.");
 
         return RedirectToAction("Index");
     }
@@ -163,8 +169,7 @@ public class PlaygroupController : Controller
             return Forbid();
 
         // Get current user's profile to query friendships
-        var userProfile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
+        var userProfile = await GetUserProfileAsync(userId);
 
         if (userProfile == null)
             return NotFound();
@@ -259,8 +264,7 @@ public class PlaygroupController : Controller
         _db.PlaygroupInvites.Add(invite);
 
         // Create a notification for the invited user
-        var invitedProfile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == invitedUserId);
+        var invitedProfile = await GetUserProfileAsync(invitedUserId);
 
         if (invitedProfile != null)
         {
@@ -331,6 +335,9 @@ public class PlaygroupController : Controller
         _db.PlaygroupMembers.Add(membership);
         await _db.SaveChangesAsync();
 
+        var joinedUser = await _userManager.FindByIdAsync(userId);
+        await PostSystemMessageAsync(invite.PlaygroupId, $"{joinedUser?.UserName ?? "A member"} joined the playgroup.");
+
         return RedirectToAction("Details", new { id = invite.PlaygroupId });
     }
 
@@ -353,132 +360,6 @@ public class PlaygroupController : Controller
 
         return RedirectToAction("PendingInvites");
     }
-
-        // GET /Playgroup/Notifications
-    public async Task<IActionResult> Notifications()
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Index");
-
-        var notifications = await _db.Set<Notification>()
-            .Where(n => n.UserProfileId == profile.Id)
-            .OrderByDescending(n => n.CreatedAt)
-            .ToListAsync();
-
-        return View(notifications);
-    }
-
-    // POST /Playgroup/MarkAllNotificationsRead
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> MarkAllNotificationsRead()
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Index");
-
-        var unread = await _db.Set<Notification>()
-            .Where(n => n.UserProfileId == profile.Id && !n.IsRead)
-            .ToListAsync();
-
-        foreach (var n in unread)
-        {
-            n.IsRead = true;
-            n.ReadAt = DateTime.UtcNow;
-        }
-
-        await _db.SaveChangesAsync();
-        return RedirectToAction("Notifications");
-    }
-
-        // POST /Playgroup/MarkNotificationRead/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> MarkNotificationRead(int id)
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Index");
-
-        var notification = await _db.Set<Notification>()
-            .FirstOrDefaultAsync(n => n.Id == id && n.UserProfileId == profile.Id);
-
-        if (notification != null && !notification.IsRead)
-        {
-            notification.IsRead = true;
-            notification.ReadAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
-        }
-
-        return RedirectToAction("Notifications");
-    }
-
-        // POST /Playgroup/ViewNotification/5
-    // Marks as read then redirects to the notification's ActionUrl
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ViewNotification(int id)
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Notifications");
-
-        var notification = await _db.Set<Notification>()
-            .FirstOrDefaultAsync(n => n.Id == id && n.UserProfileId == profile.Id);
-
-        if (notification == null)
-            return RedirectToAction("Notifications");
-
-        if (!notification.IsRead)
-        {
-            notification.IsRead = true;
-            notification.ReadAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
-        }
-
-        if (!string.IsNullOrEmpty(notification.ActionUrl))
-            return Redirect(notification.ActionUrl);
-
-        return RedirectToAction("Notifications");
-    }
-
-    // POST /Playgroup/DeleteNotification/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteNotification(int id)
-    {
-        var userId = GetUserId();
-        var profile = await _db.Set<UserProfile>()
-            .FirstOrDefaultAsync(p => p.UserId == userId);
-
-        if (profile == null)
-            return RedirectToAction("Index");
-
-        var notification = await _db.Set<Notification>()
-            .FirstOrDefaultAsync(n => n.Id == id && n.UserProfileId == profile.Id);
-
-        if (notification != null)
-        {
-            _db.Set<Notification>().Remove(notification);
-            await _db.SaveChangesAsync();
-        }
-
-        return RedirectToAction("Notifications");
-    }
-
 
         // GET /Playgroup/DeletePlaygroup/5
     public async Task<IActionResult> DeletePlaygroup(int id)
@@ -522,6 +403,152 @@ public class PlaygroupController : Controller
         await _db.SaveChangesAsync();
 
         return RedirectToAction("Index");
+    }
+
+    private async Task PostSystemMessageAsync(int playgroupId, string text)
+    {
+        _db.PlaygroupMessages.Add(new PlaygroupMessage
+        {
+            PlaygroupId = playgroupId,
+            SenderProfileId = null,
+            Content = text,
+            IsSystemMessage = true,
+            SentAt = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync();
+    }
+
+    // GET /Playgroup/Chat/5
+    public async Task<IActionResult> Chat(int id)
+    {
+        var userId = GetUserId();
+
+        var playgroup = await _db.Playgroups
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.Id == id);
+
+        if (playgroup == null || !playgroup.IsMember(userId))
+            return NotFound();
+
+        var messages = await _db.PlaygroupMessages
+            .Where(m => m.PlaygroupId == id)
+            .Include(m => m.SenderProfile)
+                .ThenInclude(p => p!.User)
+            .OrderBy(m => m.SentAt)
+            .ToListAsync();
+
+        ViewData["PlaygroupId"] = id;
+        ViewData["PlaygroupName"] = playgroup.Name;
+        return View(messages);
+    }
+
+    // POST /Playgroup/SendMessage
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SendMessage(int playgroupId, string content)
+    {
+        var userId = GetUserId();
+
+        var playgroup = await _db.Playgroups
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.Id == playgroupId);
+
+        if (playgroup == null || !playgroup.IsMember(userId))
+            return Json(new { success = false, error = "Access denied." });
+
+        if (string.IsNullOrWhiteSpace(content))
+            return Json(new { success = false, error = "Message cannot be empty." });
+
+        if (content.Length > 1000)
+            return Json(new { success = false, error = "Message cannot exceed 1000 characters." });
+
+        var senderProfile = await GetUserProfileAsync(userId);
+        if (senderProfile == null)
+            return Json(new { success = false, error = "Profile not found." });
+
+        var message = new PlaygroupMessage
+        {
+            PlaygroupId = playgroupId,
+            SenderProfileId = senderProfile.Id,
+            Content = content.Trim(),
+            IsSystemMessage = false,
+            SentAt = DateTime.UtcNow
+        };
+
+        _db.PlaygroupMessages.Add(message);
+        await _db.SaveChangesAsync();
+
+        // Notify all other members
+        var otherMemberUserIds = playgroup.Members
+            .Where(m => m.UserId != userId)
+            .Select(m => m.UserId)
+            .ToList();
+
+        var senderUser = await _userManager.FindByIdAsync(userId);
+        var senderName = senderUser?.UserName ?? "Someone";
+
+        foreach (var memberId in otherMemberUserIds)
+        {
+            var profile = await GetUserProfileAsync(memberId);
+            if (profile == null) continue;
+            _db.Set<Notification>().Add(new Notification
+            {
+                UserProfileId = profile.Id,
+                Type = "PlaygroupMessage",
+                Title = $"New message in {playgroup.Name}",
+                Message = $"{senderName}: {content.Trim().Substring(0, Math.Min(80, content.Trim().Length))}",
+                ActionUrl = $"/Playgroup/Chat/{playgroupId}",
+                RelatedEntityId = message.Id,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        await _db.SaveChangesAsync();
+
+        return Json(new
+        {
+            success = true,
+            messageId = message.Id,
+            senderName,
+            avatarUrl = senderProfile.AvatarUrl,
+            content = message.Content,
+            sentAt = message.SentAt.ToString("MMM d, yyyy · h:mm tt")
+        });
+    }
+
+    // POST /Playgroup/RemoveMember
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveMember(int playgroupId, string targetUserId)
+    {
+        var userId = GetUserId();
+
+        var playgroup = await _db.Playgroups
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.Id == playgroupId);
+
+        if (playgroup == null)
+            return NotFound();
+
+        if (!playgroup.IsOwner(userId))
+            return Forbid();
+
+        if (targetUserId == userId)
+            return RedirectToAction("Details", new { id = playgroupId });
+
+        var membership = await _db.PlaygroupMembers
+            .FirstOrDefaultAsync(m => m.PlaygroupId == playgroupId && m.UserId == targetUserId);
+
+        if (membership == null)
+            return NotFound();
+
+        var removedUser = await _userManager.FindByIdAsync(targetUserId);
+        _db.PlaygroupMembers.Remove(membership);
+        await _db.SaveChangesAsync();
+
+        await PostSystemMessageAsync(playgroupId, $"{removedUser?.UserName ?? "A member"} was removed from the playgroup.");
+
+        return RedirectToAction("Details", new { id = playgroupId });
     }
 
     // GET /Playgroup/Collection/5

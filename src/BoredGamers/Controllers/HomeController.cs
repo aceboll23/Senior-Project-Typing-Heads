@@ -26,7 +26,7 @@ public class HomeController : Controller
         var featured = await _games.GetTopGamesAsync(limit: 4);
 
         _logger.LogInformation("Featured games = {Games}",
-            string.Join(",", featured.Select(g => "${g.Name} (Avg: {g.AverageRating}, Voters: {g.BggNumVoters})")));
+            string.Join(",", featured.Select(g => $"{g.Name} (Avg: {g.AverageRating}, Voters: {g.BggNumVoters})")));
 
 
         _logger.LogInformation("Home FeaturedGames count = {Count}", featured.Count);
