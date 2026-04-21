@@ -30,6 +30,7 @@ builder.Services.AddScoped<BddAverageRatingTestDataService>();
 builder.Services.AddScoped<BddSortReviewsTestDataService>();
 builder.Services.AddScoped<BddFriendCollectionTestDataService>();
 builder.Services.AddScoped<BddBlockTestDataService>();
+builder.Services.AddScoped<BddChatTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -358,6 +359,22 @@ if (app.Environment.IsDevelopment())
             result.OwnedGameId,
             result.OwnedGameName,
             result.WishlistGameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-chat-data", async (BddChatTestDataService svc) =>
+    {
+        var result = await svc.ResetAndSeedAsync();
+        return Results.Ok(new
+        {
+            result.OwnerUsername,
+            result.OwnerPassword,
+            result.MemberUsername,
+            result.MemberPassword,
+            result.OutsiderUsername,
+            result.OutsiderPassword,
+            result.PlaygroupId,
+            result.PlaygroupName
         });
     });
 

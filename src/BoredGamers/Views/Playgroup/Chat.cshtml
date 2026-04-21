@@ -1,0 +1,199 @@
+@model List<BoredGamers.Models.PlaygroupMessage>
+
+@{
+    ViewData["Title"] = $"{ViewData["PlaygroupName"]} — Chat";
+    var playgroupId = (int)ViewData["PlaygroupId"]!;
+    var playgroupName = (string)ViewData["PlaygroupName"]!;
+}
+
+<section class="py-4">
+    <div class="container" style="max-width: 800px;">
+        <a href="/Playgroup/Details/@playgroupId" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="bi bi-arrow-left me-1"></i>Back to @playgroupName
+        </a>
+
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-chat-dots me-1"></i>
+                <strong>@playgroupName Group Chat</strong>
+            </div>
+
+            <!-- Message list -->
+            <div id="message-list" class="card-body overflow-y-auto" style="height: 480px;">
+                @if (!Model.Any())
+                {
+                    <p id="empty-state" class="text-muted text-center mt-4">No messages yet. Say hello!</p>
+                }
+                @foreach (var msg in Model)
+                {
+                    @if (msg.IsSystemMessage)
+                    {
+                        <div class="text-center my-2">
+                            <small class="text-muted fst-italic">@msg.Content</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-start gap-2 mb-3 chat-message">
+                            @if (!string.IsNullOrEmpty(msg.SenderProfile?.AvatarUrl))
+                            {
+                                <img src="@msg.SenderProfile.AvatarUrl"
+                                     class="rounded-circle"
+                                     style="width:40px;height:40px;object-fit:cover;"
+                                     alt="@msg.SenderProfile.User.UserName" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
+                                     style="width:40px;height:40px;flex-shrink:0;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            }
+                            <div>
+                                <div>
+                                    <strong class="me-2">@msg.SenderProfile?.User?.UserName</strong>
+                                    <small class="text-muted">@msg.SentAt.ToString("MMM d, yyyy · h:mm tt")</small>
+                                </div>
+                                <div>@msg.Content</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <!-- Send form -->
+            <div class="card-footer">
+                <div id="send-error" class="alert alert-danger d-none mb-2" role="alert">
+                    <span id="send-error-text"></span>
+                    <button type="button" id="retry-btn" class="btn btn-sm btn-outline-danger ms-2">Retry</button>
+                </div>
+                <form id="chat-form" class="d-flex gap-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="playgroupId" value="@playgroupId" />
+                    <div class="flex-grow-1">
+                        <textarea id="message-input"
+                                  name="content"
+                                  class="form-control"
+                                  rows="2"
+                                  maxlength="1000"
+                                  placeholder="Type a message…"></textarea>
+                        <div class="text-end">
+                            <small id="char-counter" class="text-muted">0 / 1000</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-end">
+                        <button id="send-btn" type="submit" class="btn btn-primary">
+                            <i class="bi bi-send me-1"></i>Send
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+    const messageList = document.getElementById('message-list');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const charCounter = document.getElementById('char-counter');
+    const sendBtn = document.getElementById('send-btn');
+    const sendError = document.getElementById('send-error');
+    const sendErrorText = document.getElementById('send-error-text');
+    const retryBtn = document.getElementById('retry-btn');
+    const emptyState = document.getElementById('empty-state');
+
+    // Scroll to bottom on load
+    messageList.scrollTop = messageList.scrollHeight;
+
+    messageInput.addEventListener('input', function () {
+        charCounter.textContent = `${this.value.length} / 1000`;
+        if (this.value.length > 1000) {
+            charCounter.classList.add('text-danger');
+        } else {
+            charCounter.classList.remove('text-danger');
+        }
+    });
+
+    let lastContent = '';
+
+    function appendMessage(data) {
+        if (emptyState) emptyState.remove();
+
+        const avatar = data.avatarUrl
+            ? `<img src="${data.avatarUrl}" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;" alt="${data.senderName}" />`
+            : `<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" style="width:40px;height:40px;flex-shrink:0;"><i class="bi bi-person"></i></div>`;
+
+        const div = document.createElement('div');
+        div.className = 'd-flex align-items-start gap-2 mb-3 chat-message';
+        div.innerHTML = `${avatar}<div><div><strong class="me-2">${data.senderName}</strong><small class="text-muted">${data.sentAt}</small></div><div>${data.content}</div></div>`;
+        messageList.appendChild(div);
+        messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    async function sendMessage(content) {
+        sendError.classList.add('d-none');
+        sendBtn.disabled = true;
+
+        const token = chatForm.querySelector('input[name="__RequestVerificationToken"]').value;
+        const playgroupId = chatForm.querySelector('input[name="playgroupId"]').value;
+
+        try {
+            const resp = await fetch('/Playgroup/SendMessage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
+                body: `playgroupId=${encodeURIComponent(playgroupId)}&content=${encodeURIComponent(content)}&__RequestVerificationToken=${encodeURIComponent(token)}`
+            });
+
+            const data = await resp.json();
+
+            if (data.success) {
+                appendMessage(data);
+                messageInput.value = '';
+                charCounter.textContent = '0 / 1000';
+                lastContent = '';
+            } else {
+                showError(data.error || 'Failed to send message.');
+                lastContent = content;
+            }
+        } catch {
+            showError('Network error. Please check your connection.');
+            lastContent = content;
+        } finally {
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
+    }
+
+    function showError(msg) {
+        sendErrorText.textContent = msg;
+        sendError.classList.remove('d-none');
+    }
+
+    chatForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const content = messageInput.value.trim();
+        if (!content) return;
+        if (content.length > 1000) {
+            showError('Message cannot exceed 1000 characters.');
+            return;
+        }
+        await sendMessage(content);
+    });
+
+    retryBtn.addEventListener('click', async function () {
+        if (lastContent) await sendMessage(lastContent);
+    });
+
+    messageInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+    });
+</script>
+}

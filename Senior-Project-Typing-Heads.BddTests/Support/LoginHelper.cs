@@ -15,6 +15,7 @@ public class LoginHelper
     public void Login(string username, string password)
     {
         var driver = _webDriverContext.Driver!;
+        driver.Manage().Cookies.DeleteAllCookies();
         driver.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Account/Login");
         driver.FindElement(By.Id("UsernameOrEmail")).SendKeys(username);
         driver.FindElement(By.Id("Password")).SendKeys(password);
