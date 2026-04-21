@@ -192,7 +192,7 @@
     messageInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            chatForm.dispatchEvent(new Event('submit'));
+            chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
         }
     });
 </script>

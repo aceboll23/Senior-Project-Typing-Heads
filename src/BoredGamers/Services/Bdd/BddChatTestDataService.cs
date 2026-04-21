@@ -30,20 +30,32 @@ public class BddChatTestDataService
 
     public async Task<BddChatSeedResult> ResetAndSeedAsync()
     {
+        var oldPlaygroups = await _db.Playgroups.Where(p => p.Name == "BDD Chat Playgroup").ToListAsync();
+        if (oldPlaygroups.Count > 0)
+        {
+            var playgroupIds = oldPlaygroups.Select(p => p.Id).ToList();
+
+            var messages = await _db.PlaygroupMessages.Where(m => playgroupIds.Contains(m.PlaygroupId)).ToListAsync();
+            if (messages.Count > 0) { _db.PlaygroupMessages.RemoveRange(messages); await _db.SaveChangesAsync(); }
+
+            var members = await _db.PlaygroupMembers.Where(m => playgroupIds.Contains(m.PlaygroupId)).ToListAsync();
+            if (members.Count > 0) { _db.PlaygroupMembers.RemoveRange(members); await _db.SaveChangesAsync(); }
+
+            _db.Playgroups.RemoveRange(oldPlaygroups);
+            await _db.SaveChangesAsync();
+        }
+
         foreach (var username in new[] { OwnerUserName, MemberUserName, OutsiderUserName })
         {
             var existing = await _db.Users.OfType<User>()
                 .FirstOrDefaultAsync(u => u.UserName == username);
             if (existing == null) continue;
 
-            var memberships = await _db.PlaygroupMembers.Where(m => m.UserId == existing.Id).ToListAsync();
-            if (memberships.Count > 0) { _db.PlaygroupMembers.RemoveRange(memberships); await _db.SaveChangesAsync(); }
+            var profile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == existing.Id);
+            if (profile != null) { _db.Set<UserProfile>().Remove(profile); await _db.SaveChangesAsync(); }
 
             await _userManager.DeleteAsync(existing);
         }
-
-        var oldPlaygroups = await _db.Playgroups.Where(p => p.Name == "BDD Chat Playgroup").ToListAsync();
-        if (oldPlaygroups.Count > 0) { _db.Playgroups.RemoveRange(oldPlaygroups); await _db.SaveChangesAsync(); }
 
         var owner = new User { UserName = OwnerUserName, Email = OwnerEmail, EmailConfirmed = true };
         var ownerResult = await _userManager.CreateAsync(owner, OwnerPassword);

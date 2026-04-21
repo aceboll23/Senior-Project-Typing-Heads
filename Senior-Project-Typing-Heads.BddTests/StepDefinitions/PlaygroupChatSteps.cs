@@ -76,6 +76,7 @@ public class PlaygroupChatSteps
     }
 
     [Given("I am logged in as the BDD chat owner")]
+    [When("I am logged in as the BDD chat owner")]
     public void GivenIAmLoggedInAsTheBddChatOwner()
     {
         EnsureSeedData();
