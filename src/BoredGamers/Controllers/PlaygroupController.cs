@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
+using BoredGamers.Hubs;
  namespace BoredGamers.Controllers;
 
 [Authorize]
@@ -15,11 +17,13 @@ public class PlaygroupController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<User> _userManager;
+    private readonly IHubContext<PlaygroupChatHub> _chatHub;
 
-    public PlaygroupController(ApplicationDbContext db, UserManager<User> userManager)
+    public PlaygroupController(ApplicationDbContext db, UserManager<User> userManager, IHubContext<PlaygroupChatHub> chatHub)
     {
         _db = db;
         _userManager = userManager;
+        _chatHub = chatHub;
     }
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -478,14 +482,24 @@ public class PlaygroupController : Controller
         _db.PlaygroupMessages.Add(message);
         await _db.SaveChangesAsync();
 
+        var senderUser = await _userManager.FindByIdAsync(userId);
+        var senderName = senderUser?.UserName ?? "Someone";
+
+        await _chatHub.Clients
+            .Group(PlaygroupChatHub.GroupName(playgroupId))
+            .SendAsync("ReceiveMessage", new
+            {
+                senderName,
+                avatarUrl = senderProfile.AvatarUrl,
+                content = message.Content,
+                sentAt = message.SentAt.ToString("MMM d, yyyy · h:mm tt")
+            });
+
         // Notify all other members
         var otherMemberUserIds = playgroup.Members
             .Where(m => m.UserId != userId)
             .Select(m => m.UserId)
             .ToList();
-
-        var senderUser = await _userManager.FindByIdAsync(userId);
-        var senderName = senderUser?.UserName ?? "Someone";
 
         foreach (var memberId in otherMemberUserIds)
         {

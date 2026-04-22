@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
 using BoredGamers.Services;
 using BoredGamers.Services.Bdd;
+using BoredGamers.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -34,6 +35,7 @@ builder.Services.AddScoped<BddBlockTestDataService>();
 builder.Services.AddScoped<BddChatTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 //
 //Database
@@ -135,6 +137,7 @@ app.MapControllerRoute(
 
 // Map Identity endpoints (Razor Pages)
 app.MapRazorPages();
+app.MapHub<PlaygroupChatHub>("/hubs/playgroup-chat");
 
 // registers a custom url route
 app.MapControllerRoute(

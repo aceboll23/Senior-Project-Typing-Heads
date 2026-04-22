@@ -93,6 +93,7 @@
 </section>
 
 @section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
 <script>
     const messageList = document.getElementById('message-list');
     const chatForm = document.getElementById('chat-form');
@@ -103,41 +104,54 @@
     const sendErrorText = document.getElementById('send-error-text');
     const retryBtn = document.getElementById('retry-btn');
     const emptyState = document.getElementById('empty-state');
+    const playgroupId = parseInt(chatForm.querySelector('input[name="playgroupId"]').value);
 
-    // Scroll to bottom on load
     messageList.scrollTop = messageList.scrollHeight;
 
     messageInput.addEventListener('input', function () {
         charCounter.textContent = `${this.value.length} / 1000`;
-        if (this.value.length > 1000) {
-            charCounter.classList.add('text-danger');
-        } else {
-            charCounter.classList.remove('text-danger');
-        }
+        charCounter.classList.toggle('text-danger', this.value.length > 1000);
     });
 
-    let lastContent = '';
+    function escapeHtml(text) {
+        return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
 
     function appendMessage(data) {
         if (emptyState) emptyState.remove();
 
         const avatar = data.avatarUrl
-            ? `<img src="${data.avatarUrl}" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;" alt="${data.senderName}" />`
+            ? `<img src="${data.avatarUrl}" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;" alt="${escapeHtml(data.senderName)}" />`
             : `<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" style="width:40px;height:40px;flex-shrink:0;"><i class="bi bi-person"></i></div>`;
 
         const div = document.createElement('div');
         div.className = 'd-flex align-items-start gap-2 mb-3 chat-message';
-        div.innerHTML = `${avatar}<div><div><strong class="me-2">${data.senderName}</strong><small class="text-muted">${data.sentAt}</small></div><div>${data.content}</div></div>`;
+        div.innerHTML = `${avatar}<div><div><strong class="me-2">${escapeHtml(data.senderName)}</strong><small class="text-muted">${escapeHtml(data.sentAt)}</small></div><div>${escapeHtml(data.content)}</div></div>`;
         messageList.appendChild(div);
         messageList.scrollTop = messageList.scrollHeight;
     }
+
+    // SignalR — real-time incoming messages
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/playgroup-chat")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("ReceiveMessage", function (data) {
+        appendMessage(data);
+    });
+
+    connection.start()
+        .then(() => connection.invoke("JoinGroup", playgroupId))
+        .catch(err => console.error("SignalR error:", err));
+
+    let lastContent = '';
 
     async function sendMessage(content) {
         sendError.classList.add('d-none');
         sendBtn.disabled = true;
 
         const token = chatForm.querySelector('input[name="__RequestVerificationToken"]').value;
-        const playgroupId = chatForm.querySelector('input[name="playgroupId"]').value;
 
         try {
             const resp = await fetch('/Playgroup/SendMessage', {
@@ -152,7 +166,7 @@
             const data = await resp.json();
 
             if (data.success) {
-                appendMessage(data);
+                // SignalR broadcasts to all clients including sender — no local append needed
                 messageInput.value = '';
                 charCounter.textContent = '0 / 1000';
                 lastContent = '';

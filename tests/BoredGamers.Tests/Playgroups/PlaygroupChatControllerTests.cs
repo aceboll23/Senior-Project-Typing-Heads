@@ -6,10 +6,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using BoredGamers.Controllers;
 using BoredGamers.Data;
+using BoredGamers.Hubs;
 using BoredGamers.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -43,12 +45,27 @@ namespace BoredGamers.Tests.Playgroups
             return JsonDocument.Parse(json).RootElement;
         }
 
+        private static Mock<IHubContext<PlaygroupChatHub>> CreateHubContextMock()
+        {
+            var mockProxy = new Mock<IClientProxy>();
+            mockProxy
+                .Setup(p => p.SendCoreAsync(It.IsAny<string>(), It.IsAny<object?[]>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var mockClients = new Mock<IHubClients>();
+            mockClients.Setup(c => c.Group(It.IsAny<string>())).Returns(mockProxy.Object);
+
+            var mockHub = new Mock<IHubContext<PlaygroupChatHub>>();
+            mockHub.Setup(h => h.Clients).Returns(mockClients.Object);
+            return mockHub;
+        }
+
         private static PlaygroupController CreateController(
             ApplicationDbContext db,
             Mock<UserManager<User>> mockUserManager,
             string currentUserId)
         {
-            var controller = new PlaygroupController(db, mockUserManager.Object);
+            var controller = new PlaygroupController(db, mockUserManager.Object, CreateHubContextMock().Object);
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, currentUserId) };
             var identity = new ClaimsIdentity(claims, "Test");
             controller.ControllerContext = new ControllerContext
