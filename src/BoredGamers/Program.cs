@@ -19,8 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 //
 
 // Add services to the container.
-builder.Services.AddControllersWithViews(options =>
-    options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()));
+builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<BddTestDataService>();
 builder.Services.AddScoped<BddWishlistTestDataService>();
 builder.Services.AddScoped<BddPlaygroupTestDataService>();
@@ -155,7 +154,9 @@ if (app.Environment.IsDevelopment())
     {
         //Read expected key from configuration
         var expectedKey = config["DevBackfillKey"];
-        if (string.IsNullOrWhiteSpace(expectedKey) || key != expectedKey)
+
+        //If a key is configured and it doesn't match, reject
+        if (!string.IsNullOrWhiteSpace(expectedKey) && key != expectedKey)
             return Results.Unauthorized();
 
         var updated = await sync.BackfillBggNumVotersAsync(ct);
