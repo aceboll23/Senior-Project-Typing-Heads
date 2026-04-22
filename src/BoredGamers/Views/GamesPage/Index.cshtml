@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Browse Games";
     var currentPage = (int)(ViewData["CurrentPage"] ?? 1);
+    var hasNextPage = (bool)(ViewData["HasNextPage"] ?? false);
     var maxPlayTime = ViewData["MaxPlayTime"] as int?;
     var playerCount = ViewData["PlayerCount"] as int?;
     var minRating = ViewData["MinRating"] as decimal?;
@@ -96,9 +97,16 @@
 
                 <span class="text-muted">Page @currentPage</span>
 
-                <a href="/Games?page=@(currentPage + 1)&maxPlayTime=@maxPlayTime&playerCount=@playerCount&minRating=@minRating" class="btn btn-outline-light">
-                    Next
-                </a>
+                @if (hasNextPage)
+                {
+                    <a href="/Games?page=@(currentPage + 1)&maxPlayTime=@maxPlayTime&playerCount=@playerCount&minRating=@minRating" class="btn btn-outline-light">
+                        Next
+                    </a>
+                }
+                else
+                {
+                    <button class="btn btn-outline-light" disabled>Next</button>
+                }
             </div>
         }
     </div>

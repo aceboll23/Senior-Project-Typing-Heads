@@ -14,6 +14,7 @@ namespace BoredGamers.Controllers
   //These endpoints read from our local database only (no live calls to BGG). 
   [ApiController]
   [Route("api/games")]
+  [IgnoreAntiforgeryToken]
   public class GamesController : ControllerBase
   {
     private readonly IGameService _games;

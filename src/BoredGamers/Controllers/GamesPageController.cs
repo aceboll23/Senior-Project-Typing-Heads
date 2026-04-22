@@ -53,6 +53,7 @@ namespace BoredGamers.Controllers
                 minRating);
 
             ViewData["CurrentPage"] = page;
+            ViewData["HasNextPage"] = games.Count == 20;
             ViewData["MinPlayTime"] = minPlayTime;
             ViewData["MaxPlayTime"] = maxPlayTime;
             ViewData["PlayerCount"] = playerCount;
