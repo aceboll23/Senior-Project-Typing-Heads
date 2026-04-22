@@ -338,6 +338,9 @@ public class GameNightEventController : Controller
   [ValidateAntiForgeryToken]
   public async Task<IActionResult> Respond(int eventId, ResponseStatus status)
   {
+    if (!Enum.IsDefined(typeof(ResponseStatus), status))
+        return BadRequest();
+
     var userId = GetUserId();
 
     var responded = await _gameNightEventService.RespondToEventAsync(eventId, userId, status);
