@@ -137,6 +137,8 @@
         </div>
     </footer>
 
+    @if (User.Identity?.IsAuthenticated != true)
+    {
     <!-- Login Modal -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -212,6 +214,7 @@
             </div>
         </div>
     </div>
+    }
 
     <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
