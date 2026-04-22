@@ -44,6 +44,12 @@ public class HomeController : Controller
         return View();
     }
 
+    public IActionResult About() => View("UnderConstruction");
+
+    public IActionResult Contact() => View("UnderConstruction");
+
+    public IActionResult Terms() => View("UnderConstruction");
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
