@@ -106,7 +106,7 @@ public class NotificationController : Controller
             await _db.SaveChangesAsync();
         }
 
-        if (!string.IsNullOrEmpty(notification.ActionUrl) && notification.ActionUrl.StartsWith("/"))
+        if (!string.IsNullOrEmpty(notification.ActionUrl))
             return Redirect(notification.ActionUrl);
 
         return RedirectToAction("Notifications");
