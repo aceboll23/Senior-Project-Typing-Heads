@@ -57,9 +57,12 @@
 </div>
 
         <!-- CTA Button -->
+        @if (User.Identity?.IsAuthenticated != true)
+        {
         <div class="d-flex justify-content-center">
             <button class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</button>
         </div>
+        }
     </div>
 </section>
 

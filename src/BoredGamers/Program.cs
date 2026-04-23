@@ -6,12 +6,14 @@ using BoredGamers.Services.Collections;
 using BoredGamers.Services.GameNightEvents;
 using BoredGamers.Services.Posts;
 using BoredGamers.Services.Block;
+using BoredGamers.Services.ProfilePicture;
 using BoredGamers.Services.SocialFeed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
 using BoredGamers.Services;
 using BoredGamers.Services.Bdd;
+using BoredGamers.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -32,8 +34,10 @@ builder.Services.AddScoped<BddSortReviewsTestDataService>();
 builder.Services.AddScoped<BddFriendCollectionTestDataService>();
 builder.Services.AddScoped<BddBlockTestDataService>();
 builder.Services.AddScoped<BddChatTestDataService>();
+builder.Services.AddScoped<BddProfilePictureTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 //
 //Database
@@ -55,6 +59,8 @@ builder.Services
     .AddDefaultIdentity<User>(options =>  // Changed from IdentityUser to User
     {
         options.SignIn.RequireConfirmedAccount = false;
+
+        options.User.RequireUniqueEmail = true;
 
         // Configure password requirements
         options.Password.RequireDigit = true;
@@ -91,6 +97,9 @@ builder.Services.AddScoped<IProfilePostService, ProfilePostService>();
 builder.Services.AddScoped<ISocialFeedService, SocialFeedService>();
 //Block service
 builder.Services.AddScoped<IBlockService, BlockService>();
+
+//Profile picture service
+builder.Services.AddScoped<IProfilePictureService, ProfilePictureService>();
 
 //Email service
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -135,6 +144,7 @@ app.MapControllerRoute(
 
 // Map Identity endpoints (Razor Pages)
 app.MapRazorPages();
+app.MapHub<PlaygroupChatHub>("/hubs/playgroup-chat");
 
 // registers a custom url route
 app.MapControllerRoute(
@@ -361,6 +371,16 @@ if (app.Environment.IsDevelopment())
         });
     });
 
+    app.MapPost("/dev/bdd/reset-profile-picture-data", async (BddProfilePictureTestDataService svc) =>
+    {
+        var result = await svc.ResetAndSeedAsync();
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password
+        });
+    });
+
     app.MapPost("/dev/bdd/reset-chat-data", async (BddChatTestDataService svc) =>
     {
         var result = await svc.ResetAndSeedAsync();
@@ -389,4 +409,12 @@ if (app.Environment.IsDevelopment())
     });
 
 }
+
+if (Environment.GetEnvironmentVariable("CI") == "true")
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
+}
+
 app.Run();

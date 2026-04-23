@@ -175,6 +175,15 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
+        if (model.Birthday.HasValue)
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            if (model.Birthday.Value > today)
+                ModelState.AddModelError("Birthday", "Birthday cannot be in the future.");
+            else if (model.Birthday.Value > today.AddYears(-10))
+                ModelState.AddModelError("Birthday", "You must be at least 10 years old to register.");
+        }
+
         if (ModelState.IsValid)
         {
             //creates user object

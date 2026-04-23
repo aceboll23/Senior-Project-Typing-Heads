@@ -37,6 +37,7 @@ namespace BoredGamers.Models
         [Compare("Password", ErrorMessage = "Passwords don't match")]
         public string ConfirmPassword { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Birthday is required.")]
         [DataType(DataType.Date)]
         public DateOnly? Birthday { get; set; }
     }
