@@ -58,6 +58,8 @@ builder.Services
     {
         options.SignIn.RequireConfirmedAccount = false;
 
+        options.User.RequireUniqueEmail = true;
+
         // Configure password requirements
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
