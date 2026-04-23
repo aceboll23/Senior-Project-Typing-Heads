@@ -409,4 +409,12 @@ if (app.Environment.IsDevelopment())
     });
 
 }
+
+if (Environment.GetEnvironmentVariable("CI") == "true")
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
+}
+
 app.Run();
