@@ -6,6 +6,7 @@ using BoredGamers.Services.Collections;
 using BoredGamers.Services.GameNightEvents;
 using BoredGamers.Services.Posts;
 using BoredGamers.Services.Block;
+using BoredGamers.Services.ProfilePicture;
 using BoredGamers.Services.SocialFeed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -32,6 +33,7 @@ builder.Services.AddScoped<BddSortReviewsTestDataService>();
 builder.Services.AddScoped<BddFriendCollectionTestDataService>();
 builder.Services.AddScoped<BddBlockTestDataService>();
 builder.Services.AddScoped<BddChatTestDataService>();
+builder.Services.AddScoped<BddProfilePictureTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 
@@ -91,6 +93,9 @@ builder.Services.AddScoped<IProfilePostService, ProfilePostService>();
 builder.Services.AddScoped<ISocialFeedService, SocialFeedService>();
 //Block service
 builder.Services.AddScoped<IBlockService, BlockService>();
+
+//Profile picture service
+builder.Services.AddScoped<IProfilePictureService, ProfilePictureService>();
 
 //Email service
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -358,6 +363,16 @@ if (app.Environment.IsDevelopment())
             result.OwnedGameId,
             result.OwnedGameName,
             result.WishlistGameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-profile-picture-data", async (BddProfilePictureTestDataService svc) =>
+    {
+        var result = await svc.ResetAndSeedAsync();
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password
         });
     });
 
