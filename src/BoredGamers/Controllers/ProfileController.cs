@@ -2,6 +2,7 @@ using BoredGamers.Data;
 using BoredGamers.Models;
 using BoredGamers.Services.Block;
 using BoredGamers.Services.Posts;
+using BoredGamers.Services.ProfilePicture;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,13 +17,15 @@ public class ProfileController : Controller
     private readonly UserManager<User> _userManager;
     private readonly IProfilePostService _postService;
     private readonly IBlockService _blockService;
+    private readonly IProfilePictureService _profilePictureService;
 
-    public ProfileController(ApplicationDbContext db, UserManager<User> userManager, IProfilePostService postService, IBlockService blockService)
+    public ProfileController(ApplicationDbContext db, UserManager<User> userManager, IProfilePostService postService, IBlockService blockService, IProfilePictureService profilePictureService)
     {
         _db = db;
         _userManager = userManager;
         _postService = postService;
         _blockService = blockService;
+        _profilePictureService = profilePictureService;
     }
 
     // GET /Profile/{username}
@@ -147,5 +150,25 @@ public class ProfileController : Controller
         ViewData["ProfilePosts"] = posts;
 
         return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UploadAvatar(IFormFile? avatar)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        if (avatar == null || avatar.Length == 0)
+        {
+            TempData["AvatarError"] = "Please select a file.";
+            return RedirectToAction("Index", new { username = user.UserName });
+        }
+
+        var result = await _profilePictureService.UploadAvatarAsync(user.Id, avatar);
+
+        if (!result.Success)
+            TempData["AvatarError"] = result.ErrorMessage;
+
+        return RedirectToAction("Index", new { username = user.UserName });
     }
 }

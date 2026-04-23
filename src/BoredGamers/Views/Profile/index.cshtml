@@ -20,6 +20,7 @@
     var hasBlocked = ViewData["HasBlocked"] as bool? ?? false;
     var blockSuccess = TempData["BlockSuccess"] as string;
     var blockError = TempData["BlockError"] as string;
+    var avatarError = TempData["AvatarError"] as string;
 }
 
 <!-- Profile Header -->
@@ -30,18 +31,50 @@
             <div class="col-md-4 text-center">
                 <!-- Avatar - Use uploaded image if available, otherwise placeholder -->
                 <div class="mb-3">
-                    @if (!string.IsNullOrEmpty(avatarUrl))
+                    @if (isOwnProfile)
                     {
-                        <img src="@avatarUrl" alt="@username" class="rounded-circle"
-                             style="width: 150px; height: 150px; object-fit: cover;">
+                        <form asp-controller="Profile" asp-action="UploadAvatar" method="post" enctype="multipart/form-data" id="avatarUploadForm">
+                            @Html.AntiForgeryToken()
+                            <input type="file" id="avatarFileInput" name="avatar" accept=".jpg,.jpeg,.png,.gif,.webp" style="display:none;" />
+                            <button type="submit" id="avatarSubmitBtn" style="display:none;" aria-hidden="true"></button>
+                            <div style="cursor:pointer; position:relative; display:inline-block;" onclick="document.getElementById('avatarFileInput').click();" title="Click to change profile picture">
+                                @if (!string.IsNullOrEmpty(avatarUrl))
+                                {
+                                    <img id="profile-avatar-img" src="@avatarUrl" alt="@username" class="rounded-circle"
+                                         style="width: 150px; height: 150px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div id="profile-avatar-placeholder" class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                                         style="width: 150px; height: 150px; font-size: 4rem;">
+                                        @username?.Substring(0, 1).ToUpper()
+                                    </div>
+                                }
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="position:absolute;bottom:0;right:0;width:36px;height:36px;background:rgba(0,0,0,0.6);">
+                                    <i class="bi bi-camera text-white" style="font-size:1rem;"></i>
+                                </div>
+                            </div>
+                        </form>
+                        @if (!string.IsNullOrEmpty(avatarError))
+                        {
+                            <div class="alert alert-danger mt-2 py-1 px-2 small" id="avatar-error">@avatarError</div>
+                        }
                     }
                     else
                     {
-                        <!-- Placeholder avatar using first letter of username -->
-                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto"
-                             style="width: 150px; height: 150px; font-size: 4rem;">
-                            @username?.Substring(0, 1).ToUpper()
-                        </div>
+                        @if (!string.IsNullOrEmpty(avatarUrl))
+                        {
+                            <img src="@avatarUrl" alt="@username" class="rounded-circle"
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                                 style="width: 150px; height: 150px; font-size: 4rem;">
+                                @username?.Substring(0, 1).ToUpper()
+                            </div>
+                        }
                     }
                 </div>
                 <h2>@username</h2>
@@ -265,6 +298,17 @@
         @section Scripts {
         <form id="antiForgeryForm">@Html.AntiForgeryToken()</form>
         <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var fileInput = document.getElementById('avatarFileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', function () {
+                    var form = document.getElementById('avatarUploadForm');
+                    if (this.files && this.files.length > 0 && !form.dataset.manualSubmit) {
+                        document.getElementById('avatarSubmitBtn').click();
+                    }
+                });
+            }
+        });
         $(document).ready(function () {
             const profileUsername = '@username';
             const token = $('input[name="__RequestVerificationToken"]').first().val();
