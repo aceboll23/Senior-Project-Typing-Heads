@@ -408,6 +408,25 @@ if (app.Environment.IsDevelopment())
         return Results.Ok(new { eventId, votingStatus = "Open" });
     });
 
+    app.MapPost("/dev/bdd/seed-games", async (ApplicationDbContext db) =>
+    {
+        if (await db.Games.AnyAsync())
+            return Results.Ok(new { message = "Games already seeded" });
+
+        var games = new[]
+        {
+            new Game { BggGameId = 1, Name = "Gloomhaven",         AverageRating = 8.8m, YearPublished = 2017, LastSyncedAt = DateTime.UtcNow },
+            new Game { BggGameId = 2, Name = "Pandemic",           AverageRating = 7.6m, YearPublished = 2008, LastSyncedAt = DateTime.UtcNow },
+            new Game { BggGameId = 3, Name = "Terraforming Mars",  AverageRating = 8.4m, YearPublished = 2016, LastSyncedAt = DateTime.UtcNow },
+            new Game { BggGameId = 4, Name = "Ticket to Ride",     AverageRating = 7.4m, YearPublished = 2004, LastSyncedAt = DateTime.UtcNow },
+            new Game { BggGameId = 5, Name = "Wingspan",           AverageRating = 8.1m, YearPublished = 2019, LastSyncedAt = DateTime.UtcNow },
+        };
+
+        db.Games.AddRange(games);
+        await db.SaveChangesAsync();
+        return Results.Ok(new { message = "Games seeded", count = games.Length });
+    });
+
 }
 
 if (Environment.GetEnvironmentVariable("CI") == "true")

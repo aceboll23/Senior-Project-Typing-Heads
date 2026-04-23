@@ -80,8 +80,19 @@ public class WishlistSteps
         new WebDriverWait(driver, TimeSpan.FromSeconds(10))
             .Until(d =>
             {
-                var btn = d.FindElement(By.Id("addToWishlistBtn"));
-                return !btn.Enabled || btn.GetAttribute("disabled") != null || btn.Text.Contains("On Wishlist");
+                try
+                {
+                    var btn = d.FindElement(By.Id("addToWishlistBtn"));
+                    return !btn.Enabled || btn.GetAttribute("disabled") != null || btn.Text.Contains("On Wishlist");
+                }
+                catch (StaleElementReferenceException)
+                {
+                    return false;
+                }
+                catch (NoSuchElementException)
+                {
+                    return true;
+                }
             });
     }
 
