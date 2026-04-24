@@ -1,8 +1,11 @@
 using BoredGamers.Data;
 using BoredGamers.Models;
 using BoredGamers.Services.Posts;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using NUnit.Framework;
 
 namespace BoredGamers.Tests.Profile;
@@ -12,10 +15,13 @@ public class ProfilePostServiceTests
 {
     private ApplicationDbContext _db = null!;
     private ProfilePostService _service = null!;
+    private Mock<IWebHostEnvironment> _mockEnv = null!;
 
     private User _owner = null!;
     private User _other = null!;
     private UserProfile _ownerProfile = null!;
+
+    private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
     private static async Task<ApplicationDbContext> CreateSqliteInMemoryDbAsync()
     {
@@ -33,7 +39,11 @@ public class ProfilePostServiceTests
     public async Task SetUp()
     {
         _db = await CreateSqliteInMemoryDbAsync();
-        _service = new ProfilePostService(_db);
+
+        _mockEnv = new Mock<IWebHostEnvironment>();
+        _mockEnv.Setup(e => e.WebRootPath).Returns(Path.GetTempPath());
+
+        _service = new ProfilePostService(_db, _mockEnv.Object);
 
         _owner = new User
         {
@@ -68,36 +78,51 @@ public class ProfilePostServiceTests
     public void TearDown() => _db?.Dispose();
 
     // =====================================================================
-    // CreatePostAsync
+    // Helpers
+    // =====================================================================
+
+    private static IFormFile MakeImageFile(string fileName = "test.jpg", long size = 1024)
+    {
+        var content = new byte[size];
+        var stream = new MemoryStream(content);
+        return new FormFile(stream, 0, size, "postImage", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "image/jpeg"
+        };
+    }
+
+    // =====================================================================
+    // CreatePostAsync — text only
     // =====================================================================
 
     [Test]
-    public async Task CreatePostAsync_ValidContent_ReturnsSuccess()
+    public async Task CreatePostAsync_TextOnly_ReturnsSuccess()
     {
-        var result = await _service.CreatePostAsync(_owner.Id, "Great game!");
+        var result = await _service.CreatePostAsync(_owner.Id, "Great game!", null, PostCategory.None, null);
         Assert.That(result.Success, Is.True);
     }
 
     [Test]
-    public async Task CreatePostAsync_ValidContent_SavesPostToDatabase()
+    public async Task CreatePostAsync_TextOnly_SavesContentToDatabase()
     {
-        await _service.CreatePostAsync(_owner.Id, "Great game!");
+        await _service.CreatePostAsync(_owner.Id, "Great game!", null, PostCategory.None, null);
         var post = await _db.ProfilePosts.FirstOrDefaultAsync(p => p.UserProfileId == _ownerProfile.Id);
         Assert.That(post, Is.Not.Null);
         Assert.That(post!.Content, Is.EqualTo("Great game!"));
     }
 
     [Test]
-    public async Task CreatePostAsync_EmptyContent_ReturnsFail()
+    public async Task CreatePostAsync_NoTextNoImage_ReturnsFail()
     {
-        var result = await _service.CreatePostAsync(_owner.Id, "");
+        var result = await _service.CreatePostAsync(_owner.Id, "", null, PostCategory.None, null);
         Assert.That(result.Success, Is.False);
     }
 
     [Test]
-    public async Task CreatePostAsync_WhitespaceContent_ReturnsFail()
+    public async Task CreatePostAsync_WhitespaceTextNoImage_ReturnsFail()
     {
-        var result = await _service.CreatePostAsync(_owner.Id, "   ");
+        var result = await _service.CreatePostAsync(_owner.Id, "   ", null, PostCategory.None, null);
         Assert.That(result.Success, Is.False);
     }
 
@@ -105,15 +130,84 @@ public class ProfilePostServiceTests
     public async Task CreatePostAsync_ContentExceeds500Chars_ReturnsFail()
     {
         var tooLong = new string('x', 501);
-        var result = await _service.CreatePostAsync(_owner.Id, tooLong);
+        var result = await _service.CreatePostAsync(_owner.Id, tooLong, null, PostCategory.None, null);
         Assert.That(result.Success, Is.False);
     }
 
     [Test]
     public async Task CreatePostAsync_UserWithNoProfile_ReturnsFail()
     {
-        var result = await _service.CreatePostAsync("nonexistent-user", "Hello");
+        var result = await _service.CreatePostAsync("nonexistent-user", "Hello", null, PostCategory.None, null);
         Assert.That(result.Success, Is.False);
+    }
+
+    // =====================================================================
+    // CreatePostAsync — image upload
+    // =====================================================================
+
+    [Test]
+    public async Task CreatePostAsync_ImageOnly_ReturnsSuccess()
+    {
+        var file = MakeImageFile("photo.jpg");
+        var result = await _service.CreatePostAsync(_owner.Id, "", file, PostCategory.None, null);
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task CreatePostAsync_ImageOnly_SetsImageUrl()
+    {
+        var file = MakeImageFile("photo.jpg");
+        await _service.CreatePostAsync(_owner.Id, "", file, PostCategory.None, null);
+        var post = await _db.ProfilePosts.FirstOrDefaultAsync(p => p.UserProfileId == _ownerProfile.Id);
+        Assert.That(post!.ImageUrl, Is.Not.Null.And.StartsWith("/uploads/posts/"));
+    }
+
+    [Test]
+    public async Task CreatePostAsync_TextAndImage_ReturnsSuccess()
+    {
+        var file = MakeImageFile("photo.png");
+        var result = await _service.CreatePostAsync(_owner.Id, "Game night!", file, PostCategory.None, null);
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task CreatePostAsync_InvalidImageType_ReturnsFail()
+    {
+        var file = MakeImageFile("malware.exe");
+        var result = await _service.CreatePostAsync(_owner.Id, "", file, PostCategory.None, null);
+        Assert.That(result.Success, Is.False);
+    }
+
+    [Test]
+    public async Task CreatePostAsync_ImageTooLarge_ReturnsFail()
+    {
+        var file = MakeImageFile("huge.jpg", 6 * 1024 * 1024);
+        var result = await _service.CreatePostAsync(_owner.Id, "", file, PostCategory.None, null);
+        Assert.That(result.Success, Is.False);
+    }
+
+    // =====================================================================
+    // CreatePostAsync — category and game
+    // =====================================================================
+
+    [Test]
+    public async Task CreatePostAsync_WithCategory_SavesCategory()
+    {
+        await _service.CreatePostAsync(_owner.Id, "Playing Wingspan!", null, PostCategory.CurrentlyPlaying, null);
+        var post = await _db.ProfilePosts.FirstOrDefaultAsync(p => p.UserProfileId == _ownerProfile.Id);
+        Assert.That(post!.Category, Is.EqualTo(PostCategory.CurrentlyPlaying));
+    }
+
+    [Test]
+    public async Task CreatePostAsync_WithGameId_SavesGameId()
+    {
+        var game = new Game { BggGameId = 99, Name = "Wingspan", LastSyncedAt = DateTime.UtcNow };
+        _db.Games.Add(game);
+        await _db.SaveChangesAsync();
+
+        await _service.CreatePostAsync(_owner.Id, "Love this game", null, PostCategory.None, game.Id);
+        var post = await _db.ProfilePosts.FirstOrDefaultAsync(p => p.UserProfileId == _ownerProfile.Id);
+        Assert.That(post!.GameId, Is.EqualTo(game.Id));
     }
 
     // =====================================================================

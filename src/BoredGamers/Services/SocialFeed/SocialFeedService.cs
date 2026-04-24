@@ -49,11 +49,15 @@ public class SocialFeedService : ISocialFeedService
             .Where(p => friendProfileIds.Contains(p.UserProfileId))
             .Include(p => p.UserProfile)
                 .ThenInclude(up => up.User)
+            .Include(p => p.Game)
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new SocialFeedPostViewModel
             {
                 PostId = p.Id,
                 Content = p.Content,
+                ImageUrl = p.ImageUrl,
+                Category = p.Category,
+                GameName = p.Game != null ? p.Game.Name : null,
                 CreatedAt = p.CreatedAt,
                 AuthorUsername = p.UserProfile.User.UserName ?? "Unknown",
                 AuthorAvatarUrl = p.UserProfile.AvatarUrl

@@ -79,3 +79,9 @@ build/
 coverage/
 
 src/BoredGamers/BoredGamers.sln
+
+# User-uploaded files (keep directory, ignore contents)
+src/BoredGamers/wwwroot/uploads/posts/*
+!src/BoredGamers/wwwroot/uploads/posts/.gitkeep
+src/BoredGamers/wwwroot/uploads/avatars/*
+!src/BoredGamers/wwwroot/uploads/avatars/.gitkeep

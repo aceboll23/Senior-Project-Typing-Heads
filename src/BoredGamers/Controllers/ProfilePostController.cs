@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using BoredGamers.Models;
 using BoredGamers.Services.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,9 +20,14 @@ public class ProfilePostController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(string content, string returnUsername)
+    public async Task<IActionResult> Create(
+        string content,
+        string returnUsername,
+        IFormFile? postImage,
+        PostCategory category,
+        int? gameId)
     {
-        var result = await _postService.CreatePostAsync(GetUserId(), content);
+        var result = await _postService.CreatePostAsync(GetUserId(), content, postImage, category, gameId);
 
         if (!result.Success)
             TempData["PostError"] = result.ErrorMessage;
