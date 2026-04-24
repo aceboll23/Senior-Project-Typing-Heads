@@ -7,4 +7,6 @@ public class BddPostSeedDataContext
     public string FriendUsername { get; set; } = "";
     public string FriendPassword { get; set; } = "";
     public string ExistingPostContent { get; set; } = "";
+    public int SeededGameId { get; set; }
+    public string SeededGameName { get; set; } = "";
 }

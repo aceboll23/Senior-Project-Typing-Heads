@@ -252,7 +252,9 @@ if (app.Environment.IsDevelopment())
             result.OwnerPassword,
             result.FriendUsername,
             result.FriendPassword,
-            result.ExistingPostContent
+            result.ExistingPostContent,
+            result.SeededGameId,
+            result.SeededGameName
         });
     });
 
