@@ -173,9 +173,9 @@ public class BlockSteps
             .Until(d => d.FindElement(By.Id($"unblock-btn-{_seedContext.TargetUsername}")));
         btn.Click();
 
-        // Wait for redirect back to blocked users page
+        // Wait until the unblock button is gone (redirect completed and user removed from list)
         new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(10))
-            .Until(d => d.Url.Contains("/Settings/BlockedUsers"));
+            .Until(d => d.FindElements(By.Id($"unblock-btn-{_seedContext.TargetUsername}")).Count == 0);
     }
 
     [Then("the target user should no longer appear in the blocked list")]
