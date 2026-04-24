@@ -188,6 +188,7 @@
             </div>
 
             <!-- Pending Friend Requests (only shown on own profile) -->
+            @*
             @if (isOwnProfile && pendingRequests.Any())
             {
                 <section class="py-4">
@@ -239,7 +240,7 @@
                         </div>
                     </div>
                 </section>
-            }
+            }*@
         </section>
 
         
@@ -424,6 +425,7 @@
             const token = $('input[name="__RequestVerificationToken"]').first().val();
 
             // Accept friend request
+            @*
             $(document).on('click', '.accept-btn', function () {
                 var $btn = $(this);
                 var friendshipId = $btn.data('friendship-id');
@@ -470,6 +472,7 @@
                     $btn.prop('disabled', false);
                 });
             });
+            *@
             
             // Debug: check if button and token are found
             console.log('Button found:', $('#addFriendBtn').length);

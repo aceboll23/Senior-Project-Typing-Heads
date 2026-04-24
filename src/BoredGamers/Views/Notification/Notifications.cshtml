@@ -50,20 +50,48 @@
                                     <small class="text-muted">@notification.CreatedAt.ToString("MMM d, yyyy h:mm tt")</small>
                                 </div>
                                 <div class="d-flex align-items-center gap-2 ms-3">
-                                    <form asp-action="MarkNotificationRead" asp-route-id="@notification.Id" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-outline-secondary btn-sm" title="Mark as read">
-                                            <i class="bi bi-check-lg me-1"></i>Mark As Read
-                                        </button>
-                                    </form>
-                                    @if (!string.IsNullOrEmpty(notification.ActionUrl))
+                                    @if (notification.Type == "FriendRequest" && notification.RelatedEntityId.HasValue)
                                     {
-                                        <form asp-action="ViewNotification" asp-route-id="@notification.Id" method="post" class="d-inline">
+                                        <form asp-controller="FriendRequest"
+                                            asp-action="AcceptFromNotification"
+                                            method="post"
+                                            class="d-inline">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-outline-primary btn-sm">
-                                                View
+                                            <input type="hidden" name="friendshipId" value="@notification.RelatedEntityId" />
+                                            <input type="hidden" name="notificationId" value="@notification.Id" />
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="bi bi-check-lg me-1"></i>Accept
                                             </button>
                                         </form>
+                                        <form asp-controller="FriendRequest"
+                                            asp-action="DeclineFromNotification"
+                                            method="post"
+                                            class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="friendshipId" value="@notification.RelatedEntityId" />
+                                            <input type="hidden" name="notificationId" value="@notification.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                <i class="bi bi-x-lg me-1"></i>Decline
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="MarkNotificationRead" asp-route-id="@notification.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm" title="Mark as read">
+                                                <i class="bi bi-check-lg me-1"></i>Mark As Read
+                                            </button>
+                                        </form>
+                                        @if (!string.IsNullOrEmpty(notification.ActionUrl))
+                                        {
+                                            <form asp-action="ViewNotification" asp-route-id="@notification.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                    View
+                                                </button>
+                                            </form>
+                                        }
                                     }
                                     <form asp-action="DeleteNotification" asp-route-id="@notification.Id" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()

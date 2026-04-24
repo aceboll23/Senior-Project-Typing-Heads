@@ -116,6 +116,7 @@ public class ProfileController : Controller
         }
 
         // Load pending incoming friend requests (only on own profile)
+        /**
         if (isOwnProfile && currentUser != null)
         {
             var currentProfile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
@@ -145,6 +146,7 @@ public class ProfileController : Controller
                 ViewData["PendingRequests"] = requestsWithUsers;
             }
         }
+        */
 
         var posts = await _postService.GetPostsByUserIdAsync(profileUser.Id);
         ViewData["ProfilePosts"] = posts;
