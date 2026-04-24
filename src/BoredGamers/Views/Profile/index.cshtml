@@ -10,6 +10,7 @@
     var showEmail = ViewData["ShowEmail"] as bool? ?? false;
     var showRealName = ViewData["ShowRealName"] as bool? ?? true;
     var collection = ViewData["Collection"] as List<Game> ?? new List<Game>();
+    var games = ViewData["Games"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
     var friendshipStatus = ViewData["FriendshipStatus"] as string;
     var friendshipRequesterId = ViewData["FriendshipRequesterId"] as int?;
     var currentUserProfileId = ViewData["CurrentUserProfileId"] as int?;
@@ -254,13 +255,48 @@
 
                 @if (isOwnProfile)
                 {
-                    <form asp-controller="ProfilePost" asp-action="Create" method="post" class="mb-4">
+                    <form asp-controller="ProfilePost" asp-action="Create" method="post" enctype="multipart/form-data" class="mb-4">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="returnUsername" value="@username" />
-                        <div class="mb-2">
+
+                        <!-- Text content -->
+                        <div class="mb-2 position-relative">
                             <textarea id="post-content" name="content" class="form-control"
                                       placeholder="Share a gaming update..." rows="3" maxlength="500"></textarea>
+                            <small id="post-char-counter" class="text-muted position-absolute" style="bottom:6px;right:10px;">500</small>
                         </div>
+
+                        <!-- Image upload -->
+                        <div class="mb-2">
+                            <label class="form-label small text-muted">Attach an image (optional)</label>
+                            <input type="file" id="post-image-input" name="postImage" class="form-control form-control-sm"
+                                   accept=".jpg,.jpeg,.png,.gif,.webp" />
+                            <img id="post-preview-image" src="#" alt="Preview" class="mt-2 rounded d-none"
+                                 style="max-height:200px;max-width:100%;object-fit:contain;" />
+                        </div>
+
+                        <!-- Category and game row -->
+                        <div class="row g-2 mb-2">
+                            <div class="col-sm-6">
+                                <select id="post-category" name="category" class="form-select form-select-sm">
+                                    <option value="0">— No tag —</option>
+                                    <option value="1">Currently Playing</option>
+                                    <option value="2">Want to Play</option>
+                                    <option value="3">Completed</option>
+                                    <option value="4">Top 10</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <select id="post-game" name="gameId" class="form-select form-select-sm">
+                                    <option value="">— Link a game (optional) —</option>
+                                    @foreach (var g in games)
+                                    {
+                                        <option value="@g.Id">@g.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
                         <button type="submit" id="post-submit-btn" class="btn btn-primary">Post</button>
                     </form>
                 }
@@ -275,19 +311,63 @@
                     {
                         <div class="card bg-dark mb-2 profile-post-item">
                             <div class="card-body">
-                                <p class="mb-1">@post.Content</p>
-                                <small class="text-muted">@post.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy 'at' h:mm tt")</small>
-                                @if (isOwnProfile)
+                                <!-- Category badge -->
+                                @if (post.Category != BoredGamers.Models.PostCategory.None)
                                 {
-                                    <form asp-controller="ProfilePost" asp-action="Delete" method="post" class="d-inline ms-3">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="postId" value="@post.Id" />
-                                        <input type="hidden" name="returnUsername" value="@username" />
-                                        <button type="submit" id="delete-post-btn-@post.Id"
-                                                class="btn btn-sm btn-outline-danger"
-                                                onclick="return confirm('Delete this post?')">Delete</button>
-                                    </form>
+                                    var badgeColor = post.Category switch {
+                                        BoredGamers.Models.PostCategory.CurrentlyPlaying => "success",
+                                        BoredGamers.Models.PostCategory.WantToPlay => "info",
+                                        BoredGamers.Models.PostCategory.Completed => "primary",
+                                        BoredGamers.Models.PostCategory.Top10 => "warning",
+                                        _ => "secondary"
+                                    };
+                                    var badgeLabel = post.Category switch {
+                                        BoredGamers.Models.PostCategory.CurrentlyPlaying => "Currently Playing",
+                                        BoredGamers.Models.PostCategory.WantToPlay => "Want to Play",
+                                        BoredGamers.Models.PostCategory.Completed => "Completed",
+                                        BoredGamers.Models.PostCategory.Top10 => "Top 10",
+                                        _ => ""
+                                    };
+                                    <span class="badge bg-@badgeColor mb-2" id="post-category-badge-@post.Id">@badgeLabel</span>
                                 }
+
+                                <!-- Linked game -->
+                                @if (post.Game != null)
+                                {
+                                    <div class="small text-muted mb-1" id="post-game-link-@post.Id">
+                                        <i class="bi bi-controller me-1"></i>
+                                        <a asp-controller="GamesPage" asp-action="Details" asp-route-id="@post.Game.BggGameId"
+                                           class="text-muted text-decoration-none">@post.Game.Name</a>
+                                    </div>
+                                }
+
+                                <!-- Text content -->
+                                @if (!string.IsNullOrEmpty(post.Content))
+                                {
+                                    <p class="mb-1">@post.Content</p>
+                                }
+
+                                <!-- Image -->
+                                @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                {
+                                    <img src="@post.ImageUrl" alt="Post image" class="img-fluid rounded mb-2"
+                                         style="max-height:400px;object-fit:contain;" id="post-image-@post.Id" />
+                                }
+
+                                <div class="d-flex align-items-center justify-content-between mt-1">
+                                    <small class="text-muted">@post.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy 'at' h:mm tt")</small>
+                                    @if (isOwnProfile)
+                                    {
+                                        <form asp-controller="ProfilePost" asp-action="Delete" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="postId" value="@post.Id" />
+                                            <input type="hidden" name="returnUsername" value="@username" />
+                                            <button type="submit" id="delete-post-btn-@post.Id"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Delete this post?')">Delete</button>
+                                        </form>
+                                    }
+                                </div>
                             </div>
                         </div>
                     }
@@ -299,12 +379,42 @@
         <form id="antiForgeryForm">@Html.AntiForgeryToken()</form>
         <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var fileInput = document.getElementById('avatarFileInput');
-            if (fileInput) {
-                fileInput.addEventListener('change', function () {
+            // Avatar upload
+            var avatarInput = document.getElementById('avatarFileInput');
+            if (avatarInput) {
+                avatarInput.addEventListener('change', function () {
                     var form = document.getElementById('avatarUploadForm');
                     if (this.files && this.files.length > 0 && !form.dataset.manualSubmit) {
                         document.getElementById('avatarSubmitBtn').click();
+                    }
+                });
+            }
+
+            // Post character counter
+            var postContent = document.getElementById('post-content');
+            var counter = document.getElementById('post-char-counter');
+            if (postContent && counter) {
+                postContent.addEventListener('input', function () {
+                    var remaining = 500 - this.value.length;
+                    counter.textContent = remaining;
+                    counter.style.color = remaining < 50 ? '#dc3545' : '';
+                });
+            }
+
+            // Post image preview
+            var postImageInput = document.getElementById('post-image-input');
+            var postImagePreview = document.getElementById('post-preview-image');
+            if (postImageInput && postImagePreview) {
+                postImageInput.addEventListener('change', function () {
+                    if (this.files && this.files[0]) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            postImagePreview.src = e.target.result;
+                            postImagePreview.classList.remove('d-none');
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    } else {
+                        postImagePreview.classList.add('d-none');
                     }
                 });
             }

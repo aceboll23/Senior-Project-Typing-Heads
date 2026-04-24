@@ -149,6 +149,13 @@ public class ProfileController : Controller
         var posts = await _postService.GetPostsByUserIdAsync(profileUser.Id);
         ViewData["ProfilePosts"] = posts;
 
+        var games = await _db.Games
+            .AsNoTracking()
+            .OrderBy(g => g.Name)
+            .Select(g => new { g.Id, g.Name })
+            .ToListAsync();
+        ViewData["Games"] = games;
+
         return View();
     }
 
