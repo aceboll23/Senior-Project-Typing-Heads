@@ -88,6 +88,20 @@ public class BddPostTestDataService
         };
         _db.Set<Friendship>().Add(friendship);
 
+        // Seed a game for the game-linking BDD test
+        var seededGame = await _db.Games.FirstOrDefaultAsync(g => g.BggGameId == 9001);
+        if (seededGame == null)
+        {
+            seededGame = new Game
+            {
+                BggGameId = 9001,
+                Name = "Terraforming Mars BDD",
+                LastSyncedAt = DateTime.UtcNow
+            };
+            _db.Games.Add(seededGame);
+            await _db.SaveChangesAsync();
+        }
+
         // Seed one existing post on the owner's profile
         var seededPost = new ProfilePost
         {
@@ -105,7 +119,9 @@ public class BddPostTestDataService
             OwnerPassword = OwnerPassword,
             FriendUsername = FriendUserName,
             FriendPassword = FriendPassword,
-            ExistingPostContent = SeededPostContent
+            ExistingPostContent = SeededPostContent,
+            SeededGameId = seededGame.Id,
+            SeededGameName = seededGame.Name
         };
     }
 
@@ -146,4 +162,6 @@ public class BddPostSeedResult
     public string FriendUsername { get; set; } = "";
     public string FriendPassword { get; set; } = "";
     public string ExistingPostContent { get; set; } = "";
+    public int SeededGameId { get; set; }
+    public string SeededGameName { get; set; } = "";
 }

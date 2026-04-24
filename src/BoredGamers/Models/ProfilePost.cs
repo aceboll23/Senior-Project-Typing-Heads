@@ -14,9 +14,18 @@ public class ProfilePost
     [ForeignKey("UserProfileId")]
     public UserProfile UserProfile { get; set; } = null!;
 
-    [Required]
     [MaxLength(500)]
-    public string Content { get; set; } = string.Empty;
+    public string? Content { get; set; }
+
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
+
+    public PostCategory Category { get; set; } = PostCategory.None;
+
+    public int? GameId { get; set; }
+
+    [ForeignKey("GameId")]
+    public Game? Game { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
