@@ -108,9 +108,12 @@
 
 @section Scripts {
 <form id="antiForgeryForm">@Html.AntiForgeryToken()</form>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
 <script>
 $(document).ready(function () {
     const recipientUsername = '@otherUsername';
+    const currentProfileId = @currentProfileId;
+    const otherProfileId = @otherProfileId;
     const token = $('input[name="__RequestVerificationToken"]').first().val();
     const $history = $('#messageHistory');
     const $input = $('#messageInput');
@@ -118,13 +121,59 @@ $(document).ready(function () {
     const $charCount = $('#charCount');
     const $sendError = $('#sendError');
 
-    // Scroll to bottom of message history on load
+    // Scroll to bottom on load
     $history.scrollTop($history[0].scrollHeight);
 
     // Character counter
     $input.on('input', function () {
         $charCount.text($input.val().length);
     });
+
+    function escapeHtml(str) {
+        return $('<div>').text(str).html();
+    }
+
+    function appendMessage(content, sentAt, isMine) {
+        const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
+        const bubble = isMine ? 'bg-primary' : 'bg-secondary';
+        const icon = isMine ? '<i class="bi bi-check2 text-white-50 small" title="Sent"></i>' : '';
+
+        const msgHtml = `
+            <div class="d-flex ${alignment} mb-2">
+                <div class="${bubble} text-white rounded p-2" style="max-width:70%;">
+                    <div>${escapeHtml(content)}</div>
+                    <div class="d-flex justify-content-end align-items-center gap-1 mt-1">
+                        <small class="text-white-50">${escapeHtml(sentAt)}</small>
+                        ${icon}
+                    </div>
+                </div>
+            </div>`;
+
+        $history.append(msgHtml);
+        $history.scrollTop($history[0].scrollHeight);
+    }
+
+    // SignalR — real-time incoming messages
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/direct-message")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("ReceiveMessage", function (data) {
+        // Only append if the message is from the other person
+        // Our own messages are appended optimistically on send
+        if (data.senderProfileId !== currentProfileId) {
+            appendMessage(data.content, data.sentAt, false);
+        }
+    });
+
+    // Build conversation key the same way the server does — sorted profile IDs
+    const sorted = [currentProfileId, otherProfileId].sort((a, b) => a - b);
+    const conversationKey = `dm-${sorted[0]}-${sorted[1]}`;
+
+    connection.start()
+        .then(() => connection.invoke("JoinConversation", conversationKey))
+        .catch(err => console.error("SignalR error:", err));
 
     // Send on button click
     $sendBtn.on('click', function () {
@@ -133,7 +182,8 @@ $(document).ready(function () {
 
     // Send on Enter
     $input.on('keydown', function (e) {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             sendMessage();
         }
     });
@@ -162,20 +212,8 @@ $(document).ready(function () {
             },
             function (response) {
                 if (response.success) {
-                    // Append the new message to the history
-                    const msgHtml = `
-                        <div class="d-flex justify-content-end mb-2">
-                            <div class="bg-primary text-white rounded p-2" style="max-width:70%;">
-                                <div>${escapeHtml(response.content)}</div>
-                                <div class="d-flex justify-content-end align-items-center gap-1 mt-1">
-                                    <small class="text-white-50">${response.sentAt}</small>
-                                    <i class="bi bi-check2 text-white-50 small" title="Sent"></i>
-                                </div>
-                            </div>
-                        </div>`;
-
-                    $history.append(msgHtml);
-                    $history.scrollTop($history[0].scrollHeight);
+                    // Optimistically append our own message immediately
+                    appendMessage(response.content, response.sentAt, true);
                     $input.val('');
                     $charCount.text('0');
                 } else {
@@ -185,17 +223,12 @@ $(document).ready(function () {
             }
         ).fail(function (xhr) {
             showError('Failed to send message. Please try again.');
-            console.log('Send failed:', xhr.responseText);
             $sendBtn.prop('disabled', false);
         });
     }
 
     function showError(msg) {
         $sendError.text(msg).removeClass('d-none');
-    }
-
-    function escapeHtml(str) {
-        return $('<div>').text(str).html();
     }
 });
 </script>

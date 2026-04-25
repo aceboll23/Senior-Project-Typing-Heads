@@ -146,6 +146,7 @@ app.MapControllerRoute(
 // Map Identity endpoints (Razor Pages)
 app.MapRazorPages();
 app.MapHub<PlaygroupChatHub>("/hubs/playgroup-chat");
+app.MapHub<DirectMessageHub>("/hubs/direct-message");
 
 // registers a custom url route
 app.MapControllerRoute(
