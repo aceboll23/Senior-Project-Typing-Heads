@@ -21,6 +21,32 @@ public class FriendRequestController : Controller
         _userManager = userManager;
     }
 
+    private async Task CreateFriendRequestNotificationAsync(UserProfile recipientProfile, string senderUsername, int friendshipId)
+    {
+        // Remove any existing pending friend request notification for this friendship
+        var existing = await _db.Set<Notification>()
+            .FirstOrDefaultAsync(n =>
+                n.UserProfileId == recipientProfile.Id &&
+                n.Type == "FriendRequest" &&
+                n.RelatedEntityId == friendshipId);
+
+        if (existing != null)
+            _db.Set<Notification>().Remove(existing);
+
+        _db.Set<Notification>().Add(new Notification
+        {
+            UserProfileId = recipientProfile.Id,
+            Type = "FriendRequest",
+            Title = "New Friend Request",
+            Message = $"{senderUsername} sent you a friend request.",
+            ActionUrl = null, // handled inline on notifications page
+            RelatedEntityId = friendshipId,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await _db.SaveChangesAsync();
+    }
+
     // POST /FriendRequest/Send
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -160,6 +186,8 @@ public class FriendRequestController : Controller
 
         await _db.SaveChangesAsync();
 
+        await CreateFriendRequestNotificationAsync(recipientProfile, sender.UserName!, friendship.Id);
+
         return Json(new { success = true, status = "sent"});
     }
 
@@ -196,6 +224,8 @@ public class FriendRequestController : Controller
         friendship.Status = FriendshipStatus.Cancelled;
         friendship.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
+
+        await CreateFriendRequestNotificationAsync(recipient.Profile, sender.UserName!, friendship.Id);
 
         return Json(new {success = true, status = "cancelled"});
     }
@@ -259,5 +289,76 @@ public class FriendRequestController : Controller
         await _db.SaveChangesAsync();
 
         return Json(new { success = true });
+    }
+
+    // POST /FriendRequest/AcceptFromNotification
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AcceptFromNotification(int friendshipId, int notificationId)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Unauthorized();
+
+        var currentProfile = await _db.Set<UserProfile>()
+            .FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+        if (currentProfile == null) return BadRequest("Profile not found.");
+
+        var friendship = await _db.Set<Friendship>().FirstOrDefaultAsync(f =>
+            f.Id == friendshipId &&
+            f.ReceiverProfileId == currentProfile.Id &&
+            f.Status == FriendshipStatus.Pending);
+
+        if (friendship == null)
+            return RedirectToAction("Notifications", "Notification");
+
+        friendship.Status = FriendshipStatus.Accepted;
+        friendship.RespondedAt = DateTime.UtcNow;
+        friendship.UpdatedAt = DateTime.UtcNow;
+
+        // Delete the notification
+        var notification = await _db.Set<Notification>()
+            .FirstOrDefaultAsync(n => n.Id == notificationId && n.UserProfileId == currentProfile.Id);
+        if (notification != null)
+            _db.Set<Notification>().Remove(notification);
+
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Index", "Friends");
+    }
+
+    // POST /FriendRequest/DeclineFromNotification
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeclineFromNotification(int friendshipId, int notificationId)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Unauthorized();
+
+        var currentProfile = await _db.Set<UserProfile>()
+            .FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+        if (currentProfile == null) return BadRequest("Profile not found.");
+
+        var friendship = await _db.Set<Friendship>().FirstOrDefaultAsync(f =>
+            f.Id == friendshipId &&
+            f.ReceiverProfileId == currentProfile.Id &&
+            f.Status == FriendshipStatus.Pending);
+
+        if (friendship == null)
+            return RedirectToAction("Notifications", "Notification");
+
+        friendship.Status = FriendshipStatus.Declined;
+        friendship.RespondedAt = DateTime.UtcNow;
+        friendship.LastDeclinedAt = DateTime.UtcNow;
+        friendship.UpdatedAt = DateTime.UtcNow;
+
+        // Delete the notification
+        var notification = await _db.Set<Notification>()
+            .FirstOrDefaultAsync(n => n.Id == notificationId && n.UserProfileId == currentProfile.Id);
+        if (notification != null)
+            _db.Set<Notification>().Remove(notification);
+
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Notifications", "Notification");
     }
 }   

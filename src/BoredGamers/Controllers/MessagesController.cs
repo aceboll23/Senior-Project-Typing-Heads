@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using BoredGamers.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BoredGamers.Controllers;
 
@@ -12,11 +14,16 @@ public class MessagesController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<User> _userManager;
+    private readonly IHubContext<DirectMessageHub> _hubContext;
 
-    public MessagesController(ApplicationDbContext db, UserManager<User> userManager)
+    public MessagesController(
+        ApplicationDbContext db,
+        UserManager<User> userManager,
+        IHubContext<DirectMessageHub> hubContext)
     {
         _db = db;
         _userManager = userManager;
+        _hubContext = hubContext;
     }
 
     // GET /Messages (inbox for showing all conversations)
@@ -203,6 +210,20 @@ public class MessagesController : Controller
 
         _db.DirectMessages.Add(message);
         await _db.SaveChangesAsync();
+
+        // Broadcast to both users in the conversation group
+        var conversationKey = DirectMessageHub.ConversationKey(
+            currentProfile.Id, recipient.Profile.Id);
+
+        await _hubContext.Clients.Group(conversationKey).SendAsync("ReceiveMessage", new
+        {
+            messageId = message.Id,
+            senderProfileId = message.SenderProfileId,
+            content = message.Content,
+            sentAt = message.SentAt.ToString("MMM dd, h:mm tt"),
+            status = message.Status.ToString(),
+            avatarUrl = currentProfile.AvatarUrl ?? ""
+        });
 
         return Json(new
         {
