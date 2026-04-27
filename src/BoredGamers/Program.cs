@@ -24,6 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<BddTestDataService>();
 builder.Services.AddScoped<BddWishlistTestDataService>();
+builder.Services.AddScoped<BddDeleteCollectionTestDataService>();
 builder.Services.AddScoped<BddPlaygroupTestDataService>();
 builder.Services.AddScoped<BddPostTestDataService>();
 builder.Services.AddScoped<BddSocialFeedTestDataService>();
@@ -158,6 +159,11 @@ app.MapControllerRoute(
     pattern: "Playgroup/Collection/{id}",
     defaults: new { controller = "Playgroup", action = "Collection" });
 
+app.MapControllerRoute(
+    name: "userSearch",
+    pattern: "UserSearch",
+    defaults: new { controller = "UserSearch", action = "Index" });
+
 
 
 if (app.Environment.IsDevelopment())
@@ -229,6 +235,19 @@ if (app.Environment.IsDevelopment())
             result.GameAlreadyOnWishlistId,
             result.GameNotOnWishlistName,
             result.GameAlreadyOnWishlistName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-delete-collection-data", async (BddDeleteCollectionTestDataService bddDeleteCollectionTestDataService) =>
+    {
+        var result = await bddDeleteCollectionTestDataService.ResetAndSeedDeleteCollectionTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.OwnedGameId,
+            result.OwnedGameName
         });
     });
 
