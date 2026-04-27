@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BoredGamers.Controllers;
 using BoredGamers.Data;
 using BoredGamers.Models;
+using BoredGamers.Services.Ai;
 using BoredGamers.Services.Collections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -44,7 +45,8 @@ namespace BoredGamers.Tests.Controllers
             string currentUserId)
         {
             var mockCollections = new Mock<IUserCollectionService>();
-            var controller = new CollectionController(db, mockCollections.Object, mockUserManager.Object);
+            var mockAiRecommendations = new Mock<IAiRecommendationService>();
+            var controller = new CollectionController(db, mockCollections.Object, mockUserManager.Object, mockAiRecommendations.Object);
 
             var claims = new List<Claim>
             {

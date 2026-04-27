@@ -1,6 +1,7 @@
 @model List<BoredGamers.Models.Game>
 
 @using BoredGamers.Models
+@using BoredGamers.Services.Ai
 
 @{
     ViewData["Title"] = "My Collection";
@@ -9,6 +10,8 @@
     var totalPages = (int)(ViewData["TotalPages"] ?? 1);
     var totalCount = (int)(ViewData["TotalCount"] ?? 0);
     var wishlistGames = ViewData["WishlistGames"] as List<Game> ?? new List<Game>();
+
+    var canUseAi = AiAccessPolicy.IsAllowed(User?.Identity?.Name);
 }
 
 <section class="py-4">
@@ -174,5 +177,123 @@
                 </div>
             }
         </div>
+
+        @if (canUseAi)
+        {
+            <!-- AI Recommendations Section (TYP-228) -->
+            <div class="mt-5">
+                <h2 class="mb-1">AI Recommendations</h2>
+                <div class="text-muted mb-3">Powered by Claude Haiku</div>
+
+                @* Always emit the antiforgery token so the JS fetch can post safely
+                   even if there are no other forms on the page. *@
+                @Html.AntiForgeryToken()
+
+                <button type="button" id="ai-recommendations-btn" class="btn btn-primary mb-3">
+                    Get Recommendations
+                </button>
+
+                <div id="ai-recommendations-status" class="mb-3" style="display:none;"></div>
+                <div id="ai-recommendations" class="row g-4"></div>
+            </div>
+
+            <script>
+                (function () {
+                    var btn = document.getElementById('ai-recommendations-btn');
+                    var status = document.getElementById('ai-recommendations-status');
+                    var container = document.getElementById('ai-recommendations');
+
+                    if (!btn) return;
+
+                    btn.addEventListener('click', function () {
+                        var tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                        var token = tokenInput ? tokenInput.value : '';
+
+                        btn.disabled = true;
+                        container.innerHTML = '';
+                        status.style.display = '';
+                        status.className = 'alert alert-secondary';
+                        status.textContent = 'Asking Claude for recommendations...';
+
+                        var formData = new FormData();
+                        formData.append('__RequestVerificationToken', token);
+
+                        fetch('/collection/ai-recommendations', {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(function (res) {
+                                if (!res.ok) throw new Error('Request failed (' + res.status + ')');
+                                return res.json();
+                            })
+                            .then(function (data) {
+                                if (data.message) {
+                                    status.className = 'alert alert-info';
+                                    status.textContent = data.message;
+                                    return;
+                                }
+                                status.style.display = 'none';
+                                if (!data.games || data.games.length === 0) {
+                                    status.style.display = '';
+                                    status.className = 'alert alert-info';
+                                    status.textContent = 'No recommendations to show.';
+                                    return;
+                                }
+                                renderCards(data.games);
+                            })
+                            .catch(function (err) {
+                                status.className = 'alert alert-danger';
+                                status.textContent = 'Something went wrong: ' + err.message;
+                            })
+                            .finally(function () {
+                                btn.disabled = false;
+                            });
+                    });
+
+                    function renderCards(games) {
+                        var html = '';
+                        games.forEach(function (g) {
+                            var image = g.imageUrl || g.thumbnailUrl || '/images/game-placeholder.png';
+                            var year = g.yearPublished ? g.yearPublished : '—';
+                            var voters = g.bggNumVoters
+                                ? Number(g.bggNumVoters).toLocaleString() + ' BGG voters'
+                                : '—';
+                            var rating = g.averageRating
+                                ? Number(g.averageRating).toFixed(1) + '/10'
+                                : '—';
+
+                            html += '<div class="col-12 col-sm-6 col-lg-3">';
+                            html += '  <a class="text-decoration-none" href="/Games/Details/' + encodeURIComponent(g.id) + '">';
+                            html += '    <div class="card h-100 shadow-sm bg-dark text-light border-0">';
+                            html += '      <img class="card-img-top" style="height:280px;object-fit:cover;" alt="" />';
+                            html += '      <div class="card-body">';
+                            html += '        <h5 class="card-title mb-2"></h5>';
+                            html += '        <div class="text-muted small mb-2">' + voters + ' | ' + year + '</div>';
+                            html += '        <div class="d-flex align-items-center gap-2">';
+                            html += '          <span class="text-warning"><i class="bi bi-star-fill me-1"></i></span>';
+                            html += '          <span class="fw-semibold">' + rating + '</span>';
+                            html += '        </div>';
+                            html += '      </div>';
+                            html += '    </div>';
+                            html += '  </a>';
+                            html += '</div>';
+                        });
+
+                        container.innerHTML = html;
+
+                        // Set image src + game name via DOM (safer than string concat for user-data)
+                        var imgs = container.querySelectorAll('img.card-img-top');
+                        var cards = container.querySelectorAll('.card-title');
+                        games.forEach(function (g, i) {
+                            if (imgs[i]) {
+                                imgs[i].src = g.imageUrl || g.thumbnailUrl || '/images/game-placeholder.png';
+                                imgs[i].alt = g.name || '';
+                            }
+                            if (cards[i]) cards[i].textContent = g.name || '';
+                        });
+                    }
+                })();
+            </script>
+        }
     </div>
 </section>
