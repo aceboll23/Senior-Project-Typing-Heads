@@ -14,6 +14,7 @@ namespace BoredGamers.Services.Collections
         Task<bool> AddToWishlistAsync(string userId, int gameId, CancellationToken ct = default);
         Task<bool> IsOnWishlistAsync(string userId, int gameId, CancellationToken ct = default);
         Task<bool> RemoveFromWishlistAsync(string userId, int gameId, CancellationToken ct = default);
+        Task<bool> RemoveFromCollectionAsync(string userId, int gameId, CancellationToken ct = default);
     }
 
     public class UserCollectionService : IUserCollectionService
@@ -106,6 +107,19 @@ namespace BoredGamers.Services.Collections
         {
             var entry = await _db.UserGameCollections
                 .FirstOrDefaultAsync(x => x.UserId == userId && x.GameId == gameId && x.Status == CollectionStatus.Wishlist, ct);
+
+            if (entry == null)
+                return false;
+
+            _db.UserGameCollections.Remove(entry);
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<bool> RemoveFromCollectionAsync(string userId, int gameId, CancellationToken ct = default)
+        {
+            var entry = await _db.UserGameCollections
+                .FirstOrDefaultAsync(x => x.UserId == userId && x.GameId == gameId && x.Status == CollectionStatus.Owned, ct);
 
             if (entry == null)
                 return false;

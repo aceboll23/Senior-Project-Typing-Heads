@@ -1,6 +1,17 @@
+// Basic XSS guard for rendered usernames.
+// Defined at file scope so it can be unit-tested via Jest;
+// still accessible inside the document.ready handler below via closure.
+function escapeHtml(str) {
+    return $('<div>').text(str).html();
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { escapeHtml };
+}
+
 $(document).ready(function () {
         // 'games' is default for search
-        let searchMode = 'games'; 
+        let searchMode = 'games';
         let searchTimeout = null;
         const isAuthenticated = $('#gameSearchForm').data('authenticated');
 
@@ -137,10 +148,5 @@ $(document).ready(function () {
         // Hides and empties the results dropdown
         function clearUserResults() {
             $('#userSearchResults').hide().empty();
-        }
-
-        // Basic XSS guard for rendered usernames
-        function escapeHtml(str) {
-            return $('<div>').text(str).html();
         }
     });
