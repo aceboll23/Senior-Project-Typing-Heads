@@ -25,6 +25,7 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()));
 builder.Services.AddScoped<BddTestDataService>();
 builder.Services.AddScoped<BddWishlistTestDataService>();
+builder.Services.AddScoped<BddDeleteCollectionTestDataService>();
 builder.Services.AddScoped<BddPlaygroupTestDataService>();
 builder.Services.AddScoped<BddPostTestDataService>();
 builder.Services.AddScoped<BddSocialFeedTestDataService>();
@@ -228,6 +229,19 @@ if (app.Environment.IsDevelopment())
             result.GameAlreadyOnWishlistId,
             result.GameNotOnWishlistName,
             result.GameAlreadyOnWishlistName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-delete-collection-data", async (BddDeleteCollectionTestDataService bddDeleteCollectionTestDataService) =>
+    {
+        var result = await bddDeleteCollectionTestDataService.ResetAndSeedDeleteCollectionTestDataAsync();
+
+        return Results.Ok(new
+        {
+            result.Username,
+            result.Password,
+            result.OwnedGameId,
+            result.OwnedGameName
         });
     });
 

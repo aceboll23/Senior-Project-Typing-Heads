@@ -68,6 +68,19 @@ namespace BoredGamers.Controllers
 
       return RedirectToAction("Index");
     }
+
+    [HttpPost("remove-from-collection")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveFromCollection(int gameId, CancellationToken ct)
+    {
+      var userId = GetUserId();
+      if (string.IsNullOrWhiteSpace(userId))
+        return Unauthorized();
+
+      await _collections.RemoveFromCollectionAsync(userId, gameId, ct);
+
+      return RedirectToAction("Index");
+    }
     
     [HttpGet("")]
     public async Task<IActionResult> Index(int page = 1, CancellationToken ct = default)
