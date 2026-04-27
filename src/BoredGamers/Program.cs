@@ -159,6 +159,11 @@ app.MapControllerRoute(
     pattern: "Playgroup/Collection/{id}",
     defaults: new { controller = "Playgroup", action = "Collection" });
 
+app.MapControllerRoute(
+    name: "userSearch",
+    pattern: "UserSearch",
+    defaults: new { controller = "UserSearch", action = "Index" });
+
 
 
 if (app.Environment.IsDevelopment())

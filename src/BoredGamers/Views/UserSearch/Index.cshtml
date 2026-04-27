@@ -1,0 +1,118 @@
+@{
+    ViewData["Title"] = "Search Users";
+    var query = ViewData["Query"] as string ?? string.Empty;
+    var results = ViewData["Results"] as List<object> ?? new List<object>();
+}
+
+<section class="py-4">
+    <div class="container" style="max-width: 700px;">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <a href="/Friends" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h2 class="mb-0"><i class="bi bi-person-search me-2"></i>Find Users</h2>
+        </div>
+
+        <!-- Search Form -->
+        <form method="get" asp-controller="UserSearch" asp-action="Index" class="mb-4">
+            <div class="input-group input-group-lg">
+                <input type="text"
+                       name="q"
+                       id="userSearchInput"
+                       class="form-control"
+                       placeholder="Search by username..."
+                       value="@query"
+                       autocomplete="off"
+                       autofocus />
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>Search
+                </button>
+            </div>
+            @if (!string.IsNullOrEmpty(query) && query.Length < 2)
+            {
+                <div class="form-text text-danger mt-1">
+                    Please enter at least 2 characters.
+                </div>
+            }
+        </form>
+
+        <!-- Results -->
+        @if (!string.IsNullOrEmpty(query) && query.Length >= 2)
+        {
+            @if (!results.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-person-x display-1 mb-3"></i>
+                    <p class="lead">No users found for "@query".</p>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-3">@results.Count result(s) for "@query"</p>
+                <div class="list-group">
+                    @foreach (var result in results)
+                    {
+                        var type = result.GetType();
+                        var username = type.GetProperty("username")?.GetValue(result) as string ?? "";
+                        var avatarUrl = type.GetProperty("avatarUrl")?.GetValue(result) as string;
+                        var friendshipStatus = type.GetProperty("friendshipStatus")?.GetValue(result) as string;
+                        var isSender = type.GetProperty("isSender")?.GetValue(result) as bool? ?? false;
+
+                        <div class="list-group-item bg-dark d-flex align-items-center justify-content-between gap-3">
+                            <a href="/Profile/@username"
+                               class="d-flex align-items-center gap-3 text-decoration-none flex-grow-1">
+                                @if (!string.IsNullOrEmpty(avatarUrl))
+                                {
+                                    <img src="@avatarUrl" class="rounded-circle"
+                                         style="width:48px;height:48px;object-fit:cover;">
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                                         style="width:48px;height:48px;font-size:1.2rem;">
+                                        @username.Substring(0, 1).ToUpper()
+                                    </div>
+                                }
+                                <span class="fw-bold text-white">@username</span>
+                            </a>
+
+                            <div>
+                                @if (friendshipStatus == "Accepted")
+                                {
+                                    <span class="btn btn-success btn-sm disabled">
+                                        <i class="bi bi-people-fill me-1"></i>Friends
+                                    </span>
+                                }
+                                else if (friendshipStatus == "Pending" && isSender)
+                                {
+                                    <span class="btn btn-secondary btn-sm disabled">
+                                        <i class="bi bi-clock me-1"></i>Pending
+                                    </span>
+                                }
+                                else if (friendshipStatus == "Pending" && !isSender)
+                                {
+                                    <span class="btn btn-outline-primary btn-sm disabled">
+                                        <i class="bi bi-person-plus me-1"></i>Respond
+                                    </span>
+                                }
+                                else
+                                {
+                                    <a href="/Profile/@username" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-person-plus me-1"></i>Add Friend
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else if (string.IsNullOrEmpty(query))
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-search display-1 mb-3"></i>
+                <p class="lead">Enter a username to search.</p>
+            </div>
+        }
+    </div>
+</section>

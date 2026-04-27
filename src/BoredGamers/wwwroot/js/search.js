@@ -55,9 +55,35 @@ $(document).ready(function () {
             }, 250);
         });
 
-        // --- Prevent game form submit in user mode ---
+        // --- Prevent game form submit in user mode, redirect to search page instead ---
         $('#gameSearchForm').on('submit', function (e) {
-            if (searchMode === 'users') e.preventDefault();
+            if (searchMode === 'users') {
+                e.preventDefault();
+                const q = $('#searchInput').val().trim();
+                if (q.length >= 2) {
+                    window.location.href = '/UserSearch?q=' + encodeURIComponent(q);
+                }
+            }
+        });
+
+        $('#searchInput').on('keydown', function (e) {
+            if (e.key === 'Enter' && searchMode === 'users') {
+                e.preventDefault();
+                const q = $(this).val().trim();
+                if (q.length >= 2) {
+                    window.location.href = '/UserSearch?q=' + encodeURIComponent(q);
+                }
+            }
+        });
+
+        $('#searchBtn').on('click', function (e) {
+            if (searchMode === 'users') {
+                e.preventDefault();
+                const q = $('#searchInput').val().trim();
+                if (q.length >= 2) {
+                    window.location.href = '/UserSearch?q=' + encodeURIComponent(q);
+                }
+            }
         });
 
         // --- Hide results when clicking outside ---
