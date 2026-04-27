@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using BoredGamers.Services.Collections;
+using BoredGamers.Services.Ai;
 using BoredGamers.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,12 +21,18 @@ namespace BoredGamers.Controllers
     private readonly ApplicationDbContext _db;
     private readonly IUserCollectionService _collections;
     private readonly UserManager<User> _userManager;
+    private readonly IAiRecommendationService _aiRecommendations;
 
-    public CollectionController(ApplicationDbContext db, IUserCollectionService collections, UserManager<User> userManager)
+    public CollectionController(
+        ApplicationDbContext db,
+        IUserCollectionService collections,
+        UserManager<User> userManager,
+        IAiRecommendationService aiRecommendations)
     {
       _db = db;
       _collections = collections;
       _userManager = userManager;
+      _aiRecommendations = aiRecommendations;
     }
 
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -81,7 +88,67 @@ namespace BoredGamers.Controllers
 
       return RedirectToAction("Index");
     }
-    
+
+    // POST /collection/ai-recommendations
+    // Returns JSON: either { message: "..." } when there's nothing to display
+    // or { games: [ {Id, Name, ImageUrl, ThumbnailUrl, BggNumVoters, YearPublished, AverageRating}, ... ] }
+    // Gated by AiAccessPolicy because each call costs real money against the
+    // shared Anthropic API key.
+    [HttpPost("ai-recommendations")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AiRecommendations(CancellationToken ct)
+    {
+      var currentUser = await _userManager.GetUserAsync(User);
+      if (currentUser == null)
+        return Unauthorized();
+
+      if (!AiAccessPolicy.IsAllowed(currentUser.UserName))
+        return Forbid();
+
+      var ownedGameNames = await _db.UserGameCollections
+          .Where(c => c.UserId == currentUser.Id && c.Status == CollectionStatus.Owned)
+          .Include(c => c.Game)
+          .Select(c => c.Game.Name)
+          .ToListAsync(ct);
+
+      if (ownedGameNames.Count == 0)
+      {
+        return Ok(new { message = "Add some games to your collection first to get personalized AI recommendations." });
+      }
+
+      var recommendedNames = await _aiRecommendations.GetRecommendationsAsync(ownedGameNames, ct);
+
+      if (recommendedNames.Count == 0)
+      {
+        return Ok(new { message = "The AI didn't return any recommendations this time. Please try again." });
+      }
+
+      // Match recommended names against the local Games table. Default SQL Server
+      // collation is case-insensitive, so a simple Contains lookup is enough for
+      // the minimal version. Recommendations Claude makes that aren't in our
+      // library are silently dropped here.
+      var matchedGames = await _db.Games
+          .Where(g => recommendedNames.Contains(g.Name))
+          .Select(g => new
+          {
+              g.Id,
+              g.Name,
+              g.ImageUrl,
+              g.ThumbnailUrl,
+              g.BggNumVoters,
+              g.YearPublished,
+              g.AverageRating
+          })
+          .ToListAsync(ct);
+
+      if (matchedGames.Count == 0)
+      {
+        return Ok(new { message = "The AI suggested games we don't have in our library yet. Try again — you may get a different set." });
+      }
+
+      return Ok(new { games = matchedGames });
+    }
+
     [HttpGet("")]
     public async Task<IActionResult> Index(int page = 1, CancellationToken ct = default)
     {

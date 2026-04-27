@@ -8,6 +8,7 @@ using BoredGamers.Services.Posts;
 using BoredGamers.Services.Block;
 using BoredGamers.Services.ProfilePicture;
 using BoredGamers.Services.SocialFeed;
+using BoredGamers.Services.Ai;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
@@ -103,6 +104,10 @@ builder.Services.AddScoped<IProfilePictureService, ProfilePictureService>();
 
 //Email service
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+//AI services (TYP-228)
+builder.Services.AddSingleton<IAiClient, AnthropicAiClient>();
+builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
 
 var app = builder.Build();
 

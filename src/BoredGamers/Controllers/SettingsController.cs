@@ -65,28 +65,151 @@ public class SettingsController : Controller
             return View(model);
         }
         var user = await _userManager.GetUserAsync(User);
-        if(user == null)
+        if (user == null)
         {
             return Challenge();
         }
 
-        //Verifies password before deleting
+        // Verifies password before deleting
         var passwordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
-        if(!passwordValid)
+        if (!passwordValid)
         {
             ModelState.AddModelError(nameof(model.CurrentPassword), "Password is incorrect");
             return View(model);
+        }
+
+        // Find the user's profile
+        var profile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == user.Id);
+
+        if (profile != null)
+        {
+            // Delete friendships in BOTH directions (where user is requester OR receiver)
+            var friendships = await _db.Set<Friendship>()
+                .Where(f => f.RequesterProfileId == profile.Id || f.ReceiverProfileId == profile.Id)
+                .ToListAsync();
+            if (friendships.Count > 0)
+            {
+                _db.Set<Friendship>().RemoveRange(friendships);
+            }
+
+            // Delete blocks in both directions
+            var blocks = await _db.Set<BlockedUser>()
+                .Where(b => b.BlockerProfileId == profile.Id || b.BlockedProfileId == profile.Id)
+                .ToListAsync();
+            if (blocks.Count > 0)
+            {
+                _db.Set<BlockedUser>().RemoveRange(blocks);
+            }
+
+            // Delete direct messages in both directions
+            var messages = await _db.DirectMessages
+                .Where(m => m.SenderProfileId == profile.Id || m.RecipientProfileId == profile.Id)
+                .ToListAsync();
+            if (messages.Count > 0)
+            {
+                _db.DirectMessages.RemoveRange(messages);
+            }
+
+            // Delete profile posts
+            var posts = await _db.ProfilePosts
+                .Where(p => p.UserProfileId == profile.Id)
+                .ToListAsync();
+            if (posts.Count > 0)
+            {
+                _db.ProfilePosts.RemoveRange(posts);
+            }
+
+            // Delete playgroup messages sent by this user
+            var playgroupMessages = await _db.PlaygroupMessages
+                .Where(m => m.SenderProfileId == profile.Id)
+                .ToListAsync();
+            if (playgroupMessages.Count > 0)
+            {
+                _db.PlaygroupMessages.RemoveRange(playgroupMessages);
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
+        // Delete game votes by this user
+        var votes = await _db.GameVotes
+            .Where(v => v.UserId == user.Id)
+            .ToListAsync();
+        if (votes.Count > 0)
+        {
+            _db.GameVotes.RemoveRange(votes);
+            await _db.SaveChangesAsync();
+        }
+
+        // Delete event responses
+        var responses = await _db.EventResponses
+            .Where(r => r.UserId == user.Id)
+            .ToListAsync();
+        if (responses.Count > 0)
+        {
+            _db.EventResponses.RemoveRange(responses);
+            await _db.SaveChangesAsync();
+        }
+
+        // Delete event games this user added
+        var eventGames = await _db.GameNightEventGames
+            .Where(eg => eg.UserId == user.Id)
+            .ToListAsync();
+        if (eventGames.Count > 0)
+        {
+            _db.GameNightEventGames.RemoveRange(eventGames);
+            await _db.SaveChangesAsync();
+        }
+
+        // Delete game night events created by this user
+        var events = await _db.GameNightEvents
+            .Where(e => e.CreatedByUserId == user.Id)
+            .ToListAsync();
+        if (events.Count > 0)
+        {
+            _db.GameNightEvents.RemoveRange(events);
+            await _db.SaveChangesAsync();
+        }
+
+        // Delete playgroup memberships
+        var memberships = await _db.PlaygroupMembers
+            .Where(m => m.UserId == user.Id)
+            .ToListAsync();
+        if (memberships.Count > 0)
+        {
+            _db.PlaygroupMembers.RemoveRange(memberships);
+            await _db.SaveChangesAsync();
+        }
+
+        // Delete game collection
+        var collection = await _db.UserGameCollections
+            .Where(c => c.UserId == user.Id)
+            .ToListAsync();
+        if (collection.Count > 0)
+        {
+            _db.UserGameCollections.RemoveRange(collection);
+            await _db.SaveChangesAsync();
+        }
+
+        // Delete reviews
+        var reviews = await _db.Reviews
+            .Where(r => r.UserId == user.Id)
+            .ToListAsync();
+        if (reviews.Count > 0)
+        {
+            _db.Reviews.RemoveRange(reviews);
+            await _db.SaveChangesAsync();
         }
 
         // Signs out before deleting so the session is cleared immediately
         await _signInManager.SignOutAsync();
 
         var result = await _userManager.DeleteAsync(user);
-        if(!result.Succeeded)
+        if (!result.Succeeded)
         {
             // Signs back in if deletion failed so the user isn't stranded
             await _signInManager.SignInAsync(user, isPersistent: false);
-            foreach(var error in result.Errors)
+            foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
