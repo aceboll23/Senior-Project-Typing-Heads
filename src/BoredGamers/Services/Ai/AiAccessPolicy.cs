@@ -18,6 +18,10 @@ public static class AiAccessPolicy
     private static readonly HashSet<string> AllowedUsernames = new(StringComparer.OrdinalIgnoreCase)
     {
         "PersonThree",
+        "chrisbrooks",
+        "aceboll23",
+        "Beast",
+        "PersonFour",
         "TODO_IAN",
         "TODO_ADLER"
     };
