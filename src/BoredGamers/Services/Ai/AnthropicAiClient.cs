@@ -16,19 +16,20 @@ public class AnthropicAiClient : IAiClient
     private const string Model = "claude-haiku-4-5-20251001";
     private const int MaxTokens = 1024;
 
-    private readonly AnthropicClient _client;
+    private readonly AnthropicClient? _client;
 
     public AnthropicAiClient(IConfiguration config)
     {
-        var apiKey = config["Anthropic:ApiKey"]
-            ?? throw new InvalidOperationException(
-                "Anthropic:ApiKey is not set. Run: dotnet user-secrets set \"Anthropic:ApiKey\" \"<key>\" --project src/BoredGamers");
-
-        _client = new AnthropicClient { ApiKey = apiKey };
+        var apiKey = config["Anthropic:ApiKey"];
+        if (!string.IsNullOrWhiteSpace(apiKey))
+            _client = new AnthropicClient { ApiKey = apiKey };
     }
 
     public async Task<string> GetCompletionAsync(string systemPrompt, string userPrompt, CancellationToken ct = default)
     {
+        if (_client == null)
+            return string.Empty;
+
         var parameters = new MessageCreateParams
         {
             Model = Model,
