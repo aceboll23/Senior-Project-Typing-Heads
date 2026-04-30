@@ -4,6 +4,7 @@ using BoredGamers.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BoredGamers.Services.ProfilePicture;
 
@@ -16,12 +17,17 @@ public class ProfilePictureService : IProfilePictureService
 
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _env;
+    private readonly IConfiguration _config;
 
-    public ProfilePictureService(ApplicationDbContext db, IWebHostEnvironment env)
+    public ProfilePictureService(ApplicationDbContext db, IWebHostEnvironment env, IConfiguration config)
     {
         _db = db;
         _env = env;
+        _config = config;
     }
+
+    private string GetUploadBasePath() =>
+        _config["Uploads:BasePath"] is { Length: > 0 } p ? p : Path.Combine(_env.WebRootPath, "uploads");
 
     public async Task<ServiceResult> UploadAvatarAsync(string userId, IFormFile file)
     {
@@ -36,17 +42,19 @@ public class ProfilePictureService : IProfilePictureService
         if (profile == null)
             return ServiceResult.Fail("Profile not found.");
 
+        var basePath = GetUploadBasePath();
+
         // Delete old avatar if it exists
         if (!string.IsNullOrWhiteSpace(profile.AvatarUrl))
         {
-            var oldRelative = profile.AvatarUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
-            var oldPath = Path.Combine(_env.WebRootPath, oldRelative);
+            var oldFileName = Path.GetFileName(profile.AvatarUrl);
+            var oldPath = Path.Combine(basePath, "avatars", oldFileName);
             if (File.Exists(oldPath))
                 File.Delete(oldPath);
         }
 
         // Save new file
-        var avatarsDir = Path.Combine(_env.WebRootPath, "uploads", "avatars");
+        var avatarsDir = Path.Combine(basePath, "avatars");
         Directory.CreateDirectory(avatarsDir);
 
         var fileName = $"{userId}_{Guid.NewGuid()}{ext}";
