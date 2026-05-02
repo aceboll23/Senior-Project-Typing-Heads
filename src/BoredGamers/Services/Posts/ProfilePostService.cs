@@ -4,6 +4,7 @@ using BoredGamers.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BoredGamers.Services.Posts;
 
@@ -11,16 +12,21 @@ public class ProfilePostService : IProfilePostService
 {
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _env;
+    private readonly IConfiguration _config;
 
     private static readonly HashSet<string> AllowedExtensions =
         new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
 
-    public ProfilePostService(ApplicationDbContext db, IWebHostEnvironment env)
+    public ProfilePostService(ApplicationDbContext db, IWebHostEnvironment env, IConfiguration config)
     {
         _db = db;
         _env = env;
+        _config = config;
     }
+
+    private string GetUploadBasePath() =>
+        _config["Uploads:BasePath"] is { Length: > 0 } p ? p : Path.Combine(_env.WebRootPath, "uploads");
 
     public async Task<ServiceResult> CreatePostAsync(
         string userId,
@@ -48,7 +54,7 @@ public class ProfilePostService : IProfilePostService
             if (image.Length > MaxFileSizeBytes)
                 return ServiceResult.Fail("Image must be 5MB or smaller.");
 
-            var uploadDir = Path.Combine(_env.WebRootPath, "uploads", "posts");
+            var uploadDir = Path.Combine(GetUploadBasePath(), "posts");
             Directory.CreateDirectory(uploadDir);
 
             var fileName = $"{userId}_{Guid.NewGuid()}{ext}";
@@ -109,7 +115,8 @@ public class ProfilePostService : IProfilePostService
 
         if (!string.IsNullOrEmpty(post.ImageUrl))
         {
-            var filePath = Path.Combine(_env.WebRootPath, post.ImageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            var fileName = Path.GetFileName(post.ImageUrl);
+            var filePath = Path.Combine(GetUploadBasePath(), "posts", fileName);
             if (File.Exists(filePath))
                 File.Delete(filePath);
         }
