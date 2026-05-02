@@ -127,6 +127,20 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
+
+// When Uploads:BasePath is configured (e.g. /home/uploads on Azure), serve uploaded
+// files from that persistent directory at the /uploads URL path.
+var uploadsBasePath = app.Configuration["Uploads:BasePath"];
+if (!string.IsNullOrWhiteSpace(uploadsBasePath))
+{
+    Directory.CreateDirectory(Path.Combine(uploadsBasePath, "avatars"));
+    Directory.CreateDirectory(Path.Combine(uploadsBasePath, "posts"));
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsBasePath),
+        RequestPath = "/uploads"
+    });
+}
 app.MapStaticAssets();
 
 app.MapControllerRoute(
