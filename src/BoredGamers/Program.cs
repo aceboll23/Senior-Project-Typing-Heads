@@ -15,6 +15,7 @@ using BoredGamers.Models;
 using BoredGamers.Services;
 using BoredGamers.Services.Bdd;
 using BoredGamers.Hubs;
+using BoredGamers.Services.ContentModeration;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -41,6 +42,7 @@ builder.Services.AddScoped<BddTradeTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
+
 
 //
 //Database
@@ -110,6 +112,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 //AI services (TYP-228)
 builder.Services.AddSingleton<IAiClient, AnthropicAiClient>();
 builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
+
+// Content moderation
+builder.Services.AddHttpClient<IContentModerationService, OpenAiModerationService>();
 
 var app = builder.Build();
 

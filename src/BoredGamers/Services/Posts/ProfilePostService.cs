@@ -1,6 +1,7 @@
 using BoredGamers.Data;
 using BoredGamers.Models;
 using BoredGamers.Services;
+using BoredGamers.Services.ContentModeration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -13,16 +14,18 @@ public class ProfilePostService : IProfilePostService
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _env;
     private readonly IConfiguration _config;
+    private readonly IContentModerationService _moderation;
 
     private static readonly HashSet<string> AllowedExtensions =
         new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
 
-    public ProfilePostService(ApplicationDbContext db, IWebHostEnvironment env, IConfiguration config)
+    public ProfilePostService(ApplicationDbContext db, IWebHostEnvironment env, IConfiguration config, IContentModerationService moderation)
     {
         _db = db;
         _env = env;
         _config = config;
+        _moderation = moderation;
     }
 
     private string GetUploadBasePath() =>
@@ -43,6 +46,14 @@ public class ProfilePostService : IProfilePostService
 
         if (hasText && content.Length > 500)
             return ServiceResult.Fail("Post content cannot exceed 500 characters.");
+
+        // Content moderation check
+        if (hasText)
+        {
+            var moderationResult = await _moderation.CheckContentAsync(content);
+            if (moderationResult.IsFlagged)
+                return ServiceResult.Fail("Your post was rejected for inappropriate language. Please revise and try again.");
+        }
 
         string? imageUrl = null;
         if (hasImage)
@@ -134,6 +145,11 @@ public class ProfilePostService : IProfilePostService
 
         if (content.Length > 500)
             return ServiceResult.Fail("Post content cannot exceed 500 characters.");
+
+        // Content moderation check
+        var moderationResult = await _moderation.CheckContentAsync(content);
+        if (moderationResult.IsFlagged)
+            return ServiceResult.Fail("Your post was rejected for inappropriate language. Please revise and try again.");
 
         var profile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == userId);
         if (profile == null)

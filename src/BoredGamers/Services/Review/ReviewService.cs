@@ -9,10 +9,12 @@ namespace BoredGamers.Services
   public class ReviewService
   {
     private readonly ApplicationDbContext _db;
+    private readonly Services.ContentModeration.IContentModerationService _moderation;
 
-    public ReviewService(ApplicationDbContext db)
+    public ReviewService(ApplicationDbContext db, Services.ContentModeration.IContentModerationService moderation)
     {
       _db = db;
+      _moderation = moderation;
     }
 
     public async Task<ServiceResult> CreateReviewAsync(string userId, int gameId, int rating, string text)
@@ -26,6 +28,11 @@ namespace BoredGamers.Services
 
       if (string.IsNullOrWhiteSpace(text))
         return ServiceResult.Fail("Text is required.");
+
+      // Content moderation check
+      var moderationResult = await _moderation.CheckContentAsync(text);
+      if (moderationResult.IsFlagged)
+          return ServiceResult.Fail("Your review was rejected for inappropriate language. Please revise and try again.");
 
       var gameExists = await _db.Games.AnyAsync(g => g.Id == gameId);
       if (!gameExists)
@@ -59,6 +66,10 @@ namespace BoredGamers.Services
 
       if (string.IsNullOrWhiteSpace(text))
         return ServiceResult.Fail("Text is required.");
+
+      var moderationResult = await _moderation.CheckContentAsync(text);
+      if (moderationResult.IsFlagged)
+          return ServiceResult.Fail("Your review was rejected for inappropriate language. Please revise and try again.");
 
       var review = await _db.Reviews.FirstOrDefaultAsync(r => r.ReviewId == reviewId);
 
