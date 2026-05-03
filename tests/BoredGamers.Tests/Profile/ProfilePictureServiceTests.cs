@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
 
@@ -43,7 +44,10 @@ public class ProfilePictureServiceTests
         var mockEnv = new Mock<IWebHostEnvironment>();
         mockEnv.Setup(e => e.WebRootPath).Returns(_tempWebRoot);
 
-        _service = new ProfilePictureService(_db, mockEnv.Object);
+        var mockConfig = new Mock<IConfiguration>();
+        mockConfig.Setup(c => c["Uploads:BasePath"]).Returns((string?)null);
+
+        _service = new ProfilePictureService(_db, mockEnv.Object, mockConfig.Object);
 
         _user = new User { Id = "user-1", UserName = "TestUser", Email = "test@test.com", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
         _db.Users.Add(_user);

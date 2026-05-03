@@ -178,6 +178,7 @@ public class WishlistSteps
     }
 
     [When("I navigate to my collection page")]
+    [Given("I navigate to my collection page")]
     public void WhenINavigateToMyCollectionPage()
     {
         _webDriverContext.Driver!.Navigate().GoToUrl($"{TestSettings.BaseUrl}/Collection");
