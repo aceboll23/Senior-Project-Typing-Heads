@@ -22,6 +22,8 @@ namespace BoredGamers.Models
 
         public CollectionStatus Status { get; set; } = CollectionStatus.Owned;
 
+        public bool IsAvailableForTrade { get; set; } = false;
+
         // Navigation properties (optional but recommended)
         public Game Game { get; set; } = null!;
     }

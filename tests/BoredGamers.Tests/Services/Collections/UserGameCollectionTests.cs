@@ -449,6 +449,100 @@ namespace BoredGamers.Tests.Services.Collections
         Assert.That(record.Status, Is.EqualTo(CollectionStatus.Wishlist));
     }
 
+    // --- Trade Status Tests ---
+
+    [Test]
+    public async Task ToggleTradeStatus_WhenGameInCollection_SetsIsAvailableForTrade_True()
+    {
+        await using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        await using var db = await CreateSqliteDbAsync(conn);
+
+        var user = new IdentityUser { Id = "user-1", UserName = "user1@test.com", Email = "user1@test.com" };
+        db.Users.Add(user);
+        var game = new Game { BggGameId = 3001, Name = "Tradeable Game", LastSyncedAt = DateTime.UtcNow };
+        db.Games.Add(game);
+        await db.SaveChangesAsync();
+
+        var svc = new BoredGamers.Services.Collections.UserCollectionService(db);
+        await svc.AddToCollectionAsync(user.Id, game.Id);
+
+        var result = await svc.ToggleTradeStatusAsync(user.Id, game.Id);
+
+        Assert.That(result, Is.True);
+        var record = await db.UserGameCollections.FirstAsync();
+        Assert.That(record.IsAvailableForTrade, Is.True);
+    }
+
+    [Test]
+    public async Task ToggleTradeStatus_WhenAlreadyTradeable_SetsIsAvailableForTrade_False()
+    {
+        await using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        await using var db = await CreateSqliteDbAsync(conn);
+
+        var user = new IdentityUser { Id = "user-1", UserName = "user1@test.com", Email = "user1@test.com" };
+        db.Users.Add(user);
+        var game = new Game { BggGameId = 3002, Name = "Already Tradeable Game", LastSyncedAt = DateTime.UtcNow };
+        db.Games.Add(game);
+        await db.SaveChangesAsync();
+
+        var svc = new BoredGamers.Services.Collections.UserCollectionService(db);
+        await svc.AddToCollectionAsync(user.Id, game.Id);
+        await svc.ToggleTradeStatusAsync(user.Id, game.Id); // mark true
+
+        var result = await svc.ToggleTradeStatusAsync(user.Id, game.Id); // toggle back
+
+        Assert.That(result, Is.False);
+        var record = await db.UserGameCollections.FirstAsync();
+        Assert.That(record.IsAvailableForTrade, Is.False);
+    }
+
+    [Test]
+    public async Task ToggleTradeStatus_WhenGameNotInCollection_ReturnsNull()
+    {
+        await using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        await using var db = await CreateSqliteDbAsync(conn);
+
+        var user = new IdentityUser { Id = "user-1", UserName = "user1@test.com", Email = "user1@test.com" };
+        db.Users.Add(user);
+        var game = new Game { BggGameId = 3003, Name = "Not Owned Game", LastSyncedAt = DateTime.UtcNow };
+        db.Games.Add(game);
+        await db.SaveChangesAsync();
+
+        var svc = new BoredGamers.Services.Collections.UserCollectionService(db);
+
+        var result = await svc.ToggleTradeStatusAsync(user.Id, game.Id);
+
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public async Task ToggleTradeStatus_DoesNotAffectOtherUsersGame()
+    {
+        await using var conn = new SqliteConnection("DataSource=:memory:");
+        await conn.OpenAsync();
+        await using var db = await CreateSqliteDbAsync(conn);
+
+        var owner = new IdentityUser { Id = "user-1", UserName = "owner@test.com", Email = "owner@test.com" };
+        var other = new IdentityUser { Id = "user-2", UserName = "other@test.com", Email = "other@test.com" };
+        db.Users.AddRange(owner, other);
+        var game = new Game { BggGameId = 3004, Name = "Owner Game", LastSyncedAt = DateTime.UtcNow };
+        db.Games.Add(game);
+        await db.SaveChangesAsync();
+
+        var svc = new BoredGamers.Services.Collections.UserCollectionService(db);
+        await svc.AddToCollectionAsync(owner.Id, game.Id);
+
+        // Other user tries to toggle owner's game
+        var result = await svc.ToggleTradeStatusAsync(other.Id, game.Id);
+
+        Assert.That(result, Is.Null);
+        var record = await db.UserGameCollections.FirstAsync();
+        Assert.That(record.IsAvailableForTrade, Is.False);
+    }
+
     [Test]
     public async Task GetOwnedGames_ReturnsOnlyOwned_NotWishlisted()
     {

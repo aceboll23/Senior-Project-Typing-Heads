@@ -44,7 +44,10 @@ public class ProfilePostServiceTests
         _mockEnv = new Mock<IWebHostEnvironment>();
         _mockEnv.Setup(e => e.WebRootPath).Returns(Path.GetTempPath());
 
-        _service = new ProfilePostService(_db, _mockEnv.Object, new Mock<IConfiguration>().Object);
+        var mockConfig = new Mock<IConfiguration>();
+        mockConfig.Setup(c => c["Uploads:BasePath"]).Returns((string?)null);
+
+        _service = new ProfilePostService(_db, _mockEnv.Object, mockConfig.Object);
 
         _owner = new User
         {
