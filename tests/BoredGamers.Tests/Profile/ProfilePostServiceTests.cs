@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
 
@@ -43,7 +44,7 @@ public class ProfilePostServiceTests
         _mockEnv = new Mock<IWebHostEnvironment>();
         _mockEnv.Setup(e => e.WebRootPath).Returns(Path.GetTempPath());
 
-        _service = new ProfilePostService(_db, _mockEnv.Object);
+        _service = new ProfilePostService(_db, _mockEnv.Object, new Mock<IConfiguration>().Object);
 
         _owner = new User
         {
