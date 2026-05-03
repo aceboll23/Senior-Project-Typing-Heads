@@ -15,6 +15,8 @@ namespace BoredGamers.Services.Collections
         Task<bool> IsOnWishlistAsync(string userId, int gameId, CancellationToken ct = default);
         Task<bool> RemoveFromWishlistAsync(string userId, int gameId, CancellationToken ct = default);
         Task<bool> RemoveFromCollectionAsync(string userId, int gameId, CancellationToken ct = default);
+        // Returns true = now tradeable, false = now not tradeable, null = game not in user's owned collection
+        Task<bool?> ToggleTradeStatusAsync(string userId, int gameId, CancellationToken ct = default);
     }
 
     public class UserCollectionService : IUserCollectionService
@@ -127,6 +129,19 @@ namespace BoredGamers.Services.Collections
             _db.UserGameCollections.Remove(entry);
             await _db.SaveChangesAsync(ct);
             return true;
+        }
+
+        public async Task<bool?> ToggleTradeStatusAsync(string userId, int gameId, CancellationToken ct = default)
+        {
+            var entry = await _db.UserGameCollections
+                .FirstOrDefaultAsync(x => x.UserId == userId && x.GameId == gameId && x.Status == CollectionStatus.Owned, ct);
+
+            if (entry == null)
+                return null;
+
+            entry.IsAvailableForTrade = !entry.IsAvailableForTrade;
+            await _db.SaveChangesAsync(ct);
+            return entry.IsAvailableForTrade;
         }
     }
 }

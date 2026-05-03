@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Linq;
 using BoredGamers.Models;
+using BoredGamers.Models.ViewModels;
 
 namespace BoredGamers.Controllers
 {
@@ -73,6 +74,17 @@ namespace BoredGamers.Controllers
 
       await _collections.RemoveFromWishlistAsync(userId, gameId, ct);
 
+      return RedirectToAction("Index");
+    }
+
+    [HttpPost("toggle-trade")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleTrade(int gameId, CancellationToken ct)
+    {
+      var userId = GetUserId();
+      var result = await _collections.ToggleTradeStatusAsync(userId, gameId, ct);
+      if (result == null)
+        return Forbid();
       return RedirectToAction("Index");
     }
 
@@ -159,36 +171,35 @@ namespace BoredGamers.Controllers
       const int pageSize = 20;
       if (page < 1) page = 1;
 
-      var ownedQuery = _db.UserGameCollections
+      var ownedBaseQuery = _db.UserGameCollections
           .AsNoTracking()
-          .Where(c => c.UserId == userId && c.Status == CollectionStatus.Owned)
+          .Where(c => c.UserId == userId && c.Status == CollectionStatus.Owned);
+
+      var totalCount = await ownedBaseQuery.CountAsync(ct);
+      var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+      var ownedItems = await ownedBaseQuery
           .Include(c => c.Game)
           .OrderByDescending(c => c.DateAdded)
-          .Select(c => c.Game);
+          .Skip((page - 1) * pageSize)
+          .Take(pageSize)
+          .Select(c => new CollectionItemViewModel { Game = c.Game, IsAvailableForTrade = c.IsAvailableForTrade })
+          .ToListAsync(ct);
 
-      var wishlistQuery = _db.UserGameCollections
+      var wishlistGames = await _db.UserGameCollections
           .AsNoTracking()
           .Where(c => c.UserId == userId && c.Status == CollectionStatus.Wishlist)
           .Include(c => c.Game)
           .OrderByDescending(c => c.DateAdded)
-          .Select(c => c.Game);
-
-      var totalCount = await ownedQuery.CountAsync(ct);
-      var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-
-      var ownedGames = await ownedQuery
-          .Skip((page - 1) * pageSize)
-          .Take(pageSize)
+          .Select(c => c.Game)
           .ToListAsync(ct);
-
-      var wishlistGames = await wishlistQuery.ToListAsync(ct);
 
       ViewData["Page"] = page;
       ViewData["TotalPages"] = totalPages;
       ViewData["TotalCount"] = totalCount;
       ViewData["WishlistGames"] = wishlistGames;
 
-      return View(ownedGames);
+      return View(ownedItems);
     }
 
     [HttpGet("{username}")]
