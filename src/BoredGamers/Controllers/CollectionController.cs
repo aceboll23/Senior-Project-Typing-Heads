@@ -202,6 +202,18 @@ namespace BoredGamers.Controllers
       return View(ownedItems);
     }
 
+    [HttpGet("trades/{username}")]
+    public async Task<IActionResult> FriendTrades(string username, CancellationToken ct)
+    {
+      var viewerUserId = GetUserId();
+      var games = await _collections.GetFriendTradeableGamesAsync(viewerUserId, username, ct);
+      if (games == null)
+        return Forbid();
+
+      ViewData["FriendUsername"] = username;
+      return View(games);
+    }
+
     [HttpGet("{username}")]
     public async Task<IActionResult> FriendCollection(string username, int page = 1, CancellationToken ct = default)
     {
