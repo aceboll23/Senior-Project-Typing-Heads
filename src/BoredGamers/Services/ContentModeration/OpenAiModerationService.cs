@@ -32,16 +32,51 @@ public class OpenAiModerationService : IContentModerationService
 
     public async Task<ModerationResult> CheckContentAsync(string content, CancellationToken ct = default)
     {
-        // Fail-open if no API key configured (e.g., during local dev without setup)
+        if (string.IsNullOrWhiteSpace(content))
+            return new ModerationResult { IsFlagged = false };
+
+        // Profanity word list check (runs first, doesn't need API)
+        var profanityCategories = CheckProfanityWordList(content);
+
+        // OpenAI moderation check
+        var apiCategories = await CheckOpenAiModerationAsync(content, ct);
+
+        var allCategories = profanityCategories.Concat(apiCategories).Distinct().ToList();
+
+        return new ModerationResult
+        {
+            IsFlagged = allCategories.Count > 0,
+            FlaggedCategories = allCategories
+        };
+    }
+
+    private List<string> CheckProfanityWordList(string content)
+    {
+        var flagged = new List<string>();
+
+        // Whole-word regex match, case-insensitive
+        foreach (var word in ProfanityList.Words)
+        {
+            var pattern = $@"\b{System.Text.RegularExpressions.Regex.Escape(word)}\b";
+            if (System.Text.RegularExpressions.Regex.IsMatch(content, pattern,
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            {
+                flagged.Add("profanity");
+                break; // Only need to flag once
+            }
+        }
+
+        return flagged;
+    }
+
+    private async Task<List<string>> CheckOpenAiModerationAsync(string content, CancellationToken ct)
+    {
         var apiKey = _config["OpenAi:ApiKey"];
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            _logger.LogWarning("OpenAI API key not configured — skipping moderation check.");
-            return new ModerationResult { IsFlagged = false };
+            _logger.LogWarning("OpenAI API key not configured — skipping AI moderation.");
+            return new List<string>();
         }
-
-        if (string.IsNullOrWhiteSpace(content))
-            return new ModerationResult { IsFlagged = false };
 
         try
         {
@@ -55,14 +90,13 @@ public class OpenAiModerationService : IContentModerationService
             response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadFromJsonAsync<OpenAiModerationResponse>(cancellationToken: ct);
-
             if (result?.Results == null || result.Results.Count == 0)
-                return new ModerationResult { IsFlagged = false };
+                return new List<string>();
 
             var first = result.Results[0];
             var flaggedCategories = new List<string>();
 
-            if (first.Categories != null)
+            if (first.Flagged && first.Categories != null)
             {
                 foreach (var (category, isFlagged) in first.Categories)
                 {
@@ -71,17 +105,12 @@ public class OpenAiModerationService : IContentModerationService
                 }
             }
 
-            return new ModerationResult
-            {
-                IsFlagged = first.Flagged,
-                FlaggedCategories = flaggedCategories
-            };
+            return flaggedCategories;
         }
         catch (Exception ex)
         {
-            // Fail-open — if moderation fails, allow the content through but log it
-            _logger.LogError(ex, "Content moderation check failed for content of length {Length}.", content.Length);
-            return new ModerationResult { IsFlagged = false };
+            _logger.LogError(ex, "OpenAI moderation check failed for content of length {Length}.", content.Length);
+            return new List<string>(); // Fail-open
         }
     }
 
