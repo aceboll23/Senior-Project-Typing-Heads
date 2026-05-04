@@ -17,6 +17,8 @@ namespace BoredGamers.Services.Collections
         Task<bool> RemoveFromCollectionAsync(string userId, int gameId, CancellationToken ct = default);
         // Returns true = now tradeable, false = now not tradeable, null = game not in user's owned collection
         Task<bool?> ToggleTradeStatusAsync(string userId, int gameId, CancellationToken ct = default);
+        // Returns null when viewer is not friends with the owner (or owner not found); empty list when no tradeable games
+        Task<List<Game>?> GetFriendTradeableGamesAsync(string viewerUserId, string ownerUsername, CancellationToken ct = default);
     }
 
     public class UserCollectionService : IUserCollectionService
@@ -142,6 +144,39 @@ namespace BoredGamers.Services.Collections
             entry.IsAvailableForTrade = !entry.IsAvailableForTrade;
             await _db.SaveChangesAsync(ct);
             return entry.IsAvailableForTrade;
+        }
+
+        public async Task<List<Game>?> GetFriendTradeableGamesAsync(string viewerUserId, string ownerUsername, CancellationToken ct = default)
+        {
+            var owner = await _db.Set<User>()
+                .Include(u => u.Profile)
+                .FirstOrDefaultAsync(u => u.UserName == ownerUsername, ct);
+
+            if (owner?.Profile == null)
+                return null;
+
+            var viewerProfile = await _db.Set<UserProfile>()
+                .FirstOrDefaultAsync(p => p.UserId == viewerUserId, ct);
+
+            if (viewerProfile == null)
+                return null;
+
+            var areFriends = await _db.Set<Friendship>()
+                .AnyAsync(f =>
+                    f.Status == FriendshipStatus.Accepted &&
+                    ((f.RequesterProfileId == viewerProfile.Id && f.ReceiverProfileId == owner.Profile.Id) ||
+                     (f.RequesterProfileId == owner.Profile.Id && f.ReceiverProfileId == viewerProfile.Id)), ct);
+
+            if (!areFriends)
+                return null;
+
+            return await _db.UserGameCollections
+                .AsNoTracking()
+                .Where(c => c.UserId == owner.Id && c.Status == CollectionStatus.Owned && c.IsAvailableForTrade)
+                .Include(c => c.Game)
+                .OrderBy(c => c.Game.Name)
+                .Select(c => c.Game)
+                .ToListAsync(ct);
         }
     }
 }

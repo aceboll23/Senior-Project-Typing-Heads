@@ -122,6 +122,16 @@
                                    asp-route-username="@username">
                                     View Collection
                                 </a>
+                                @if (friendshipStatus == "Accepted")
+                                {
+                                    <a class="btn btn-outline-success btn-sm ms-2"
+                                       asp-controller="Collection"
+                                       asp-action="FriendTrades"
+                                       asp-route-username="@username"
+                                       id="view-available-trades-btn">
+                                        <i class="bi bi-arrow-left-right me-1"></i>View Available Trades
+                                    </a>
+                                }
                             }
                         </div>
 
