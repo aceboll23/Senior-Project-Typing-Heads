@@ -14,15 +14,9 @@ namespace BoredGamers.Services.Ai;
 
 public interface IAiRecommendationService
 {
-    // Legacy signature — still in use by CollectionController until the v2 flow
-    // is complete. Will be removed once the controller switches to the new method.
-    Task<IReadOnlyList<string>> GetRecommendationsAsync(
-        IEnumerable<string> ownedGameNames,
-        CancellationToken ct = default);
-
-    // TYP-245: smarter recommendations using collection context. Pulls owned
-    // games for the user, builds a rich prompt, and resolves Claude's response
-    // to a list of local Game entities (with on-demand BGG promotion for misses).
+    // Pulls owned games for the user, builds a rich prompt with collection
+    // context, and resolves Claude's response to a list of local Game entities
+    // (with on-demand BGG promotion for misses).
     Task<IReadOnlyList<Game>> GetRecommendationsAsync(
         string userId,
         CancellationToken ct = default);
@@ -31,7 +25,7 @@ public interface IAiRecommendationService
 public class AiRecommendationService : IAiRecommendationService
 {
     private const int MaxOwnedGamesInPrompt = 10;
-    private const int DescriptionMaxChars = 400;
+    private const int DescriptionMaxChars = 700;
     private const int MaxBggPromotions = 3;
     private const int BggCallTimeoutSeconds = 10;
 
@@ -39,20 +33,15 @@ public class AiRecommendationService : IAiRecommendationService
         "You are a board game recommendation assistant. The user owns the board " +
         "games listed below; for each game, the player count, play time, and a " +
         "short description are included. Use the player counts, play times, and " +
-        "descriptions to identify the themes, group sizes, and session lengths " +
+        "especially thedescriptions to identify the themes, group sizes, and session lengths " +
         "the user enjoys, and recommend similar board games. " +
+        "If they player owns a game from a certain franchise, " +
+        "that is a sign to recommend other games from that franchise." +
+        "If they own games in a sci fi setting, reccomment other sci fi games." +
+        "You may use any knowledge about boardgames listed on https://boardgamegeek.com/ to inform your choices." +
         "Respond with ONLY a list of game names, one per line. " +
         "No numbering, no bullet points, no introduction, no explanation, just " +
         "game names separated by newlines. Recommend up to 8 games.";
-
-    // Legacy system prompt — used by the legacy method only. Will be removed
-    // along with the legacy method.
-    private const string LegacySystemPrompt =
-        "You are a board game recommendation assistant. Given a list of board games " +
-        "a user owns, recommend similar board games they might enjoy. " +
-        "Respond with ONLY a list of game names, one per line. " +
-        "No numbering, no bullet points, no introduction, no explanation, just game names " +
-        "separated by newlines. Recommend up to 8 games.";
 
     private readonly IAiClient _aiClient;
     private readonly ApplicationDbContext _db;
@@ -69,15 +58,6 @@ public class AiRecommendationService : IAiRecommendationService
         _db = db;
         _bgg = bgg;
         _games = games;
-    }
-
-    public async Task<IReadOnlyList<string>> GetRecommendationsAsync(
-        IEnumerable<string> ownedGameNames,
-        CancellationToken ct = default)
-    {
-        var userPrompt = BuildLegacyUserPrompt(ownedGameNames);
-        var response = await _aiClient.GetCompletionAsync(LegacySystemPrompt, userPrompt, ct);
-        return ParseResponse(response);
     }
 
     public async Task<IReadOnlyList<Game>> GetRecommendationsAsync(
@@ -229,12 +209,6 @@ public class AiRecommendationService : IAiRecommendationService
         }
 
         return sb.ToString();
-    }
-
-    private static string BuildLegacyUserPrompt(IEnumerable<string> ownedGameNames)
-    {
-        var names = string.Join("\n", ownedGameNames);
-        return $"The user owns these board games:\n{names}\n\nRecommend similar board games.";
     }
 
     private static IReadOnlyList<string> ParseResponse(string response)
