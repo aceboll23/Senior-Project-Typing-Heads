@@ -32,6 +32,8 @@ public class AiRecommendationService : IAiRecommendationService
 {
     private const int MaxOwnedGamesInPrompt = 10;
     private const int DescriptionMaxChars = 400;
+    private const int MaxBggPromotions = 3;
+    private const int BggCallTimeoutSeconds = 10;
 
     private const string SystemPrompt =
         "You are a board game recommendation assistant. The user owns the board " +
@@ -82,7 +84,8 @@ public class AiRecommendationService : IAiRecommendationService
         string userId,
         CancellationToken ct = default)
     {
-        var ownedGames = await _db.UserGameCollections
+        // Pull the top-N most recent owned games for the prompt context.
+        var ownedForPrompt = await _db.UserGameCollections
             .AsNoTracking()
             .Where(c => c.UserId == userId && c.Status == CollectionStatus.Owned)
             .OrderByDescending(c => c.DateAdded)
@@ -91,15 +94,98 @@ public class AiRecommendationService : IAiRecommendationService
             .Select(c => c.Game)
             .ToListAsync(ct);
 
-        if (ownedGames.Count == 0)
+        if (ownedForPrompt.Count == 0)
             return Array.Empty<Game>();
 
-        var userPrompt = BuildUserPrompt(ownedGames);
-        await _aiClient.GetCompletionAsync(SystemPrompt, userPrompt, ct);
+        var userPrompt = BuildUserPrompt(ownedForPrompt);
+        var response = await _aiClient.GetCompletionAsync(SystemPrompt, userPrompt, ct);
+        var recommendedNames = ParseResponse(response);
 
-        // Orchestration (matching local, BGG promotion, owned-filter, ordering)
-        // is implemented in the next step (T6-T9). For now, return empty.
-        return Array.Empty<Game>();
+        if (recommendedNames.Count == 0)
+            return Array.Empty<Game>();
+
+        // Pull the FULL set of owned GameIds (not just top 10) — used to
+        // exclude games the user already owns from the result.
+        var ownedGameIds = (await _db.UserGameCollections
+            .AsNoTracking()
+            .Where(c => c.UserId == userId && c.Status == CollectionStatus.Owned)
+            .Select(c => c.GameId)
+            .ToListAsync(ct))
+            .ToHashSet();
+
+        // Match recommended names against local Games. SQL Server default
+        // collation is case-insensitive; the dictionary lookup below also
+        // uses OrdinalIgnoreCase so light case differences from BGG don't
+        // cause false misses.
+        var localMatches = await _db.Games
+            .AsNoTracking()
+            .Where(g => recommendedNames.Contains(g.Name))
+            .ToListAsync(ct);
+
+        var byName = localMatches.ToDictionary(g => g.Name, StringComparer.OrdinalIgnoreCase);
+
+        // Identify unmatched names, capped at MaxBggPromotions, preserving
+        // their original positions in Claude's response so order survives.
+        var unmatched = new List<(int index, string name)>();
+        for (int i = 0; i < recommendedNames.Count; i++)
+        {
+            if (!byName.ContainsKey(recommendedNames[i]))
+            {
+                unmatched.Add((i, recommendedNames[i]));
+                if (unmatched.Count >= MaxBggPromotions) break;
+            }
+        }
+
+        var promotedByIndex = new Dictionary<int, Game>();
+        if (unmatched.Count > 0)
+        {
+            var promoteTasks = unmatched.Select(u => TryPromoteOneAsync(u.name, ct)).ToArray();
+            var promoted = await Task.WhenAll(promoteTasks);
+            for (int i = 0; i < promoted.Length; i++)
+            {
+                if (promoted[i] != null)
+                    promotedByIndex[unmatched[i].index] = promoted[i]!;
+            }
+        }
+
+        // Build the final ordered, deduped, owned-filtered result.
+        var seen = new HashSet<int>();
+        var result = new List<Game>();
+        for (int i = 0; i < recommendedNames.Count; i++)
+        {
+            Game? candidate = null;
+            if (byName.TryGetValue(recommendedNames[i], out var localGame))
+                candidate = localGame;
+            else if (promotedByIndex.TryGetValue(i, out var promotedGame))
+                candidate = promotedGame;
+
+            if (candidate != null
+                && !ownedGameIds.Contains(candidate.Id)
+                && seen.Add(candidate.Id))
+            {
+                result.Add(candidate);
+            }
+        }
+
+        return result;
+    }
+
+    private async Task<Game?> TryPromoteOneAsync(string name, CancellationToken ct)
+    {
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(BggCallTimeoutSeconds));
+        try
+        {
+            var hits = await _bgg.SearchGamesAsync(name, 1, timeoutCts.Token);
+            var hit = hits.FirstOrDefault();
+            if (hit == null) return null;
+            return await _games.SaveGameFromBggAsync(hit.BggGameId);
+        }
+        catch
+        {
+            // Timeout, network error, BGG miss, EF/SQL race — drop silently.
+            return null;
+        }
     }
 
     private static string BuildUserPrompt(IEnumerable<Game> ownedGames)
