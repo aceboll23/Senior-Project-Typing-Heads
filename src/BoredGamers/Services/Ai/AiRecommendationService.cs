@@ -33,11 +33,11 @@ public class AiRecommendationService : IAiRecommendationService
         "You are a board game recommendation assistant. The user owns the board " +
         "games listed below; for each game, the player count, play time, and a " +
         "short description are included. Use the player counts, play times, and " +
-        "especially thedescriptions to identify the themes, group sizes, and session lengths " +
+        "especially the descriptions to identify the themes, group sizes, and session lengths " +
         "the user enjoys, and recommend similar board games. " +
-        "If they player owns a game from a certain franchise, " +
+        "If they own a game from a certain franchise, " +
         "that is a sign to recommend other games from that franchise." +
-        "If they own games in a sci fi setting, reccomment other sci fi games." +
+        "If they own games in a sci fi setting, reccommend other sci fi games." +
         "You may use any knowledge about boardgames listed on https://boardgamegeek.com/ to inform your choices." +
         "Respond with ONLY a list of game names, one per line. " +
         "No numbering, no bullet points, no introduction, no explanation, just " +

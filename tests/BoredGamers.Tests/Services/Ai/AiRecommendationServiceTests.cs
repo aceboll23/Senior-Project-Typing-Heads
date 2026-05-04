@@ -55,66 +55,6 @@ public class AiRecommendationServiceTests
         await db.SaveChangesAsync();
     }
 
-    // =====================================================================
-    // Legacy method — to be removed once the controller switches to the
-    // new (string userId) overload. These tests cover the existing button.
-    // =====================================================================
-
-    [Test]
-    public async Task GetRecommendationsAsync_Legacy_PassesOwnedGameNamesIntoUserPrompt()
-    {
-        using var db = NewInMemoryDb();
-        var capturedUserPrompt = string.Empty;
-        var aiClient = new Mock<IAiClient>();
-        aiClient
-            .Setup(c => c.GetCompletionAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Callback<string, string, CancellationToken>((_, user, _) => capturedUserPrompt = user)
-            .ReturnsAsync("");
-
-        var sut = BuildSut(db, aiClient: aiClient);
-
-        await sut.GetRecommendationsAsync(new[] { "Catan", "Wingspan" });
-
-        Assert.That(capturedUserPrompt, Does.Contain("Catan"));
-        Assert.That(capturedUserPrompt, Does.Contain("Wingspan"));
-    }
-
-    [Test]
-    public async Task GetRecommendationsAsync_Legacy_ParsesNewlineSeparatedResponseIntoList()
-    {
-        using var db = NewInMemoryDb();
-        var aiClient = new Mock<IAiClient>();
-        aiClient
-            .Setup(c => c.GetCompletionAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync("Game A\nGame B\nGame C");
-
-        var sut = BuildSut(db, aiClient: aiClient);
-
-        var result = await sut.GetRecommendationsAsync(new[] { "Owned Game" });
-
-        Assert.That(result, Is.EqualTo(new[] { "Game A", "Game B", "Game C" }));
-    }
-
-    [Test]
-    public async Task GetRecommendationsAsync_Legacy_TrimsWhitespaceAndDropsBlankLines()
-    {
-        using var db = NewInMemoryDb();
-        var aiClient = new Mock<IAiClient>();
-        aiClient
-            .Setup(c => c.GetCompletionAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync("  Game A  \n\n   \nGame B\n");
-
-        var sut = BuildSut(db, aiClient: aiClient);
-
-        var result = await sut.GetRecommendationsAsync(new[] { "Owned" });
-
-        Assert.That(result, Is.EqualTo(new[] { "Game A", "Game B" }));
-    }
-
-    // =====================================================================
-    // TYP-245 v2 — new (string userId) overload.
-    // =====================================================================
-
     // T4 — Prompt includes name, min/max players, play time, and (truncated) description.
     [Test]
     public async Task GetRecommendationsAsync_FullyPopulatedGame_PromptIncludesAllFields()

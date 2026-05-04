@@ -88,7 +88,7 @@ public class CollectionAiEndpointTests
         // Assert — no AI call should have been made
         Assert.That(result, Is.TypeOf<ForbidResult>());
         mockAi.Verify(
-            a => a.GetRecommendationsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()),
+            a => a.GetRecommendationsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -118,7 +118,7 @@ public class CollectionAiEndpointTests
         Assert.That(message, Is.Not.Null.And.Not.Empty);
 
         mockAi.Verify(
-            a => a.GetRecommendationsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()),
+            a => a.GetRecommendationsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -152,10 +152,11 @@ public class CollectionAiEndpointTests
         mockUserManager.Setup(m => m.GetUserAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(user);
 
         var mockAi = new Mock<IAiRecommendationService>();
-        // AI returns two names: one is in our DB (Wingspan), one isn't (Bohnanza)
+        // The new service returns resolved Game entities directly — local
+        // matching, BGG promotion, and owned-filter happen inside the service.
         mockAi
-            .Setup(a => a.GetRecommendationsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[] { "Wingspan", "Bohnanza" });
+            .Setup(a => a.GetRecommendationsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { matchingRecommendation });
 
         var controller = CreateController(db, mockUserManager, mockAi, "user-1");
 
@@ -202,9 +203,12 @@ public class CollectionAiEndpointTests
         mockUserManager.Setup(m => m.GetUserAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(user);
 
         var mockAi = new Mock<IAiRecommendationService>();
+        // Service returns no usable games (could be: AI returned nothing, all
+        // names hallucinated, or all suggestions filtered out as already-owned).
+        // Controller should surface a friendly message rather than empty cards.
         mockAi
-            .Setup(a => a.GetRecommendationsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[] { "Game Not In Our DB", "Another Game Not In Our DB" });
+            .Setup(a => a.GetRecommendationsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<Game>());
 
         var controller = CreateController(db, mockUserManager, mockAi, "user-1");
 

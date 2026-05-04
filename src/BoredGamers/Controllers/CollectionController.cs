@@ -117,31 +117,24 @@ namespace BoredGamers.Controllers
       if (!AiAccessPolicy.IsAllowed(currentUser.UserName))
         return Forbid();
 
-      var ownedGameNames = await _db.UserGameCollections
-          .Where(c => c.UserId == currentUser.Id && c.Status == CollectionStatus.Owned)
-          .Include(c => c.Game)
-          .Select(c => c.Game.Name)
-          .ToListAsync(ct);
+      var hasOwnedGames = await _db.UserGameCollections
+          .AnyAsync(c => c.UserId == currentUser.Id && c.Status == CollectionStatus.Owned, ct);
 
-      if (ownedGameNames.Count == 0)
+      if (!hasOwnedGames)
       {
         return Ok(new { message = "Add some games to your collection first to get personalized AI recommendations." });
       }
 
-      var recommendedNames = await _aiRecommendations.GetRecommendationsAsync(ownedGameNames, ct);
+      var games = await _aiRecommendations.GetRecommendationsAsync(currentUser.Id, ct);
 
-      if (recommendedNames.Count == 0)
+      if (games.Count == 0)
       {
         return Ok(new { message = "The AI didn't return any recommendations this time. Please try again." });
       }
 
-      // Match recommended names against the local Games table. Default SQL Server
-      // collation is case-insensitive, so a simple Contains lookup is enough for
-      // the minimal version. Recommendations Claude makes that aren't in our
-      // library are silently dropped here.
-      var matchedGames = await _db.Games
-          .Where(g => recommendedNames.Contains(g.Name))
-          .Select(g => new
+      return Ok(new
+      {
+          games = games.Select(g => new
           {
               g.Id,
               g.Name,
@@ -151,14 +144,7 @@ namespace BoredGamers.Controllers
               g.YearPublished,
               g.AverageRating
           })
-          .ToListAsync(ct);
-
-      if (matchedGames.Count == 0)
-      {
-        return Ok(new { message = "The AI suggested games we don't have in our library yet. Try again — you may get a different set." });
-      }
-
-      return Ok(new { games = matchedGames });
+      });
     }
 
     [HttpGet("")]
