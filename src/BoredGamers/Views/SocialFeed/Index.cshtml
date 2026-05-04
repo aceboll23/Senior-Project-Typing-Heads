@@ -46,7 +46,40 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="mb-0">@post.Content</p>
+                            @if (post.Category != BoredGamers.Models.PostCategory.None)
+                            {
+                                var badgeColor = post.Category switch {
+                                    BoredGamers.Models.PostCategory.CurrentlyPlaying => "success",
+                                    BoredGamers.Models.PostCategory.WantToPlay => "info",
+                                    BoredGamers.Models.PostCategory.Completed => "primary",
+                                    BoredGamers.Models.PostCategory.Top10 => "warning",
+                                    _ => "secondary"
+                                };
+                                var badgeLabel = post.Category switch {
+                                    BoredGamers.Models.PostCategory.CurrentlyPlaying => "Currently Playing",
+                                    BoredGamers.Models.PostCategory.WantToPlay => "Want to Play",
+                                    BoredGamers.Models.PostCategory.Completed => "Completed",
+                                    BoredGamers.Models.PostCategory.Top10 => "Top 10",
+                                    _ => ""
+                                };
+                                <span class="badge bg-@badgeColor mb-2">@badgeLabel</span>
+                            }
+                            @if (!string.IsNullOrEmpty(post.GameName))
+                            {
+                                <div class="small text-muted mb-1">
+                                    <i class="bi bi-controller me-1"></i>
+                                    <span>@post.GameName</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(post.Content))
+                            {
+                                <p class="mb-1">@post.Content</p>
+                            }
+                            @if (!string.IsNullOrEmpty(post.ImageUrl))
+                            {
+                                <img src="@post.ImageUrl" alt="Post image" class="img-fluid rounded mb-2"
+                                     style="max-height:400px;object-fit:contain;" />
+                            }
                         </div>
                     </div>
                 }

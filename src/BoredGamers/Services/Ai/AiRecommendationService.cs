@@ -1,61 +1,216 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using BoredGamers.Data;
+using BoredGamers.Models;
+using BoredGamers.Services.Bgg;
+using BoredGamers.Services.Games;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoredGamers.Services.Ai;
 
 public interface IAiRecommendationService
 {
-    Task<IReadOnlyList<string>> GetRecommendationsAsync(
-        IEnumerable<string> ownedGameNames,
+    // Pulls owned games for the user, builds a rich prompt with collection
+    // context, and resolves Claude's response to a list of local Game entities
+    // (with on-demand BGG promotion for misses).
+    Task<IReadOnlyList<Game>> GetRecommendationsAsync(
+        string userId,
         CancellationToken ct = default);
 }
 
-// Builds the prompts, calls the AI, and parses the response into a flat list of
-// recommended game names. Returns just the names — the controller is responsible
-// for looking each one up in the local Games table to render full cards.
-//
-// Depends on IAiClient (not the SDK directly) so unit tests can substitute a
-// mock that returns canned responses.
 public class AiRecommendationService : IAiRecommendationService
 {
-    // Instructions for Claude. We ask for a strict newline-separated list with
-    // nothing else so the parser can stay simple.
+    private const int MaxOwnedGamesInPrompt = 10;
+    private const int DescriptionMaxChars = 700;
+    private const int MaxBggPromotions = 3;
+    private const int BggCallTimeoutSeconds = 10;
+
     private const string SystemPrompt =
-        "You are a board game recommendation assistant. Given a list of board games " +
-        "a user owns, recommend similar board games they might enjoy. " +
+        "You are a board game recommendation assistant. The user owns the board " +
+        "games listed below; for each game, the player count, play time, and a " +
+        "short description are included. Use the player counts, play times, and " +
+        "especially the descriptions to identify the themes, group sizes, and session lengths " +
+        "the user enjoys, and recommend similar board games. " +
+        "If they own a game from a certain franchise, " +
+        "that is a sign to recommend other games from that franchise." +
+        "If they own games in a sci fi setting, reccommend other sci fi games." +
+        "You may use any knowledge about boardgames listed on https://boardgamegeek.com/ to inform your choices." +
         "Respond with ONLY a list of game names, one per line. " +
-        "No numbering, no bullet points, no introduction, no explanation, just game names " +
-        "separated by newlines. Recommend up to 8 games.";
+        "No numbering, no bullet points, no introduction, no explanation, just " +
+        "game names separated by newlines. Recommend up to 8 games.";
 
     private readonly IAiClient _aiClient;
+    private readonly ApplicationDbContext _db;
+    private readonly IBggClient _bgg;
+    private readonly IGameService _games;
 
-    public AiRecommendationService(IAiClient aiClient)
+    public AiRecommendationService(
+        IAiClient aiClient,
+        ApplicationDbContext db,
+        IBggClient bgg,
+        IGameService games)
     {
         _aiClient = aiClient;
+        _db = db;
+        _bgg = bgg;
+        _games = games;
     }
 
-    public async Task<IReadOnlyList<string>> GetRecommendationsAsync(
-        IEnumerable<string> ownedGameNames,
+    public async Task<IReadOnlyList<Game>> GetRecommendationsAsync(
+        string userId,
         CancellationToken ct = default)
     {
-        var userPrompt = BuildUserPrompt(ownedGameNames);
+        // Pull the top-N most recent owned games for the prompt context.
+        var ownedForPrompt = await _db.UserGameCollections
+            .AsNoTracking()
+            .Where(c => c.UserId == userId && c.Status == CollectionStatus.Owned)
+            .OrderByDescending(c => c.DateAdded)
+            .Take(MaxOwnedGamesInPrompt)
+            .Include(c => c.Game)
+            .Select(c => c.Game)
+            .ToListAsync(ct);
+
+        if (ownedForPrompt.Count == 0)
+            return Array.Empty<Game>();
+
+        var userPrompt = BuildUserPrompt(ownedForPrompt);
         var response = await _aiClient.GetCompletionAsync(SystemPrompt, userPrompt, ct);
-        return ParseResponse(response);
+        var recommendedNames = ParseResponse(response);
+
+        if (recommendedNames.Count == 0)
+            return Array.Empty<Game>();
+
+        // Pull the FULL set of owned GameIds (not just top 10) — used to
+        // exclude games the user already owns from the result.
+        var ownedGameIds = (await _db.UserGameCollections
+            .AsNoTracking()
+            .Where(c => c.UserId == userId && c.Status == CollectionStatus.Owned)
+            .Select(c => c.GameId)
+            .ToListAsync(ct))
+            .ToHashSet();
+
+        // Match recommended names against local Games. SQL Server default
+        // collation is case-insensitive; the dictionary lookup below also
+        // uses OrdinalIgnoreCase so light case differences from BGG don't
+        // cause false misses.
+        var localMatches = await _db.Games
+            .AsNoTracking()
+            .Where(g => recommendedNames.Contains(g.Name))
+            .ToListAsync(ct);
+
+        var byName = localMatches.ToDictionary(g => g.Name, StringComparer.OrdinalIgnoreCase);
+
+        // Identify unmatched names, capped at MaxBggPromotions, preserving
+        // their original positions in Claude's response so order survives.
+        var unmatched = new List<(int index, string name)>();
+        for (int i = 0; i < recommendedNames.Count; i++)
+        {
+            if (!byName.ContainsKey(recommendedNames[i]))
+            {
+                unmatched.Add((i, recommendedNames[i]));
+                if (unmatched.Count >= MaxBggPromotions) break;
+            }
+        }
+
+        var promotedByIndex = new Dictionary<int, Game>();
+        if (unmatched.Count > 0)
+        {
+            var promoteTasks = unmatched.Select(u => TryPromoteOneAsync(u.name, ct)).ToArray();
+            var promoted = await Task.WhenAll(promoteTasks);
+            for (int i = 0; i < promoted.Length; i++)
+            {
+                if (promoted[i] != null)
+                    promotedByIndex[unmatched[i].index] = promoted[i]!;
+            }
+        }
+
+        // Build the final ordered, deduped, owned-filtered result.
+        var seen = new HashSet<int>();
+        var result = new List<Game>();
+        for (int i = 0; i < recommendedNames.Count; i++)
+        {
+            Game? candidate = null;
+            if (byName.TryGetValue(recommendedNames[i], out var localGame))
+                candidate = localGame;
+            else if (promotedByIndex.TryGetValue(i, out var promotedGame))
+                candidate = promotedGame;
+
+            if (candidate != null
+                && !ownedGameIds.Contains(candidate.Id)
+                && seen.Add(candidate.Id))
+            {
+                result.Add(candidate);
+            }
+        }
+
+        return result;
     }
 
-    private static string BuildUserPrompt(IEnumerable<string> ownedGameNames)
+    private async Task<Game?> TryPromoteOneAsync(string name, CancellationToken ct)
     {
-        var names = string.Join("\n", ownedGameNames);
-        return $"The user owns these board games:\n{names}\n\nRecommend similar board games.";
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(BggCallTimeoutSeconds));
+        try
+        {
+            var hits = await _bgg.SearchGamesAsync(name, 1, timeoutCts.Token);
+            var hit = hits.FirstOrDefault();
+            if (hit == null) return null;
+            return await _games.SaveGameFromBggAsync(hit.BggGameId);
+        }
+        catch
+        {
+            // Timeout, network error, BGG miss, EF/SQL race — drop silently.
+            return null;
+        }
     }
 
-    // Defensive parsing: split on newlines, trim each line, drop blanks. If
-    // Claude prepends "Here are some recommendations:" or similar despite the
-    // system prompt, those non-name lines just won't match anything in the
-    // local Games table and will be silently dropped at the controller layer.
+    private static string BuildUserPrompt(IEnumerable<Game> ownedGames)
+    {
+        var sb = new StringBuilder("The user owns these board games:\n");
+        foreach (var game in ownedGames)
+        {
+            sb.AppendLine(FormatGame(game));
+        }
+        sb.AppendLine();
+        sb.AppendLine("Recommend similar board games.");
+        return sb.ToString();
+    }
+
+    private static string FormatGame(Game game)
+    {
+        var sb = new StringBuilder("- ").Append(game.Name);
+
+        var hasPlayerCount = game.MinPlayers.HasValue && game.MaxPlayers.HasValue;
+        var hasPlayTime = game.PlayTime.HasValue;
+
+        if (hasPlayerCount || hasPlayTime)
+        {
+            sb.Append(" (");
+            if (hasPlayerCount)
+            {
+                sb.Append(game.MinPlayers!.Value).Append('-').Append(game.MaxPlayers!.Value).Append(" players");
+                if (hasPlayTime) sb.Append(", ");
+            }
+            if (hasPlayTime)
+            {
+                sb.Append(game.PlayTime!.Value).Append(" min");
+            }
+            sb.Append(')');
+        }
+
+        if (!string.IsNullOrWhiteSpace(game.Description))
+        {
+            var truncated = DescriptionTruncator.Truncate(game.Description, DescriptionMaxChars);
+            sb.Append(": ").Append(truncated);
+        }
+
+        return sb.ToString();
+    }
+
     private static IReadOnlyList<string> ParseResponse(string response)
     {
         if (string.IsNullOrWhiteSpace(response))

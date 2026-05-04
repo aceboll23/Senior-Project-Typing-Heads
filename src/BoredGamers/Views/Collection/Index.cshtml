@@ -1,6 +1,7 @@
-@model List<BoredGamers.Models.Game>
+@model List<BoredGamers.Models.ViewModels.CollectionItemViewModel>
 
 @using BoredGamers.Models
+@using BoredGamers.Models.ViewModels
 @using BoredGamers.Services.Ai
 
 @{
@@ -32,8 +33,9 @@
         else
         {
             <div class="row g-4">
-                @foreach (var g in Model)
+                @foreach (var item in Model)
                 {
+                    var g = item.Game;
                     var image = !string.IsNullOrWhiteSpace(g.ImageUrl)
                         ? g.ImageUrl
                         : !string.IsNullOrWhiteSpace(g.ThumbnailUrl)
@@ -53,6 +55,13 @@
                                     <div class="card-body">
                                         <h5 class="card-title mb-2">@g.Name</h5>
 
+                                        @if (item.IsAvailableForTrade)
+                                        {
+                                            <span id="trade-badge-@g.Id" class="badge bg-success mb-2">
+                                                <i class="bi bi-arrow-left-right me-1"></i>Available for Trade
+                                            </span>
+                                        }
+
                                         <div class="text-muted small mb-2">
                                             @(g.BggNumVoters.HasValue ? $"{g.BggNumVoters.Value:N0} BGG voters" : "—")
                                             |
@@ -71,7 +80,28 @@
                                 </div>
                             </a>
 
-                            <form asp-controller="Collection" asp-action="RemoveFromCollection" method="post" class="mt-2"
+                            <form asp-controller="Collection" asp-action="ToggleTrade" method="post" class="mt-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="gameId" value="@g.Id" />
+                                @if (item.IsAvailableForTrade)
+                                {
+                                    <button type="submit"
+                                            id="remove-trade-btn-@g.Id"
+                                            class="btn btn-outline-warning btn-sm w-100">
+                                        <i class="bi bi-x-circle me-1"></i>Remove from Trade
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit"
+                                            id="mark-trade-btn-@g.Id"
+                                            class="btn btn-outline-success btn-sm w-100">
+                                        <i class="bi bi-arrow-left-right me-1"></i>Mark as Trade
+                                    </button>
+                                }
+                            </form>
+
+                            <form asp-controller="Collection" asp-action="RemoveFromCollection" method="post" class="mt-1"
                                   onsubmit="return confirm('Are you sure you want to remove this game from your collection?');">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="gameId" value="@g.Id" />

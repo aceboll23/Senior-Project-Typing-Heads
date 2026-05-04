@@ -15,6 +15,7 @@ using BoredGamers.Models;
 using BoredGamers.Services;
 using BoredGamers.Services.Bdd;
 using BoredGamers.Hubs;
+using BoredGamers.Services.ContentModeration;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -36,9 +37,12 @@ builder.Services.AddScoped<BddFriendCollectionTestDataService>();
 builder.Services.AddScoped<BddBlockTestDataService>();
 builder.Services.AddScoped<BddChatTestDataService>();
 builder.Services.AddScoped<BddProfilePictureTestDataService>();
+builder.Services.AddScoped<BddTradeTestDataService>();
+builder.Services.AddScoped<BddViewTradesTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
+
 
 //
 //Database
@@ -109,6 +113,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<IAiClient, AnthropicAiClient>();
 builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
 
+// Content moderation
+builder.Services.AddHttpClient<IContentModerationService, OpenAiModerationService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -126,6 +133,20 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
+
+// When Uploads:BasePath is configured (e.g. /home/uploads on Azure), serve uploaded
+// files from that persistent directory at the /uploads URL path.
+var uploadsBasePath = app.Configuration["Uploads:BasePath"];
+if (!string.IsNullOrWhiteSpace(uploadsBasePath))
+{
+    Directory.CreateDirectory(Path.Combine(uploadsBasePath, "avatars"));
+    Directory.CreateDirectory(Path.Combine(uploadsBasePath, "posts"));
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsBasePath),
+        RequestPath = "/uploads"
+    });
+}
 app.MapStaticAssets();
 
 app.MapControllerRoute(
@@ -407,6 +428,45 @@ if (app.Environment.IsDevelopment())
         {
             result.Username,
             result.Password
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-trade-data", async (BddTradeTestDataService svc) =>
+    {
+        var result = await svc.ResetWithGameAsync();
+        return Results.Ok(new
+        {
+            result.OwnerUsername,
+            result.OwnerPassword,
+            result.GameId,
+            result.GameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-trade-data-pretraded", async (BddTradeTestDataService svc) =>
+    {
+        var result = await svc.ResetWithTradedGameAsync();
+        return Results.Ok(new
+        {
+            result.OwnerUsername,
+            result.OwnerPassword,
+            result.GameId,
+            result.GameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-view-trades-data", async (BddViewTradesTestDataService svc) =>
+    {
+        var result = await svc.ResetAndSeedAsync();
+        return Results.Ok(new
+        {
+            result.ViewerUsername,
+            result.ViewerPassword,
+            result.FriendWithTradesUsername,
+            result.FriendNoTradesUsername,
+            result.StrangerUsername,
+            result.TradeGameName,
+            result.NonTradeGameName
         });
     });
 

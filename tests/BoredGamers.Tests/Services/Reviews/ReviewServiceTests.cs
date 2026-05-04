@@ -5,12 +5,21 @@ using NUnit.Framework;
 using BoredGamers.Data;      // adjust if needed
 using BoredGamers.Models;    // adjust if needed
 using BoredGamers.Services;  // adjust if needed
+using BoredGamers.Services.ContentModeration;
+using Moq;
 
 namespace BoredGamers.Tests.Services
 {
   [TestFixture]
   public class ReviewServiceTests
   {
+    private static IContentModerationService CreatePassThroughModeration()
+    {
+        var mock = new Mock<IContentModerationService>();
+        mock.Setup(m => m.CheckContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ModerationResult { IsFlagged = false });
+        return mock.Object;
+    }
     private ApplicationDbContext NewDb(string dbName)
     {
       var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -28,7 +37,7 @@ namespace BoredGamers.Tests.Services
       db.Games.Add(new Game { Id = 1, Name = "Catan" });
       await db.SaveChangesAsync();
 
-      var sut = new ReviewService(db);
+      var sut = new ReviewService(db, CreatePassThroughModeration());
       var userId = "user-1";
 
       var result = await sut.CreateReviewAsync(userId, 1, 8, "Great game.");
@@ -52,7 +61,7 @@ namespace BoredGamers.Tests.Services
       db.Games.Add(new Game { Id = 1, Name = "Catan" });
       await db.SaveChangesAsync();
 
-      var sut = new ReviewService(db);
+      var sut = new ReviewService(db, CreatePassThroughModeration());
 
       var result = await sut.CreateReviewAsync("user-1", 1, rating, "Text");
 
@@ -69,7 +78,7 @@ namespace BoredGamers.Tests.Services
       db.Games.Add(new Game { Id = 1, Name = "Catan" });
       await db.SaveChangesAsync();
 
-      var sut = new ReviewService(db);
+      var sut = new ReviewService(db, CreatePassThroughModeration());
 
       var result = await sut.CreateReviewAsync("user-1", 1, 7, text);
 
@@ -95,7 +104,7 @@ namespace BoredGamers.Tests.Services
 
       await db.SaveChangesAsync();
 
-      var sut = new ReviewService(db);
+      var sut = new ReviewService(db, CreatePassThroughModeration());
 
       var result = await sut.CreateReviewAsync("user-1", 1, 8, "Second attempt");
 
@@ -108,7 +117,7 @@ namespace BoredGamers.Tests.Services
     {
       var db = NewDb(Guid.NewGuid().ToString());
 
-      var sut = new ReviewService(db);
+      var sut = new ReviewService(db, CreatePassThroughModeration());
 
       var result = await sut.CreateReviewAsync("user-1", 999, 7, "Text");
 
@@ -134,7 +143,7 @@ namespace BoredGamers.Tests.Services
 
       await db.SaveChangesAsync();
 
-      var sut = new ReviewService(db);
+      var sut = new ReviewService(db, CreatePassThroughModeration());
       
       var result = await sut.EditReviewAsync(1, "user-1", 9, "Updated review text");
 
@@ -166,7 +175,7 @@ namespace BoredGamers.Tests.Services
 
       await db.SaveChangesAsync();
 
-      var sut = new ReviewService(db);
+      var sut = new ReviewService(db, CreatePassThroughModeration());
       
       var result = await sut.EditReviewAsync(1, "user-2", 9, "Hacked edit");
 
@@ -192,7 +201,7 @@ namespace BoredGamers.Tests.Services
 
       await db.SaveChangesAsync();
 
-      var sut = new ReviewService(db);
+      var sut = new ReviewService(db, CreatePassThroughModeration());
 
       var result = await sut.DeleteReviewAsync(1, "user-1");
 
@@ -220,7 +229,7 @@ namespace BoredGamers.Tests.Services
 
       await db.SaveChangesAsync();
 
-      var sut = new ReviewService (db);
+      var sut = new ReviewService (db, CreatePassThroughModeration());
 
       var result = await sut.DeleteReviewAsync(1, "user-2");
 
@@ -247,7 +256,7 @@ namespace BoredGamers.Tests.Services
 
       await db.SaveChangesAsync();
 
-      var sut = new ReviewService(db);
+      var sut = new ReviewService(db, CreatePassThroughModeration());
 
       var average = await sut.GetAverageUserRatingAsync(1);
 
@@ -266,7 +275,7 @@ namespace BoredGamers.Tests.Services
         new Review { ReviewId = 3, Rating = 6, CreatedAt = DateTime.UtcNow }
       };
 
-      var sut = new ReviewService(NewDb(Guid.NewGuid().ToString()));
+      var sut = new ReviewService(NewDb(Guid.NewGuid().ToString()), CreatePassThroughModeration());
 
       var sorted = sut.SortReviews(reviews, "rating-desc");
       var ratings = sorted.Select(r => r.Rating).ToList();
@@ -284,7 +293,7 @@ namespace BoredGamers.Tests.Services
         new Review { ReviewId = 3, Rating = 6, CreatedAt = DateTime.UtcNow }
       };
 
-      var sut = new ReviewService(NewDb(Guid.NewGuid().ToString()));
+      var sut = new ReviewService(NewDb(Guid.NewGuid().ToString()), CreatePassThroughModeration());
 
       var sorted = sut.SortReviews(reviews, "rating-asc");
       var ratings = sorted.Select(r => r.Rating).ToList();

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Linq;
 using BoredGamers.Models;
+using BoredGamers.Models.ViewModels;
 
 namespace BoredGamers.Controllers
 {
@@ -76,6 +77,17 @@ namespace BoredGamers.Controllers
       return RedirectToAction("Index");
     }
 
+    [HttpPost("toggle-trade")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleTrade(int gameId, CancellationToken ct)
+    {
+      var userId = GetUserId();
+      var result = await _collections.ToggleTradeStatusAsync(userId, gameId, ct);
+      if (result == null)
+        return Forbid();
+      return RedirectToAction("Index");
+    }
+
     [HttpPost("remove-from-collection")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemoveFromCollection(int gameId, CancellationToken ct)
@@ -105,31 +117,24 @@ namespace BoredGamers.Controllers
       if (!AiAccessPolicy.IsAllowed(currentUser.UserName))
         return Forbid();
 
-      var ownedGameNames = await _db.UserGameCollections
-          .Where(c => c.UserId == currentUser.Id && c.Status == CollectionStatus.Owned)
-          .Include(c => c.Game)
-          .Select(c => c.Game.Name)
-          .ToListAsync(ct);
+      var hasOwnedGames = await _db.UserGameCollections
+          .AnyAsync(c => c.UserId == currentUser.Id && c.Status == CollectionStatus.Owned, ct);
 
-      if (ownedGameNames.Count == 0)
+      if (!hasOwnedGames)
       {
         return Ok(new { message = "Add some games to your collection first to get personalized AI recommendations." });
       }
 
-      var recommendedNames = await _aiRecommendations.GetRecommendationsAsync(ownedGameNames, ct);
+      var games = await _aiRecommendations.GetRecommendationsAsync(currentUser.Id, ct);
 
-      if (recommendedNames.Count == 0)
+      if (games.Count == 0)
       {
         return Ok(new { message = "The AI didn't return any recommendations this time. Please try again." });
       }
 
-      // Match recommended names against the local Games table. Default SQL Server
-      // collation is case-insensitive, so a simple Contains lookup is enough for
-      // the minimal version. Recommendations Claude makes that aren't in our
-      // library are silently dropped here.
-      var matchedGames = await _db.Games
-          .Where(g => recommendedNames.Contains(g.Name))
-          .Select(g => new
+      return Ok(new
+      {
+          games = games.Select(g => new
           {
               g.Id,
               g.Name,
@@ -139,14 +144,7 @@ namespace BoredGamers.Controllers
               g.YearPublished,
               g.AverageRating
           })
-          .ToListAsync(ct);
-
-      if (matchedGames.Count == 0)
-      {
-        return Ok(new { message = "The AI suggested games we don't have in our library yet. Try again — you may get a different set." });
-      }
-
-      return Ok(new { games = matchedGames });
+      });
     }
 
     [HttpGet("")]
@@ -159,36 +157,47 @@ namespace BoredGamers.Controllers
       const int pageSize = 20;
       if (page < 1) page = 1;
 
-      var ownedQuery = _db.UserGameCollections
+      var ownedBaseQuery = _db.UserGameCollections
           .AsNoTracking()
-          .Where(c => c.UserId == userId && c.Status == CollectionStatus.Owned)
+          .Where(c => c.UserId == userId && c.Status == CollectionStatus.Owned);
+
+      var totalCount = await ownedBaseQuery.CountAsync(ct);
+      var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+      var ownedItems = await ownedBaseQuery
           .Include(c => c.Game)
           .OrderByDescending(c => c.DateAdded)
-          .Select(c => c.Game);
+          .Skip((page - 1) * pageSize)
+          .Take(pageSize)
+          .Select(c => new CollectionItemViewModel { Game = c.Game, IsAvailableForTrade = c.IsAvailableForTrade })
+          .ToListAsync(ct);
 
-      var wishlistQuery = _db.UserGameCollections
+      var wishlistGames = await _db.UserGameCollections
           .AsNoTracking()
           .Where(c => c.UserId == userId && c.Status == CollectionStatus.Wishlist)
           .Include(c => c.Game)
           .OrderByDescending(c => c.DateAdded)
-          .Select(c => c.Game);
-
-      var totalCount = await ownedQuery.CountAsync(ct);
-      var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-
-      var ownedGames = await ownedQuery
-          .Skip((page - 1) * pageSize)
-          .Take(pageSize)
+          .Select(c => c.Game)
           .ToListAsync(ct);
-
-      var wishlistGames = await wishlistQuery.ToListAsync(ct);
 
       ViewData["Page"] = page;
       ViewData["TotalPages"] = totalPages;
       ViewData["TotalCount"] = totalCount;
       ViewData["WishlistGames"] = wishlistGames;
 
-      return View(ownedGames);
+      return View(ownedItems);
+    }
+
+    [HttpGet("trades/{username}")]
+    public async Task<IActionResult> FriendTrades(string username, CancellationToken ct)
+    {
+      var viewerUserId = GetUserId();
+      var games = await _collections.GetFriendTradeableGamesAsync(viewerUserId, username, ct);
+      if (games == null)
+        return Forbid();
+
+      ViewData["FriendUsername"] = username;
+      return View(games);
     }
 
     [HttpGet("{username}")]

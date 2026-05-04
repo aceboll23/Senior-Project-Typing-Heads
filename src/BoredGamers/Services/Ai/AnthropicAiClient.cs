@@ -13,7 +13,7 @@ namespace BoredGamers.Services.Ai;
 // response parsing) are isolated here so the rest of the app stays SDK-agnostic.
 public class AnthropicAiClient : IAiClient
 {
-    private const string Model = "claude-haiku-4-5-20251001";
+    private const string Model = "claude-sonnet-4-6";
     private const int MaxTokens = 1024;
 
     private readonly AnthropicClient? _client;
