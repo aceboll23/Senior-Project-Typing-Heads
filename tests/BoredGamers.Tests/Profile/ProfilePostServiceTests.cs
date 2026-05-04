@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
+using BoredGamers.Services.ContentModeration;
 
 namespace BoredGamers.Tests.Profile;
 
@@ -23,6 +24,14 @@ public class ProfilePostServiceTests
     private UserProfile _ownerProfile = null!;
 
     private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+
+    private static IContentModerationService CreatePassThroughModeration()
+    {
+        var mock = new Mock<IContentModerationService>();
+        mock.Setup(m => m.CheckContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ModerationResult { IsFlagged = false });
+        return mock.Object;
+    }
 
     private static async Task<ApplicationDbContext> CreateSqliteInMemoryDbAsync()
     {
@@ -47,7 +56,7 @@ public class ProfilePostServiceTests
         var mockConfig = new Mock<IConfiguration>();
         mockConfig.Setup(c => c["Uploads:BasePath"]).Returns((string?)null);
 
-        _service = new ProfilePostService(_db, _mockEnv.Object, mockConfig.Object);
+        _service = new ProfilePostService(_db, _mockEnv.Object, mockConfig.Object, CreatePassThroughModeration());
 
         _owner = new User
         {

@@ -20,4 +20,6 @@ public class BddSeedDataContext
   public string VotingCreatorPassword { get; set; } = "";
   public string VotingMemberUsername { get; set; } = "";
   public string VotingMemberPassword { get; set; } = "";
+  public string ModerationUsername { get; set; } = "";
+  public string ModerationPassword { get; set; } = "";
 }
