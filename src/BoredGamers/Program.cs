@@ -115,7 +115,15 @@ builder.Services.AddSingleton<IAiClient, AnthropicAiClient>();
 builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
 
 // Content moderation
-builder.Services.AddHttpClient<IContentModerationService, OpenAiModerationService>();
+// Use the fake moderation service in BDD/test mode so tests don't depend on a live API
+if (builder.Configuration.GetValue<bool>("UseBddDatabase"))
+{
+    builder.Services.AddScoped<IContentModerationService, FakeContentModerationService>();
+}
+else
+{
+    builder.Services.AddHttpClient<IContentModerationService, OpenAiModerationService>();
+}
 
 var app = builder.Build();
 

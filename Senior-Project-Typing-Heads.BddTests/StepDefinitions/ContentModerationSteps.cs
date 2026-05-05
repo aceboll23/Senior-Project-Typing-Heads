@@ -12,7 +12,7 @@ public class ContentModerationSteps
     private readonly WebDriverContext _webDriverContext;
 
     private const string CleanContent = "Just had an amazing game night with my friends!";
-    private const string InappropriateContent = "I want to kill everyone here, they are all worthless garbage";
+    private const string InappropriateContent = "BDD_FLAG_THIS test message that should be blocked";
 
     public ContentModerationSteps(WebDriverContext webDriverContext)
     {
