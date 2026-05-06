@@ -70,6 +70,7 @@ jobs:
           ASPNETCORE_URLS: http://localhost:5144
           ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=BoredGamersCI;User Id=SA;Password=Passw0rd_Bdd;TrustServerCertificate=True;"
           ConnectionStrings__BddConnection: "Server=localhost,1433;Database=BoredGamersCI;User Id=SA;Password=Passw0rd_Bdd;TrustServerCertificate=True;"
+          OpenAi__ApiKey: ${{ secrets.OPENAI_API_KEY }}
         run: dotnet run --project src/BoredGamers/BoredGamers.csproj --no-build -c Release &
 
       - name: Wait for app to be ready
