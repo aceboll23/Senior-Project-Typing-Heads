@@ -40,6 +40,7 @@ builder.Services.AddScoped<BddChatTestDataService>();
 builder.Services.AddScoped<BddProfilePictureTestDataService>();
 builder.Services.AddScoped<BddTradeTestDataService>();
 builder.Services.AddScoped<BddViewTradesTestDataService>();
+builder.Services.AddScoped<BddAllFriendTradesTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
@@ -474,6 +475,22 @@ if (app.Environment.IsDevelopment())
             result.StrangerUsername,
             result.TradeGameName,
             result.NonTradeGameName
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-all-friend-trades-data", async (BddAllFriendTradesTestDataService svc) =>
+    {
+        var result = await svc.ResetAndSeedAsync();
+        return Results.Ok(new
+        {
+            result.ViewerUsername,
+            result.ViewerPassword,
+            result.Friend1Username,
+            result.Friend2Username,
+            result.Friend1TradeGameName,
+            result.Friend2TradeGameName,
+            result.NoTradeGameName,
+            result.StrangerUsername
         });
     });
 
