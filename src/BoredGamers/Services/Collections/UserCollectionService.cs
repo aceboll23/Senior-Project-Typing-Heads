@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BoredGamers.Data;
 using BoredGamers.Models;
+using BoredGamers.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoredGamers.Services.Collections
@@ -19,6 +20,8 @@ namespace BoredGamers.Services.Collections
         Task<bool?> ToggleTradeStatusAsync(string userId, int gameId, CancellationToken ct = default);
         // Returns null when viewer is not friends with the owner (or owner not found); empty list when no tradeable games
         Task<List<Game>?> GetFriendTradeableGamesAsync(string viewerUserId, string ownerUsername, CancellationToken ct = default);
+        // Returns all tradeable games from all accepted friends, sorted by most recently added, paginated
+        Task<(List<FriendTradeItem> Items, int TotalCount)> GetAllFriendsTradeableGamesAsync(string viewerUserId, int page, int pageSize, CancellationToken ct = default);
     }
 
     public class UserCollectionService : IUserCollectionService
@@ -177,6 +180,83 @@ namespace BoredGamers.Services.Collections
                 .OrderBy(c => c.Game.Name)
                 .Select(c => c.Game)
                 .ToListAsync(ct);
+        }
+
+        public async Task<(List<FriendTradeItem> Items, int TotalCount)> GetAllFriendsTradeableGamesAsync(
+            string viewerUserId, int page, int pageSize, CancellationToken ct = default)
+        {
+            var viewerProfile = await _db.Set<UserProfile>()
+                .FirstOrDefaultAsync(p => p.UserId == viewerUserId, ct);
+            if (viewerProfile == null)
+                return (new List<FriendTradeItem>(), 0);
+
+            var friendProfileIdsAsRequester = await _db.Set<Friendship>()
+                .Where(f => f.Status == FriendshipStatus.Accepted && f.RequesterProfileId == viewerProfile.Id)
+                .Select(f => f.ReceiverProfileId)
+                .ToListAsync(ct);
+
+            var friendProfileIdsAsReceiver = await _db.Set<Friendship>()
+                .Where(f => f.Status == FriendshipStatus.Accepted && f.ReceiverProfileId == viewerProfile.Id)
+                .Select(f => f.RequesterProfileId)
+                .ToListAsync(ct);
+
+            var friendProfileIds = friendProfileIdsAsRequester.Concat(friendProfileIdsAsReceiver).ToList();
+            if (!friendProfileIds.Any())
+                return (new List<FriendTradeItem>(), 0);
+
+            var blockedByMe = await _db.Set<BlockedUser>()
+                .Where(b => b.BlockerProfileId == viewerProfile.Id)
+                .Select(b => b.BlockedProfileId)
+                .ToListAsync(ct);
+
+            var blockedMe = await _db.Set<BlockedUser>()
+                .Where(b => b.BlockedProfileId == viewerProfile.Id)
+                .Select(b => b.BlockerProfileId)
+                .ToListAsync(ct);
+
+            var blockedProfileIds = blockedByMe.Concat(blockedMe).ToHashSet();
+            var activeFriendProfileIds = friendProfileIds.Where(id => !blockedProfileIds.Contains(id)).ToList();
+            if (!activeFriendProfileIds.Any())
+                return (new List<FriendTradeItem>(), 0);
+
+            var friendProfiles = await _db.Set<UserProfile>()
+                .Where(p => activeFriendProfileIds.Contains(p.Id))
+                .Select(p => new { p.Id, p.UserId })
+                .ToListAsync(ct);
+
+            var friendUserIds = friendProfiles.Select(p => p.UserId).ToList();
+
+            var friendUsers = await _db.Set<User>()
+                .Where(u => friendUserIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.UserName })
+                .ToListAsync(ct);
+            var usernameLookup = friendUsers.ToDictionary(u => u.Id, u => u.UserName ?? "");
+
+            var baseQuery = _db.UserGameCollections
+                .Where(c => friendUserIds.Contains(c.UserId) &&
+                            c.Status == CollectionStatus.Owned &&
+                            c.IsAvailableForTrade);
+
+            var totalCount = await baseQuery.CountAsync(ct);
+
+            var rows = await baseQuery
+                .AsNoTracking()
+                .Include(c => c.Game)
+                .OrderByDescending(c => c.DateAdded)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(c => new { c.Game, c.UserId, c.DateAdded })
+                .ToListAsync(ct);
+
+            var items = rows.Select(r => new FriendTradeItem
+            {
+                Game = r.Game,
+                OwnerUserId = r.UserId,
+                OwnerUsername = usernameLookup.GetValueOrDefault(r.UserId, ""),
+                DateAdded = r.DateAdded
+            }).ToList();
+
+            return (items, totalCount);
         }
     }
 }
