@@ -188,6 +188,23 @@ namespace BoredGamers.Controllers
       return View(ownedItems);
     }
 
+    [HttpGet("all-friend-trades")]
+    public async Task<IActionResult> AllFriendTrades(int page = 1, CancellationToken ct = default)
+    {
+      const int pageSize = 20;
+      if (page < 1) page = 1;
+
+      var viewerUserId = GetUserId();
+      var (items, totalCount) = await _collections.GetAllFriendsTradeableGamesAsync(viewerUserId, page, pageSize, ct);
+
+      var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+      ViewData["Page"] = page;
+      ViewData["TotalPages"] = totalPages;
+      ViewData["TotalCount"] = totalCount;
+
+      return View(items);
+    }
+
     [HttpGet("trades/{username}")]
     public async Task<IActionResult> FriendTrades(string username, CancellationToken ct)
     {
