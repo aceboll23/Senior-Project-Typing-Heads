@@ -9,6 +9,7 @@ using BoredGamers.Services.Block;
 using BoredGamers.Services.ProfilePicture;
 using BoredGamers.Services.SocialFeed;
 using BoredGamers.Services.Ai;
+using BoredGamers.Services.Flags;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
@@ -114,6 +115,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 //AI services (TYP-228)
 builder.Services.AddSingleton<IAiClient, AnthropicAiClient>();
 builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
+
+// Post flagging (TYP-242)
+builder.Services.AddScoped<IPostFlagService, PostFlagService>();
 
 // Content moderation
 // Use the fake moderation service in BDD/test mode so tests don't depend on a live API
