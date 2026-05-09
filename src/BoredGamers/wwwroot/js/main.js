@@ -8,6 +8,7 @@ $(document).ready(function () {
     initDemoLogin();
     initNavbarScroll();
     initSearchResults();
+    initReportPost();
 });
 
 /* ============================================================================
@@ -225,6 +226,43 @@ function initSearchResults() {
             .fail(function () {
                 alert('Unable to import that game right now. Please try again.');
             });
+    });
+}
+
+/* ============================================================================
+   Report Post
+   Flag post for inappropriate content (TYP-242)
+   ============================================================================ */
+
+function initReportPost() {
+    $(document).on('click', '.report-post-btn', function () {
+        if (!confirm('Report this post for inappropriate content?')) return;
+
+        var $btn = $(this);
+        var postId = $btn.data('post-id');
+        var token = $('input[name="__RequestVerificationToken"]').first().val();
+
+        $btn.prop('disabled', true);
+
+        $.ajax({
+            url: '/profile-post/' + postId + '/flag',
+            type: 'POST',
+            data: { __RequestVerificationToken: token },
+            dataType: 'json',
+            success: function (response) {
+                if (response.success) {
+                    $btn.removeClass('btn-outline-secondary').addClass('btn-secondary');
+                    $btn.html('<i class="bi bi-flag-fill me-1"></i>Reported');
+                } else {
+                    alert(response.message || 'Unable to report this post.');
+                    $btn.prop('disabled', false);
+                }
+            },
+            error: function () {
+                alert('Something went wrong. Please try again.');
+                $btn.prop('disabled', false);
+            }
+        });
     });
 }
 
