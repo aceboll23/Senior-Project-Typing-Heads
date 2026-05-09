@@ -318,10 +318,45 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
         <script>
             (function () {
-                const connection = new signalR.HubConnectionBuilder()
-                    .withUrl("/hubs/user-notifications")
-                    .withAutomaticReconnect()
-                    .build();
+                let lastMessageCount = 0;
+                let lastNotificationCount = 0;
+                let audioWarmedUp = false;
+
+                // Read initial counts from existing badges so we don't play sound on page load
+                const initialMsgBadge = document.getElementById('unread-messages-badge');
+                const initialNotifBadge = document.getElementById('unread-notifications-badge');
+                lastMessageCount = initialMsgBadge ? parseInt(initialMsgBadge.textContent, 10) || 0 : 0;
+                lastNotificationCount = initialNotifBadge ? parseInt(initialNotifBadge.textContent, 10) || 0 : 0;
+
+                // Preload the notification sound
+                const notifSound = new Audio('/sounds/notif.wav');
+                notifSound.volume = 0.5;
+
+                // Browsers block audio until user interacts. Warm up on first click anywhere.
+                function warmUpAudio() {
+                    if (audioWarmedUp) return;
+                    audioWarmedUp = true;
+                    const original = notifSound.volume;
+                    notifSound.volume = 0;
+                    notifSound.play().then(() => {
+                        notifSound.pause();
+                        notifSound.currentTime = 0;
+                        notifSound.volume = original;
+                    }).catch(() => {
+                        notifSound.volume = original;
+                    });
+                    document.removeEventListener('click', warmUpAudio);
+                    document.removeEventListener('keydown', warmUpAudio);
+                }
+                document.addEventListener('click', warmUpAudio);
+                document.addEventListener('keydown', warmUpAudio); 
+
+                function playNotificationSound() {
+                    const enabled = localStorage.getItem('notificationSoundEnabled');
+                    if (enabled === 'false') return; // user opted out
+                    notifSound.currentTime = 0;
+                    notifSound.play().catch(() => { /* ignore — browser blocked or audio not loaded yet */ });
+                }
 
                 function updateBadge(linkId, badgeId, count) {
                     const link = document.getElementById(linkId);
@@ -342,12 +377,24 @@
                     }
                 }
 
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/hubs/user-notifications")
+                    .withAutomaticReconnect()
+                    .build();
+
                 connection.on("UnreadMessagesUpdated", function (count) {
-                    // Update both desktop and offcanvas if both are present
+                    if (count > lastMessageCount) {
+                        playNotificationSound();
+                    }
+                    lastMessageCount = count;
                     updateBadge('messages-icon-link', 'unread-messages-badge', count);
                 });
 
                 connection.on("UnreadNotificationsUpdated", function (count) {
+                    if (count > lastNotificationCount) {
+                        playNotificationSound();
+                    }
+                    lastNotificationCount = count;
                     updateBadge('notifications-icon-link', 'unread-notifications-badge', count);
                 });
 

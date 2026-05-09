@@ -52,6 +52,23 @@
 
                             <hr class="border-secondary my-4" />
 
+                            <div class="mb-3">
+                                <label class="form-label d-flex align-items-center justify-content-between">
+                                    <span>
+                                        <i class="bi bi-volume-up me-2"></i>Notification Sounds
+                                    </span>
+                                    <div class="form-check form-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="notificationSoundToggle" />
+                                        <label class="form-check-label visually-hidden" for="notificationSoundToggle">Enable notification sounds</label>
+                                    </div>
+                                </label>
+                                <div class="form-text text-muted">
+                                    Play a sound when new messages or friend requests arrive on this device.
+                                </div>
+                            </div>
+
+                            <hr class="border-secondary my-4" />
+
                             <div class="mb-4">
                                 <label asp-for="CurrentPassword" class="form-label">Current Password</label>
                                 <input asp-for="CurrentPassword" class="form-control"
@@ -94,4 +111,18 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        (function () {
+            const toggle = document.getElementById('notificationSoundToggle');
+            if (!toggle) return;
+
+            // Default to ON if not previously set
+            const stored = localStorage.getItem('notificationSoundEnabled');
+            toggle.checked = stored === null ? true : stored === 'true';
+
+            toggle.addEventListener('change', function () {
+                localStorage.setItem('notificationSoundEnabled', toggle.checked ? 'true' : 'false');
+            });
+        })();
+    </script>
 }
