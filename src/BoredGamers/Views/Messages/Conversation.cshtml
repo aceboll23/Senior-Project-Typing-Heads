@@ -152,6 +152,14 @@ $(document).ready(function () {
         $history.append(msgHtml);
         $history.scrollTop($history[0].scrollHeight);
     }
+    // Mark this conversation as actively viewed so the global notification sound
+    // doesn't play when messages from this user arrive
+    sessionStorage.setItem('activeConversation', recipientUsername);
+
+    // Clear it when the user leaves the page
+    window.addEventListener('beforeunload', function () {
+        sessionStorage.removeItem('activeConversation');
+    });
 
     // SignalR — real-time incoming messages
     const connection = new signalR.HubConnectionBuilder()

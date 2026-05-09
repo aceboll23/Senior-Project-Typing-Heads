@@ -353,9 +353,11 @@
 
                 function playNotificationSound() {
                     const enabled = localStorage.getItem('notificationSoundEnabled');
-                    if (enabled === 'false') return; // user opted out
+                    if (enabled === 'false') return;
                     notifSound.currentTime = 0;
-                    notifSound.play().catch(() => { /* ignore — browser blocked or audio not loaded yet */ });
+                    notifSound.play().catch(err => {
+                        console.log('Notification sound blocked:', err.message);
+                    });
                 }
 
                 function updateBadge(linkId, badgeId, count) {
@@ -384,10 +386,15 @@
 
                 connection.on("UnreadMessagesUpdated", function (count) {
                     if (count > lastMessageCount) {
+                    // Only play sound if user isn't actively in a conversation
+                    // (the conversation page handles its own real-time updates silently)
+                    const inConversation = !!sessionStorage.getItem('activeConversation');
+                    if (!inConversation) {
                         playNotificationSound();
                     }
-                    lastMessageCount = count;
-                    updateBadge('messages-icon-link', 'unread-messages-badge', count);
+                }
+                lastMessageCount = count;
+                updateBadge('messages-icon-link', 'unread-messages-badge', count);
                 });
 
                 connection.on("UnreadNotificationsUpdated", function (count) {
