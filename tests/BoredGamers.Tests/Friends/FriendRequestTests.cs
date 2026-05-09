@@ -11,6 +11,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using BoredGamers.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BoredGamers.Tests;
 
@@ -29,6 +31,16 @@ public class FriendRequestTests
     private User _deactivatedUser;
     private UserProfile _senderProfile;
     private UserProfile _recipientProfile;
+    private static IHubContext<UserNotificationHub> CreateMockUserHubContext()
+    {
+        var clientProxy = new Mock<IClientProxy>();
+        var clients = new Mock<IHubClients>();
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(clientProxy.Object);
+
+        var hubContext = new Mock<IHubContext<UserNotificationHub>>();
+        hubContext.Setup(h => h.Clients).Returns(clients.Object);
+        return hubContext.Object;
+    }
 
     [SetUp]
     public void SetUp()
@@ -40,19 +52,19 @@ public class FriendRequestTests
         var store = new Mock<IUserStore<User>>();
         _userManagerMock = new Mock<UserManager<User>>(
             store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-        
+
         SeedUsers();
 
-        // Mock GetUserAsync to return the sender by default
         _userManagerMock.Setup(m => m.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync(_sender);
-
         _userManagerMock.Setup(m => m.Users)
             .Returns(_db.Set<User>());
 
-        _controller = new FriendRequestController(_db, _userManagerMock.Object);
+        _controller = new FriendRequestController(
+            _db,
+            _userManagerMock.Object,
+            CreateMockUserHubContext());
 
-        // Give the controller a fake HttpContext so User claims work
         _controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext
