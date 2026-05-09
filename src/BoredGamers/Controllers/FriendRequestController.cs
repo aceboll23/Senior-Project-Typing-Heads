@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using BoredGamers.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BoredGamers.Controllers;
 
@@ -12,13 +14,28 @@ public class FriendRequestController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<User> _userManager;
+    private readonly IHubContext<UserNotificationHub> _userHubContext;
     private const int DailyRequestLimit = 10;
     private const int DeclineCooldownDays = 30;
 
-    public FriendRequestController(ApplicationDbContext db, UserManager<User> userManager)
+    public FriendRequestController(ApplicationDbContext db, UserManager<User> userManager, IHubContext<UserNotificationHub> userHubContext)
     {
         _db = db;
         _userManager = userManager;
+        _userHubContext = userHubContext;
+    }
+
+    private async Task BroadcastUnreadNotificationCountAsync(int recipientProfileId, string recipientUserId)
+    {
+        var unreadCount = await _db.Set<Notification>()
+            .CountAsync(n => n.UserProfileId == recipientProfileId && !n.IsRead);
+
+        Console.WriteLine($"[SignalR] Broadcasting notification count {unreadCount} to group: {UserNotificationHub.GroupName(recipientUserId)}");
+
+
+        await _userHubContext.Clients
+            .Group(UserNotificationHub.GroupName(recipientUserId))
+            .SendAsync("UnreadNotificationsUpdated", unreadCount);
     }
 
     private async Task CreateFriendRequestNotificationAsync(UserProfile recipientProfile, string senderUsername, int friendshipId)
@@ -45,6 +62,14 @@ public class FriendRequestController : Controller
         });
 
         await _db.SaveChangesAsync();
+
+        // Look up recipient's user ID to broadcast to them
+        var recipientUser = await _db.Users.OfType<User>()
+            .FirstOrDefaultAsync(u => u.Id == recipientProfile.UserId);
+        if (recipientUser != null)
+        {
+            await BroadcastUnreadNotificationCountAsync(recipientProfile.Id, recipientUser.Id);
+        }
     }
 
     // POST /FriendRequest/Send
@@ -322,6 +347,7 @@ public class FriendRequestController : Controller
             _db.Set<Notification>().Remove(notification);
 
         await _db.SaveChangesAsync();
+        await BroadcastUnreadNotificationCountAsync(currentProfile.Id, currentUser.Id);
 
         return RedirectToAction("Index", "Friends");
     }
@@ -358,6 +384,7 @@ public class FriendRequestController : Controller
             _db.Set<Notification>().Remove(notification);
 
         await _db.SaveChangesAsync();
+        await BroadcastUnreadNotificationCountAsync(currentProfile.Id, currentUser.Id);
 
         return RedirectToAction("Notifications", "Notification");
     }

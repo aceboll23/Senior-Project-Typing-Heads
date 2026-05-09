@@ -183,6 +183,7 @@ app.MapControllerRoute(
 app.MapRazorPages();
 app.MapHub<PlaygroupChatHub>("/hubs/playgroup-chat");
 app.MapHub<DirectMessageHub>("/hubs/direct-message");
+app.MapHub<UserNotificationHub>("/hubs/user-notifications");
 
 // registers a custom url route
 app.MapControllerRoute(

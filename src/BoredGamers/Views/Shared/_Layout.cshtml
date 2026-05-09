@@ -44,11 +44,11 @@
                 {
                     <!-- Logged In: Icons (visible on desktop only — mobile sees them in offcanvas) -->
                     <div class="d-none d-lg-flex align-items-center gap-3">
-                        <a asp-controller="Messages" asp-action="Index" class="btn btn-outline-light position-relative" title="Messages">
+                        <a asp-controller="Messages" asp-action="Index" class="btn btn-outline-light position-relative" title="Messages" id="messages-icon-link">
                             <i class="bi bi-envelope"></i>
                             @await Component.InvokeAsync("UnreadMessages")
                         </a>
-                        <a asp-controller="Notification" asp-action="Notifications" class="btn btn-outline-light position-relative" title="Notifications">
+                        <a asp-controller="Notification" asp-action="Notifications" class="btn btn-outline-light position-relative" title="Notifications" id="notifications-icon-link">
                             <i class="bi bi-bell"></i>
                             @await Component.InvokeAsync("UnreadNotifications")
                         </a>
@@ -141,13 +141,13 @@
                     </li>
                     <li><hr class="border-secondary"></li>
                     <li class="nav-item mb-1">
-                        <a asp-controller="Messages" asp-action="Index" class="nav-link text-white py-2 position-relative">
+                        <a asp-controller="Messages" asp-action="Index" class="nav-link text-white py-2 position-relative" title="Messages" id="messages-icon-link">
                             <i class="bi bi-envelope me-2"></i>Messages
                             @await Component.InvokeAsync("UnreadMessages")
                         </a>
                     </li>
                     <li class="nav-item mb-1">
-                        <a asp-controller="Notification" asp-action="Notifications" class="nav-link text-white py-2 position-relative">
+                        <a asp-controller="Notification" asp-action="Notifications" class="nav-link text-white py-2 position-relative" title="Notifications" id="notifications-icon-link">
                             <i class="bi bi-bell me-2"></i>Notifications
                             @await Component.InvokeAsync("UnreadNotifications")
                         </a>
@@ -313,6 +313,50 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/main.js" asp-append-version="true"></script>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+        <script>
+            (function () {
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/hubs/user-notifications")
+                    .withAutomaticReconnect()
+                    .build();
+
+                function updateBadge(linkId, badgeId, count) {
+                    const link = document.getElementById(linkId);
+                    if (!link) return;
+
+                    let badge = document.getElementById(badgeId);
+
+                    if (count > 0) {
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.id = badgeId;
+                            badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                            link.appendChild(badge);
+                        }
+                        badge.textContent = count;
+                    } else if (badge) {
+                        badge.remove();
+                    }
+                }
+
+                connection.on("UnreadMessagesUpdated", function (count) {
+                    // Update both desktop and offcanvas if both are present
+                    updateBadge('messages-icon-link', 'unread-messages-badge', count);
+                });
+
+                connection.on("UnreadNotificationsUpdated", function (count) {
+                    updateBadge('notifications-icon-link', 'unread-notifications-badge', count);
+                });
+
+                connection.start().catch(function (err) {
+                    console.error("UserNotificationHub connection failed:", err);
+                });
+            })();
+        </script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

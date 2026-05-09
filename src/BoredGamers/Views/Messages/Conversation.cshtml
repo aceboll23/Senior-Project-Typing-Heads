@@ -165,6 +165,9 @@ $(document).ready(function () {
         if (data.senderProfileId !== currentProfileId) {
             appendMessage(data.content, data.sentAt, false);
         }
+        // Mark as read since the user is actively viewing
+        $.post('/Messages/MarkAsRead',
+            { otherUsername: recipientUsername, __RequestVerificationToken: token });
     });
 
     // Build conversation key the same way the server does — sorted profile IDs
