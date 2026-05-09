@@ -437,3 +437,17 @@ a:hover {
     object-fit: cover;
     background-color: var(--bg-tertiary);
 }
+
+/* ============================================================================
+   Mobile notification
+   ============================================================================ */
+
+/* Desktop icon links: re-apply absolute corner positioning */
+#messages-icon-link-desktop .badge,
+#notifications-icon-link-desktop .badge {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    transform: translate(-50%, -50%);
+    margin-left: 0 !important; /* override ms-auto */
+}
