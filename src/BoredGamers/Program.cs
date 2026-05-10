@@ -16,6 +16,7 @@ using BoredGamers.Services;
 using BoredGamers.Services.Bdd;
 using BoredGamers.Hubs;
 using BoredGamers.Services.ContentModeration;
+using BoredGamers.Services.Transfers;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -110,6 +111,9 @@ builder.Services.AddScoped<IProfilePictureService, ProfilePictureService>();
 
 //Email service
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+// Game transfer service
+builder.Services.AddScoped<IGameTransferService, GameTransferService>();
 
 //AI services (TYP-228)
 builder.Services.AddSingleton<IAiClient, AnthropicAiClient>();
