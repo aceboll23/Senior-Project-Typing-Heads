@@ -44,11 +44,12 @@
                 {
                     <!-- Logged In: Icons (visible on desktop only — mobile sees them in offcanvas) -->
                     <div class="d-none d-lg-flex align-items-center gap-3">
-                        <a asp-controller="Messages" asp-action="Index" class="btn btn-outline-light position-relative" title="Messages" id="messages-icon-link">
+                        <a asp-controller="Messages" asp-action="Index" class="btn btn-outline-light position-relative" title="Messages" id="messages-icon-link-desktop">
                             <i class="bi bi-envelope"></i>
                             @await Component.InvokeAsync("UnreadMessages")
                         </a>
-                        <a asp-controller="Notification" asp-action="Notifications" class="btn btn-outline-light position-relative" title="Notifications" id="notifications-icon-link">
+
+                        <a asp-controller="Notification" asp-action="Notifications" class="btn btn-outline-light position-relative" title="Notifications" id="notifications-icon-link-desktop">
                             <i class="bi bi-bell"></i>
                             @await Component.InvokeAsync("UnreadNotifications")
                         </a>
@@ -92,8 +93,10 @@
                 }
 
                 <!-- Mobile hamburger (opens offcanvas) -->
-                <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-controls="mobileNav" aria-label="Toggle navigation">
+                <button class="navbar-toggler border-0 position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-controls="mobileNav" aria-label="Toggle navigation" id="hamburger-btn">
                     <span class="navbar-toggler-icon"></span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="hamburger-badge" style="font-size:0.6rem;">
+                    </span>
                 </button>
             </div>
 
@@ -145,14 +148,16 @@
                     </li>
                     <li><hr class="border-secondary"></li>
                     <li class="nav-item mb-1">
-                        <a asp-controller="Messages" asp-action="Index" class="nav-link text-white py-2 position-relative" title="Messages" id="messages-icon-link">
-                            <i class="bi bi-envelope me-2"></i>Messages
+                        <a asp-controller="Messages" asp-action="Index" class="nav-link text-white py-2 d-flex align-items-center" id="messages-icon-link-mobile">
+                            <i class="bi bi-envelope me-2"></i>
+                            <span>Messages</span>
                             @await Component.InvokeAsync("UnreadMessages")
                         </a>
                     </li>
                     <li class="nav-item mb-1">
-                        <a asp-controller="Notification" asp-action="Notifications" class="nav-link text-white py-2 position-relative" title="Notifications" id="notifications-icon-link">
-                            <i class="bi bi-bell me-2"></i>Notifications
+                        <a asp-controller="Notification" asp-action="Notifications" class="nav-link text-white py-2 d-flex align-items-center" id="notifications-icon-link-mobile">
+                            <i class="bi bi-bell me-2"></i>
+                            <span>Notifications</span>
                             @await Component.InvokeAsync("UnreadNotifications")
                         </a>
                     </li>
@@ -330,37 +335,106 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
         <script>
             (function () {
+                let lastMessageCount = 0;
+                let lastNotificationCount = 0;
+                let audioWarmedUp = false;
+
+                // Preload the notification sound
+                const notifSound = new Audio('/sounds/notif.wav');
+                notifSound.volume = 0.5;
+
+                // Browsers block audio until user interacts. Warm up on first click anywhere.
+                function warmUpAudio() {
+                    if (audioWarmedUp) return;
+                    audioWarmedUp = true;
+                    const original = notifSound.volume;
+                    notifSound.volume = 0;
+                    notifSound.play().then(() => {
+                        notifSound.pause();
+                        notifSound.currentTime = 0;
+                        notifSound.volume = original;
+                    }).catch(() => {
+                        notifSound.volume = original;
+                    });
+                    document.removeEventListener('click', warmUpAudio);
+                    document.removeEventListener('keydown', warmUpAudio);
+                }
+                document.addEventListener('click', warmUpAudio);
+                document.addEventListener('keydown', warmUpAudio);
+
+                function playNotificationSound() {
+                    const enabled = localStorage.getItem('notificationSoundEnabled');
+                    if (enabled === 'false') return;
+                    notifSound.currentTime = 0;
+                    notifSound.play().catch(err => {
+                        console.log('Notification sound blocked:', err.message);
+                    });
+                }
+
+                function updateBadgeByClass(linkIdPrefix, badgeClass, count) {
+                    ['-desktop', '-mobile'].forEach(suffix => {
+                        const link = document.getElementById(linkIdPrefix + suffix);
+                        if (!link) return;
+
+                        let badge = link.querySelector('.' + badgeClass);
+
+                        if (count > 0) {
+                            if (!badge) {
+                                badge = document.createElement('span');
+                                badge.className = 'badge rounded-pill bg-danger ms-auto ' + badgeClass;
+                                link.appendChild(badge);
+                            }
+                            badge.textContent = count;
+                        } else if (badge) {
+                            badge.remove();
+                        }
+                    });
+                }
+
+                function updateHamburgerBadge() {
+                    const hamburgerBadge = document.getElementById('hamburger-badge');
+                    if (!hamburgerBadge) return;
+
+                    const total = lastMessageCount + lastNotificationCount;
+                    if (total > 0) {
+                        hamburgerBadge.textContent = total > 9 ? '9+' : total;
+                        hamburgerBadge.classList.remove('d-none');
+                    } else {
+                        hamburgerBadge.classList.add('d-none');
+                    }
+                }
+
+                // Read initial counts so we don't play sound on page load
+                const initialMsgBadge = document.querySelector('.unread-messages-badge');
+                const initialNotifBadge = document.querySelector('.unread-notifications-badge');
+                lastMessageCount = initialMsgBadge ? parseInt(initialMsgBadge.textContent, 10) || 0 : 0;
+                lastNotificationCount = initialNotifBadge ? parseInt(initialNotifBadge.textContent, 10) || 0 : 0;
+                updateHamburgerBadge();
+
                 const connection = new signalR.HubConnectionBuilder()
                     .withUrl("/hubs/user-notifications")
                     .withAutomaticReconnect()
                     .build();
 
-                function updateBadge(linkId, badgeId, count) {
-                    const link = document.getElementById(linkId);
-                    if (!link) return;
-
-                    let badge = document.getElementById(badgeId);
-
-                    if (count > 0) {
-                        if (!badge) {
-                            badge = document.createElement('span');
-                            badge.id = badgeId;
-                            badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
-                            link.appendChild(badge);
-                        }
-                        badge.textContent = count;
-                    } else if (badge) {
-                        badge.remove();
-                    }
-                }
-
                 connection.on("UnreadMessagesUpdated", function (count) {
-                    // Update both desktop and offcanvas if both are present
-                    updateBadge('messages-icon-link', 'unread-messages-badge', count);
+                    if (count > lastMessageCount) {
+                        const inConversation = !!sessionStorage.getItem('activeConversation');
+                        if (!inConversation) {
+                            playNotificationSound();
+                        }
+                    }
+                    lastMessageCount = count;
+                    updateBadgeByClass('messages-icon-link', 'unread-messages-badge', count);
+                    updateHamburgerBadge();
                 });
 
                 connection.on("UnreadNotificationsUpdated", function (count) {
-                    updateBadge('notifications-icon-link', 'unread-notifications-badge', count);
+                    if (count > lastNotificationCount) {
+                        playNotificationSound();
+                    }
+                    lastNotificationCount = count;
+                    updateBadgeByClass('notifications-icon-link', 'unread-notifications-badge', count);
+                    updateHamburgerBadge();
                 });
 
                 connection.start().catch(function (err) {
