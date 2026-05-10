@@ -33,6 +33,7 @@ public class ApplicationDbContext : IdentityDbContext
 
     public DbSet<EventResponse> EventResponses { get; set; }
     public DbSet<ProfilePost> ProfilePosts { get; set; }
+    public DbSet<ProfilePostFlag> ProfilePostFlags { get; set; }
     public DbSet<PlaygroupMessage> PlaygroupMessages { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -312,6 +313,21 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(p => p.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
             entity.Property(p => p.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure ProfilePostFlag
+        modelBuilder.Entity<ProfilePostFlag>(entity =>
+        {
+            entity.HasOne(f => f.ProfilePost)
+                .WithMany()
+                .HasForeignKey(f => f.ProfilePostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(f => new { f.ProfilePostId, f.ReporterId })
+                .IsUnique();
+
+            entity.Property(f => f.ReportedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 

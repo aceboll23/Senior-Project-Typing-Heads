@@ -136,11 +136,31 @@ public class BddPostTestDataService
 
         if (user.Profile != null)
         {
-            var posts = await _db.ProfilePosts
+            var postIds = await _db.ProfilePosts
                 .Where(p => p.UserProfileId == user.Profile.Id)
+                .Select(p => p.Id)
                 .ToListAsync();
-            if (posts.Count > 0)
+
+            if (postIds.Count > 0)
+            {
+                var flags = await _db.ProfilePostFlags
+                    .Where(f => postIds.Contains(f.ProfilePostId))
+                    .ToListAsync();
+                if (flags.Count > 0)
+                    _db.ProfilePostFlags.RemoveRange(flags);
+
+                var posts = await _db.ProfilePosts
+                    .Where(p => postIds.Contains(p.Id))
+                    .ToListAsync();
                 _db.ProfilePosts.RemoveRange(posts);
+            }
+
+            // Also remove flags this user submitted on other posts
+            var userFlags = await _db.ProfilePostFlags
+                .Where(f => f.ReporterId == user.Id)
+                .ToListAsync();
+            if (userFlags.Count > 0)
+                _db.ProfilePostFlags.RemoveRange(userFlags);
 
             var friendships = await _db.Set<Friendship>()
                 .Where(f => f.RequesterProfileId == user.Profile.Id || f.ReceiverProfileId == user.Profile.Id)

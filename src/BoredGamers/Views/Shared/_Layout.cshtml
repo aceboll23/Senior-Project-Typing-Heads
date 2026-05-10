@@ -67,6 +67,10 @@
                                 <li><a class="dropdown-item" asp-controller="Friends" asp-action="Index"><i class="bi bi-people me-2"></i>Friends</a></li>
                                 <li><a class="dropdown-item" asp-controller="SocialFeed" asp-action="Index"><i class="bi bi-newspaper me-2"></i>Social</a></li>
                                 <li><a class="dropdown-item" asp-controller="Settings" asp-action="Index"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                                @if (BoredGamers.Services.Ai.AiAccessPolicy.IsAllowed(User.Identity.Name))
+                                {
+                                    <li><a class="dropdown-item" href="/admin/reports"><i class="bi bi-flag me-2"></i>Reports</a></li>
+                                }
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
@@ -188,6 +192,14 @@
                             <i class="bi bi-gear me-2"></i>Settings
                         </a>
                     </li>
+                    @if (BoredGamers.Services.Ai.AiAccessPolicy.IsAllowed(User.Identity.Name))
+                    {
+                        <li class="nav-item mb-1">
+                            <a href="/admin/reports" class="nav-link text-white py-2">
+                                <i class="bi bi-flag me-2"></i>Reports
+                            </a>
+                        </li>
+                    }
                     <li><hr class="border-secondary"></li>
                     <li class="nav-item">
                         <form asp-controller="Account" asp-action="Logout" method="post">

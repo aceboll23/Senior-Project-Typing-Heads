@@ -1,5 +1,7 @@
 using System.Security.Claims;
+using System.Threading;
 using BoredGamers.Models;
+using BoredGamers.Services.Flags;
 using BoredGamers.Services.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +12,12 @@ namespace BoredGamers.Controllers;
 public class ProfilePostController : Controller
 {
     private readonly IProfilePostService _postService;
+    private readonly IPostFlagService _flagService;
 
-    public ProfilePostController(IProfilePostService postService)
+    public ProfilePostController(IProfilePostService postService, IPostFlagService flagService)
     {
         _postService = postService;
+        _flagService = flagService;
     }
 
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -57,5 +61,14 @@ public class ProfilePostController : Controller
             TempData["PostError"] = result.ErrorMessage;
 
         return RedirectToAction("Index", "Profile", new { username = returnUsername });
+    }
+
+    [HttpPost("profile-post/{id}/flag")]
+    public async Task<IActionResult> Flag(int id, CancellationToken ct)
+    {
+        var userId = GetUserId();
+        var result = await _flagService.FlagPostAsync(userId, id, ct);
+
+        return Json(new { success = result.Success, message = result.Success ? null : result.ErrorMessage });
     }
 }
