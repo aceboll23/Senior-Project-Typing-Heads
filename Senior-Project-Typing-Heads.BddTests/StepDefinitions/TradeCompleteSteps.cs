@@ -84,7 +84,7 @@ public class TradeCompleteSteps
     public void WhenIInitiateTransfer()
     {
         var driver = _webDriverContext.Driver!;
-        // Find and click the Transfer Game button for the tradeable game
+        driver.Navigate().GoToUrl($"{TestSettings.BaseUrl}/collection");
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
         var transferBtn = wait.Until(d => d.FindElements(By.LinkText("Transfer Game"))
             .FirstOrDefault(e => e.Displayed));
@@ -139,6 +139,7 @@ public class TradeCompleteSteps
     public void WhenIAcceptThePendingTransfer()
     {
         var driver = _webDriverContext.Driver!;
+        driver.Navigate().GoToUrl($"{TestSettings.BaseUrl}/collection");
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
         var acceptBtn = wait.Until(d => d.FindElement(By.Id($"accept-transfer-btn-{_seedContext.PendingTransferId}")));
         acceptBtn.Click();
@@ -168,6 +169,7 @@ public class TradeCompleteSteps
     public void WhenIDeclineThePendingTransfer()
     {
         var driver = _webDriverContext.Driver!;
+        driver.Navigate().GoToUrl($"{TestSettings.BaseUrl}/collection");
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
         var declineBtn = wait.Until(d => d.FindElement(By.Id($"decline-transfer-btn-{_seedContext.PendingTransferId}")));
         declineBtn.Click();
@@ -221,6 +223,7 @@ public class TradeCompleteSteps
     public void WhenITransferToUserWhoAlreadyOwns()
     {
         var driver = _webDriverContext.Driver!;
+        driver.Navigate().GoToUrl($"{TestSettings.BaseUrl}/collection");
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
         var transferLink = wait.Until(d => d.FindElements(By.LinkText("Transfer Game"))
             .FirstOrDefault(e => e.Displayed));
