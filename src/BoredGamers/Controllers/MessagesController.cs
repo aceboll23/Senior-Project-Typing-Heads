@@ -15,15 +15,34 @@ public class MessagesController : Controller
     private readonly ApplicationDbContext _db;
     private readonly UserManager<User> _userManager;
     private readonly IHubContext<DirectMessageHub> _hubContext;
+    private readonly IHubContext<UserNotificationHub> _userHubContext;
 
     public MessagesController(
         ApplicationDbContext db,
         UserManager<User> userManager,
-        IHubContext<DirectMessageHub> hubContext)
+        IHubContext<DirectMessageHub> hubContext,
+        IHubContext<UserNotificationHub> userHubContext)
     {
         _db = db;
         _userManager = userManager;
         _hubContext = hubContext;
+        _userHubContext = userHubContext;
+    }
+
+    private async Task BroadcastUnreadMessageCountAsync(int recipientProfileId, string recipientUserId)
+    {
+        var unreadCount = await _db.DirectMessages
+            .Where(m =>
+                m.RecipientProfileId == recipientProfileId &&
+                m.Status != MessageStatus.Read &&
+                !m.DeletedByRecipient)
+            .Select(m => m.SenderProfileId)
+            .Distinct()
+            .CountAsync();
+
+        await _userHubContext.Clients
+            .Group(UserNotificationHub.GroupName(recipientUserId))
+            .SendAsync("UnreadMessagesUpdated", unreadCount);
     }
 
     // GET /Messages (inbox for showing all conversations)
@@ -139,6 +158,7 @@ public class MessagesController : Controller
         if(unread.Any())
         {
             await _db.SaveChangesAsync();
+            await BroadcastUnreadMessageCountAsync(currentProfile.Id, currentUser.Id);
         }
 
         //Check if friends
@@ -225,6 +245,9 @@ public class MessagesController : Controller
             avatarUrl = currentProfile.AvatarUrl ?? ""
         });
 
+        // Broadcast updated unread count to recipient's personal channel
+        await BroadcastUnreadMessageCountAsync(recipient.Profile.Id, recipient.Id);
+
         return Json(new
         {
             success = true,
@@ -233,5 +256,41 @@ public class MessagesController : Controller
             content = message.Content,
             status = message.Status.ToString()
         });
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarkAsRead(string otherUsername)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Unauthorized();
+
+        var currentProfile = await _db.Set<UserProfile>()
+            .FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+        if (currentProfile == null) return BadRequest();
+
+        var otherUser = await _userManager.Users.Include(u => u.Profile)
+            .FirstOrDefaultAsync(u => u.UserName == otherUsername);
+        if (otherUser?.Profile == null) return NotFound();
+
+        var unread = await _db.DirectMessages
+            .Where(m =>
+                m.SenderProfileId == otherUser.Profile.Id &&
+                m.RecipientProfileId == currentProfile.Id &&
+                m.Status != MessageStatus.Read)
+            .ToListAsync();
+
+        foreach (var msg in unread)
+        {
+            msg.Status = MessageStatus.Read;
+            msg.ReadAt = DateTime.UtcNow;
+        }
+
+        if (unread.Count > 0)
+        {
+            await _db.SaveChangesAsync();
+            await BroadcastUnreadMessageCountAsync(currentProfile.Id, currentUser.Id);
+        }
+
+        return Json(new { success = true });
     }
 }

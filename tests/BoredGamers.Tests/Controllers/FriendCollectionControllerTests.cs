@@ -46,7 +46,10 @@ namespace BoredGamers.Tests.Controllers
         {
             var mockCollections = new Mock<IUserCollectionService>();
             var mockAiRecommendations = new Mock<IAiRecommendationService>();
-            var controller = new CollectionController(db, mockCollections.Object, mockUserManager.Object, mockAiRecommendations.Object);
+            var mockTransfers = new Mock<BoredGamers.Services.Transfers.IGameTransferService>();
+            mockTransfers.Setup(t => t.GetPendingTransfersForUserAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<BoredGamers.Models.ViewModels.PendingTransferViewModel>());
+            var controller = new CollectionController(db, mockCollections.Object, mockUserManager.Object, mockAiRecommendations.Object, mockTransfers.Object);
 
             var claims = new List<Claim>
             {

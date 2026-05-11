@@ -9,6 +9,7 @@ using BoredGamers.Services.Block;
 using BoredGamers.Services.ProfilePicture;
 using BoredGamers.Services.SocialFeed;
 using BoredGamers.Services.Ai;
+using BoredGamers.Services.Flags;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using BoredGamers.Models;
@@ -16,6 +17,7 @@ using BoredGamers.Services;
 using BoredGamers.Services.Bdd;
 using BoredGamers.Hubs;
 using BoredGamers.Services.ContentModeration;
+using BoredGamers.Services.Transfers;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -40,6 +42,7 @@ builder.Services.AddScoped<BddProfilePictureTestDataService>();
 builder.Services.AddScoped<BddTradeTestDataService>();
 builder.Services.AddScoped<BddViewTradesTestDataService>();
 builder.Services.AddScoped<BddAllFriendTradesTestDataService>();
+builder.Services.AddScoped<BddTradeCompleteTestDataService>();
 // Identity UI uses Razor Pages
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
@@ -110,9 +113,15 @@ builder.Services.AddScoped<IProfilePictureService, ProfilePictureService>();
 //Email service
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// Game transfer service
+builder.Services.AddScoped<IGameTransferService, GameTransferService>();
+
 //AI services (TYP-228)
 builder.Services.AddSingleton<IAiClient, AnthropicAiClient>();
 builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
+
+// Post flagging (TYP-242)
+builder.Services.AddScoped<IPostFlagService, PostFlagService>();
 
 // Content moderation
 // Use the fake moderation service in BDD/test mode so tests don't depend on a live API
@@ -182,6 +191,7 @@ app.MapControllerRoute(
 app.MapRazorPages();
 app.MapHub<PlaygroupChatHub>("/hubs/playgroup-chat");
 app.MapHub<DirectMessageHub>("/hubs/direct-message");
+app.MapHub<UserNotificationHub>("/hubs/user-notifications");
 
 // registers a custom url route
 app.MapControllerRoute(
@@ -492,6 +502,22 @@ if (app.Environment.IsDevelopment())
             result.Friend2TradeGameName,
             result.NoTradeGameName,
             result.StrangerUsername
+        });
+    });
+
+    app.MapPost("/dev/bdd/reset-trade-complete-data", async (BddTradeCompleteTestDataService svc) =>
+    {
+        var result = await svc.ResetAndSeedAsync();
+        return Results.Ok(new
+        {
+            result.SenderUsername,
+            result.SenderPassword,
+            result.ReceiverUsername,
+            result.ReceiverPassword,
+            result.HasGameUsername,
+            result.TransferGameName,
+            result.PendingGameName,
+            result.PendingTransferId
         });
     });
 

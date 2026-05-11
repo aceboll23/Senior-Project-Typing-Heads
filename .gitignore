@@ -87,4 +87,4 @@ src/BoredGamers/wwwroot/uploads/avatars/*
 !src/BoredGamers/wwwroot/uploads/avatars/.gitkeep
 
 # Content moderation word list - includes offensive words that could upset code readers and editors
-src/BoredGamers/ProfanityModeration/profanity.txt
+# src/BoredGamers/ProfanityModeration/profanity.txt

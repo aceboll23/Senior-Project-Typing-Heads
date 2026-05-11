@@ -32,13 +32,76 @@
             <!-- Logo -->
             <a asp-controller="Home" asp-action="Index" class="navbar-brand fw-bold">BoredGamers</a>
 
-            <!-- Mobile Toggle -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <!-- Desktop right-side actions (always visible) -->
+            <div class="d-flex align-items-center gap-2 order-lg-last">
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="theme-toggle" title="Toggle theme" onclick="toggleTheme()">
+                    <i class="bi bi-sun icon-sun"></i>
+                    <i class="bi bi-moon icon-moon"></i>
+                </button>
 
-            <!-- Nav Links -->
-            <div class="collapse navbar-collapse" id="navbarNav">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <!-- Logged In: Icons (visible on desktop only — mobile sees them in offcanvas) -->
+                    <div class="d-none d-lg-flex align-items-center gap-3">
+                        <a asp-controller="Messages" asp-action="Index" class="btn btn-outline-light position-relative" title="Messages" id="messages-icon-link-desktop">
+                            <i class="bi bi-envelope"></i>
+                            @await Component.InvokeAsync("UnreadMessages")
+                        </a>
+
+                        <a asp-controller="Notification" asp-action="Notifications" class="btn btn-outline-light position-relative" title="Notifications" id="notifications-icon-link-desktop">
+                            <i class="bi bi-bell"></i>
+                            @await Component.InvokeAsync("UnreadNotifications")
+                        </a>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @await Component.InvokeAsync("UserAvatar")
+                                <span>@User.Identity.Name</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><h6 class="dropdown-header">@User.Identity.Name</h6></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Profile" asp-action="Index" asp-route-username="@User.Identity.Name"><i class="bi bi-person me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item" asp-controller="Collection" asp-action="Index"><i class="bi bi-collection me-2"></i>My Collection</a></li>
+                                <li><a class="dropdown-item" id="nav-friends-trades-link" asp-controller="Collection" asp-action="AllFriendTrades"><i class="bi bi-arrow-left-right me-2"></i>Friends' Trades</a></li>
+                                <li><a class="dropdown-item" asp-controller="Friends" asp-action="Index"><i class="bi bi-people me-2"></i>Friends</a></li>
+                                <li><a class="dropdown-item" asp-controller="SocialFeed" asp-action="Index"><i class="bi bi-newspaper me-2"></i>Social</a></li>
+                                <li><a class="dropdown-item" asp-controller="Settings" asp-action="Index"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                                @if (BoredGamers.Services.Ai.AiAccessPolicy.IsAllowed(User.Identity.Name))
+                                {
+                                    <li><a class="dropdown-item" href="/admin/reports"><i class="bi bi-flag me-2"></i>Reports</a></li>
+                                }
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item text-danger" style="border:none;background:none;cursor:pointer;text-align:left;width:100%;padding:0.25rem 1rem;">
+                                            <i class="bi bi-box-arrow-right me-2"></i>Log Out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Logged Out (desktop only) -->
+                    <div class="d-none d-lg-flex align-items-center gap-2">
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light">Log In</a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Sign Up</a>
+                    </div>
+                }
+
+                <!-- Mobile hamburger (opens offcanvas) -->
+                <button class="navbar-toggler border-0 position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-controls="mobileNav" aria-label="Toggle navigation" id="hamburger-btn">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="hamburger-badge" style="font-size:0.6rem;">
+                    </span>
+                </button>
+            </div>
+
+            <!-- Desktop nav links (hidden on mobile) -->
+            <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a asp-controller="GamesPage" asp-action="Index" class="nav-link">Games</a>
@@ -50,69 +113,116 @@
                         </li>
                     }
                 </ul>
-
-                <!-- Right Side Actions -->
-                <div class="d-flex align-items-center gap-2">
-                    <!-- Theme Toggle -->
-                    <button id="themeToggle" class="theme-toggle" title="Toggle theme" onclick="toggleTheme()">
-                        <i class="bi bi-sun icon-sun"></i>
-                        <i class="bi bi-moon icon-moon"></i>
-                    </button>
-                    @if (User.Identity != null && User.Identity.IsAuthenticated)
-                    {
-                        <!-- Logged In: Icons and User Menu -->
-                        <div class="d-flex align-items-center gap-3">
-                            <!-- Messages -->
-                            <a asp-controller="Messages" asp-action="Index" class="btn btn-outline-light position-relative" title="Messages">
-                                <i class="bi bi-envelope"></i>
-                                @await Component.InvokeAsync("UnreadMessages")
-                            </a>
-
-                            <!-- Notifications -->
-                            <a asp-controller="Notification" asp-action="Notifications" class="btn btn-outline-light position-relative" title="Notifications">
-                                <i class="bi bi-bell"></i>
-                                @await Component.InvokeAsync("UnreadNotifications")
-                            </a>
-
-                            <!-- User Dropdown -->
-                            <div class="dropdown">
-                                <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    @await Component.InvokeAsync("UserAvatar")
-                                    <span class="d-none d-md-inline">@User.Identity.Name</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><h6 class="dropdown-header">@User.Identity.Name</h6></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" asp-controller="Profile" asp-action="Index" asp-route-username="@User.Identity.Name"><i class="bi bi-person me-2"></i>My Profile</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Collection" asp-action="Index"><i class="bi bi-collection me-2"></i>My Collection</a></li>
-                                    <li><a class="dropdown-item" id="nav-friends-trades-link" asp-controller="Collection" asp-action="AllFriendTrades"><i class="bi bi-arrow-left-right me-2"></i>Friends' Trades</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Friends" asp-action="Index"><i class="bi bi-people me-2"></i>Friends</a></li>
-                                    <li><a class="dropdown-item" asp-controller="SocialFeed" asp-action="Index"><i class="bi bi-newspaper me-2"></i>Social</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Settings" asp-action="Index"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                        <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; cursor: pointer; text-align: left; width: 100%; padding: 0.25rem 1rem;">
-                                            <i class="bi bi-box-arrow-right me-2"></i>Log Out
-                                        </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <!-- Logged Out: Login/Signup buttons -->
-                        <div class="d-flex align-items-center gap-2">
-                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light">Log In</a>
-                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Sign Up</a>
-                        </div>
-                    }
-                </div>
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Offcanvas Side Panel -->
+    <div class="offcanvas offcanvas-end bg-dark text-white" tabindex="-1" id="mobileNav" aria-labelledby="mobileNavLabel" style="width: 280px;">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="mobileNavLabel">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <span>@User.Identity.Name</span>
+                }
+                else
+                {
+                    <span>Menu</span>
+                }
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="navbar-nav">
+                <li class="nav-item mb-1">
+                    <a asp-controller="GamesPage" asp-action="Index" class="nav-link text-white py-2">
+                        <i class="bi bi-controller me-2"></i>Games
+                    </a>
+                </li>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="nav-item mb-1">
+                        <a asp-controller="Playgroup" asp-action="Index" class="nav-link text-white py-2">
+                            <i class="bi bi-people-fill me-2"></i>Groups
+                        </a>
+                    </li>
+                    <li><hr class="border-secondary"></li>
+                    <li class="nav-item mb-1">
+                        <a asp-controller="Messages" asp-action="Index" class="nav-link text-white py-2 d-flex align-items-center" id="messages-icon-link-mobile">
+                            <i class="bi bi-envelope me-2"></i>
+                            <span>Messages</span>
+                            @await Component.InvokeAsync("UnreadMessages")
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a asp-controller="Notification" asp-action="Notifications" class="nav-link text-white py-2 d-flex align-items-center" id="notifications-icon-link-mobile">
+                            <i class="bi bi-bell me-2"></i>
+                            <span>Notifications</span>
+                            @await Component.InvokeAsync("UnreadNotifications")
+                        </a>
+                    </li>
+                    <li><hr class="border-secondary"></li>
+                    <li class="nav-item mb-1">
+                        <a asp-controller="Profile" asp-action="Index" asp-route-username="@User.Identity.Name" class="nav-link text-white py-2">
+                            <i class="bi bi-person me-2"></i>My Profile
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a asp-controller="Collection" asp-action="Index" class="nav-link text-white py-2">
+                            <i class="bi bi-collection me-2"></i>My Collection
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a asp-controller="Collection" asp-action="AllFriendTrades" class="nav-link text-white py-2">
+                            <i class="bi bi-arrow-left-right me-2"></i>Friends' Trades
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a asp-controller="Friends" asp-action="Index" class="nav-link text-white py-2">
+                            <i class="bi bi-people me-2"></i>Friends
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a asp-controller="SocialFeed" asp-action="Index" class="nav-link text-white py-2">
+                            <i class="bi bi-newspaper me-2"></i>Social
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a asp-controller="Settings" asp-action="Index" class="nav-link text-white py-2">
+                            <i class="bi bi-gear me-2"></i>Settings
+                        </a>
+                    </li>
+                    @if (BoredGamers.Services.Ai.AiAccessPolicy.IsAllowed(User.Identity.Name))
+                    {
+                        <li class="nav-item mb-1">
+                            <a href="/admin/reports" class="nav-link text-white py-2">
+                                <i class="bi bi-flag me-2"></i>Reports
+                            </a>
+                        </li>
+                    }
+                    <li><hr class="border-secondary"></li>
+                    <li class="nav-item">
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="btn btn-link nav-link text-danger py-2 w-100 text-start" style="text-decoration:none;">
+                                <i class="bi bi-box-arrow-right me-2"></i>Log Out
+                            </button>
+                        </form>
+                    </li>
+                }
+                else
+                {
+                    <li><hr class="border-secondary"></li>
+                    <li class="nav-item mb-2">
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light w-100">Log In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-primary w-100">Sign Up</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
 
     <!-- Main Content -->
     <main class="flex-grow-1">
@@ -120,20 +230,18 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-4 border-top">
+    <footer class="bg-dark text-white py-3 border-top mt-auto">
         <div class="container">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 small">
                 <p class="mb-0">&copy; 2026 BoredGamers</p>
                 <div class="d-flex gap-3">
                     <a asp-controller="Home" asp-action="About" class="text-white-50 text-decoration-none">About</a>
                     <a asp-controller="Home" asp-action="Contact" class="text-white-50 text-decoration-none">Contact</a>
-<a asp-controller="Home" asp-action="Terms" class="text-white-50 text-decoration-none">Terms</a>
+                    <a asp-controller="Home" asp-action="Terms" class="text-white-50 text-decoration-none">Terms</a>
                 </div>
-                <div class="d-flex gap-2">
-                    <a href="https://boardgamegeek.com" target="_blank">
-                        <img src="~/Images/powered_by_logo_04_XL.jpg" alt="Powered by BoardGameGeek" style="height: 40px; width: auto;" />
-                    </a>
-                </div>
+                <a href="https://boardgamegeek.com" target="_blank" class="d-inline-block">
+                    <img src="~/Images/powered_by_logo_04_XL.jpg" alt="Powered by BoardGameGeek" style="height: 28px; width: auto;" />
+                </a>
             </div>
         </div>
     </footer>
@@ -222,6 +330,119 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/main.js" asp-append-version="true"></script>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+        <script>
+            (function () {
+                let lastMessageCount = 0;
+                let lastNotificationCount = 0;
+                let audioWarmedUp = false;
+
+                // Preload the notification sound
+                const notifSound = new Audio('/sounds/notif.wav');
+                notifSound.volume = 0.5;
+
+                // Browsers block audio until user interacts. Warm up on first click anywhere.
+                function warmUpAudio() {
+                    if (audioWarmedUp) return;
+                    audioWarmedUp = true;
+                    const original = notifSound.volume;
+                    notifSound.volume = 0;
+                    notifSound.play().then(() => {
+                        notifSound.pause();
+                        notifSound.currentTime = 0;
+                        notifSound.volume = original;
+                    }).catch(() => {
+                        notifSound.volume = original;
+                    });
+                    document.removeEventListener('click', warmUpAudio);
+                    document.removeEventListener('keydown', warmUpAudio);
+                }
+                document.addEventListener('click', warmUpAudio);
+                document.addEventListener('keydown', warmUpAudio);
+
+                function playNotificationSound() {
+                    const enabled = localStorage.getItem('notificationSoundEnabled');
+                    if (enabled === 'false') return;
+                    notifSound.currentTime = 0;
+                    notifSound.play().catch(err => {
+                        console.log('Notification sound blocked:', err.message);
+                    });
+                }
+
+                function updateBadgeByClass(linkIdPrefix, badgeClass, count) {
+                    ['-desktop', '-mobile'].forEach(suffix => {
+                        const link = document.getElementById(linkIdPrefix + suffix);
+                        if (!link) return;
+
+                        let badge = link.querySelector('.' + badgeClass);
+
+                        if (count > 0) {
+                            if (!badge) {
+                                badge = document.createElement('span');
+                                badge.className = 'badge rounded-pill bg-danger ms-auto ' + badgeClass;
+                                link.appendChild(badge);
+                            }
+                            badge.textContent = count;
+                        } else if (badge) {
+                            badge.remove();
+                        }
+                    });
+                }
+
+                function updateHamburgerBadge() {
+                    const hamburgerBadge = document.getElementById('hamburger-badge');
+                    if (!hamburgerBadge) return;
+
+                    const total = lastMessageCount + lastNotificationCount;
+                    if (total > 0) {
+                        hamburgerBadge.textContent = total > 9 ? '9+' : total;
+                        hamburgerBadge.classList.remove('d-none');
+                    } else {
+                        hamburgerBadge.classList.add('d-none');
+                    }
+                }
+
+                // Read initial counts so we don't play sound on page load
+                const initialMsgBadge = document.querySelector('.unread-messages-badge');
+                const initialNotifBadge = document.querySelector('.unread-notifications-badge');
+                lastMessageCount = initialMsgBadge ? parseInt(initialMsgBadge.textContent, 10) || 0 : 0;
+                lastNotificationCount = initialNotifBadge ? parseInt(initialNotifBadge.textContent, 10) || 0 : 0;
+                updateHamburgerBadge();
+
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/hubs/user-notifications")
+                    .withAutomaticReconnect()
+                    .build();
+
+                connection.on("UnreadMessagesUpdated", function (count) {
+                    if (count > lastMessageCount) {
+                        const inConversation = !!sessionStorage.getItem('activeConversation');
+                        if (!inConversation) {
+                            playNotificationSound();
+                        }
+                    }
+                    lastMessageCount = count;
+                    updateBadgeByClass('messages-icon-link', 'unread-messages-badge', count);
+                    updateHamburgerBadge();
+                });
+
+                connection.on("UnreadNotificationsUpdated", function (count) {
+                    if (count > lastNotificationCount) {
+                        playNotificationSound();
+                    }
+                    lastNotificationCount = count;
+                    updateBadgeByClass('notifications-icon-link', 'unread-notifications-badge', count);
+                    updateHamburgerBadge();
+                });
+
+                connection.start().catch(function (err) {
+                    console.error("UserNotificationHub connection failed:", err);
+                });
+            })();
+        </script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

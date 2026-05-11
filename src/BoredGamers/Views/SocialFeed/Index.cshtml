@@ -3,6 +3,8 @@
     ViewData["Title"] = "Social Feed";
 }
 
+<form id="antiForgeryForm" style="display:none;">@Html.AntiForgeryToken()</form>
+
 <section class="py-4">
     <div class="container">
         <h3 class="mb-4"><i class="bi bi-newspaper me-2"></i>Social Feed</h3>
@@ -79,6 +81,16 @@
                             {
                                 <img src="@post.ImageUrl" alt="Post image" class="img-fluid rounded mb-2"
                                      style="max-height:400px;object-fit:contain;" />
+                            }
+                            @if (User.Identity != null && User.Identity.IsAuthenticated)
+                            {
+                                <div class="d-flex justify-content-end mt-1">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary report-post-btn"
+                                            data-post-id="@post.PostId"
+                                            title="Report this post">
+                                        <i class="bi bi-flag me-1"></i>Report
+                                    </button>
+                                </div>
                             }
                         </div>
                     </div>

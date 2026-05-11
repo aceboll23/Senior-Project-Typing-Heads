@@ -35,6 +35,17 @@ public class MessagesControllerTests
     private UserProfile _senderProfile;
     private UserProfile _recipientProfile;
     private UserProfile _nonFriendProfile;
+    private static IHubContext<T> CreateMockHubContext<T>() where T : Hub
+    {
+        var clientProxy = new Mock<IClientProxy>();
+        var clients = new Mock<IHubClients>();
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(clientProxy.Object);
+        clients.Setup(c => c.All).Returns(clientProxy.Object);
+
+        var hubContext = new Mock<IHubContext<T>>();
+        hubContext.Setup(h => h.Clients).Returns(clients.Object);
+        return hubContext.Object;
+    }
 
     [SetUp]
     public void SetUp()
@@ -42,7 +53,6 @@ public class MessagesControllerTests
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-
         _db = new ApplicationDbContext(options);
 
         var store = new Mock<IUserStore<User>>();
@@ -57,7 +67,6 @@ public class MessagesControllerTests
         _hubClientsMock
             .Setup(c => c.Group(It.IsAny<string>()))
             .Returns(_clientProxyMock.Object);
-
         _hubContextMock
             .Setup(h => h.Clients)
             .Returns(_hubClientsMock.Object);
@@ -66,15 +75,14 @@ public class MessagesControllerTests
 
         _userManagerMock.Setup(m => m.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync(_sender);
-
         _userManagerMock.Setup(m => m.Users)
             .Returns(_db.Set<User>());
 
         _controller = new MessagesController(
             _db,
             _userManagerMock.Object,
-            _hubContextMock.Object
-        );
+            _hubContextMock.Object,
+            CreateMockHubContext<UserNotificationHub>());
 
         _controller.ControllerContext = new ControllerContext
         {

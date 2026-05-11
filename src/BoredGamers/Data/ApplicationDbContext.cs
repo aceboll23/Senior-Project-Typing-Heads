@@ -33,7 +33,9 @@ public class ApplicationDbContext : IdentityDbContext
 
     public DbSet<EventResponse> EventResponses { get; set; }
     public DbSet<ProfilePost> ProfilePosts { get; set; }
+    public DbSet<ProfilePostFlag> ProfilePostFlags { get; set; }
     public DbSet<PlaygroupMessage> PlaygroupMessages { get; set; }
+    public DbSet<GameTransfer> GameTransfers { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
 
@@ -315,6 +317,21 @@ public class ApplicationDbContext : IdentityDbContext
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 
+        // Configure ProfilePostFlag
+        modelBuilder.Entity<ProfilePostFlag>(entity =>
+        {
+            entity.HasOne(f => f.ProfilePost)
+                .WithMany()
+                .HasForeignKey(f => f.ProfilePostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(f => new { f.ProfilePostId, f.ReporterId })
+                .IsUnique();
+
+            entity.Property(f => f.ReportedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
         // Configure EventResponse
         modelBuilder.Entity<EventResponse>(entity =>
         {
@@ -353,6 +370,21 @@ public class ApplicationDbContext : IdentityDbContext
                 .IsUnique();
 
             entity.Property(v => v.SubmittedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure GameTransfer
+        modelBuilder.Entity<GameTransfer>(entity =>
+        {
+            entity.HasOne(t => t.Game)
+                .WithMany()
+                .HasForeignKey(t => t.GameId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(t => new { t.ToUserId, t.Status });
+            entity.HasIndex(t => t.FromUserId);
+
+            entity.Property(t => t.InitiatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 

@@ -378,6 +378,14 @@
                                                     onclick="return confirm('Delete this post?')">Delete</button>
                                         </form>
                                     }
+                                    else if (User.Identity != null && User.Identity.IsAuthenticated)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-secondary report-post-btn"
+                                                data-post-id="@post.Id"
+                                                title="Report this post">
+                                            <i class="bi bi-flag me-1"></i>Report
+                                        </button>
+                                    }
                                 </div>
                             </div>
                         </div>
