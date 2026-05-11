@@ -4,6 +4,7 @@ using BoredGamers.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BoredGamers.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510003746_AddGameTransfer")]
+    partial class AddGameTransfer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -658,34 +661,6 @@ namespace BoredGamers.Migrations
                     b.ToTable("ProfilePosts");
                 });
 
-            modelBuilder.Entity("BoredGamers.Models.ProfilePostFlag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ProfilePostId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ReportedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("ReporterId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfilePostId", "ReporterId")
-                        .IsUnique();
-
-                    b.ToTable("ProfilePostFlags");
-                });
-
             modelBuilder.Entity("BoredGamers.Models.Review", b =>
                 {
                     b.Property<int>("ReviewId")
@@ -1303,17 +1278,6 @@ namespace BoredGamers.Migrations
                     b.Navigation("Game");
 
                     b.Navigation("UserProfile");
-                });
-
-            modelBuilder.Entity("BoredGamers.Models.ProfilePostFlag", b =>
-                {
-                    b.HasOne("BoredGamers.Models.ProfilePost", "ProfilePost")
-                        .WithMany()
-                        .HasForeignKey("ProfilePostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProfilePost");
                 });
 
             modelBuilder.Entity("BoredGamers.Models.Review", b =>

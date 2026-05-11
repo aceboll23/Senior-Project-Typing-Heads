@@ -1,0 +1,51 @@
+@model BoredGamers.Models.Game
+
+@{
+    var toUsername = ViewData["ToUsername"] as string;
+    ViewData["Title"] = "Confirm Transfer";
+    var image = !string.IsNullOrWhiteSpace(Model.ImageUrl)
+        ? Model.ImageUrl
+        : !string.IsNullOrWhiteSpace(Model.ThumbnailUrl)
+            ? Model.ThumbnailUrl
+            : Url.Content("~/images/game-placeholder.png");
+}
+
+<section class="py-4">
+    <div class="container" style="max-width: 540px;">
+        <h1 class="mb-4">Confirm Transfer</h1>
+
+        <div class="card bg-dark text-light border-0 shadow-sm mb-4">
+            <div class="row g-0">
+                <div class="col-4">
+                    <img src="@image" alt="@Model.Name" class="img-fluid rounded-start" style="height: 140px; object-fit: cover; width: 100%;" />
+                </div>
+                <div class="col-8">
+                    <div class="card-body">
+                        <h5 class="card-title">@Model.Name</h5>
+                        <div class="text-muted small">@(Model.YearPublished.HasValue ? Model.YearPublished.Value.ToString() : "—")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning" id="transfer-confirm-msg">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Are you sure you want to transfer <strong>@Model.Name</strong> to <strong>@toUsername</strong>?
+            This will remove the game from your collection. @toUsername will need to confirm they received it
+            before it appears in their collection.
+        </div>
+
+        <form asp-controller="Collection" asp-action="ExecuteTransfer" asp-route-gameId="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="toUsername" value="@toUsername" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger" id="transfer-confirm-btn">
+                    <i class="bi bi-check-circle me-1"></i>Yes, Transfer Game
+                </button>
+                <a asp-controller="Collection" asp-action="Index" class="btn btn-outline-secondary" id="transfer-cancel-btn">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
