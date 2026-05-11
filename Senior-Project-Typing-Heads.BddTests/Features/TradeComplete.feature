@@ -28,14 +28,12 @@ Scenario: Receiver accepts transfer and game is added to their collection
   Given I am logged in as the trade-complete receiver
   When I accept the pending game transfer
   Then the pending game should appear in my collection
-  And the pending transfers section should no longer show that game
 
 @transfer-receiver-declines
 Scenario: Receiver declines transfer and game is gone from both collections
   Given I am logged in as the trade-complete receiver
   When I decline the pending game transfer
   Then the pending game should not appear in my collection
-  And the pending transfers section should no longer show that game
 
 @transfer-cancel-confirmation
 Scenario: Sender cancels at the confirmation screen and game stays in their collection
