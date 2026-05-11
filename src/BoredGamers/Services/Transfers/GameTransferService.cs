@@ -63,9 +63,14 @@ public class GameTransferService : IGameTransferService
         if (transfer.ToUserId != toUserId)
             return Fail("You are not the recipient of this transfer.");
 
-        var alreadyOwned = await _db.UserGameCollections
-            .AnyAsync(c => c.UserId == toUserId && c.GameId == transfer.GameId && c.Status == CollectionStatus.Owned, ct);
-        if (!alreadyOwned)
+        var existing = await _db.UserGameCollections
+            .FirstOrDefaultAsync(c => c.UserId == toUserId && c.GameId == transfer.GameId, ct);
+        if (existing != null)
+        {
+            existing.Status = CollectionStatus.Owned;
+            existing.IsAvailableForTrade = false;
+        }
+        else
         {
             _db.UserGameCollections.Add(new UserGameCollection
             {
