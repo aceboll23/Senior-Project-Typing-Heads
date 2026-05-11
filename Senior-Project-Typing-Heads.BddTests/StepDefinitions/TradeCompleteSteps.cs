@@ -154,7 +154,6 @@ public class TradeCompleteSteps
         Assert.That(_webDriverContext.Driver!.PageSource, Does.Contain(_seedContext.PendingGameName));
     }
 
-
     [When("I decline the pending game transfer")]
     public void WhenIDeclineThePendingTransfer()
     {
