@@ -44,7 +44,7 @@ public class HomeController : Controller
         return View();
     }
 
-    public IActionResult About() => View("UnderConstruction");
+    public IActionResult About() => View();
 
     public IActionResult Contact() => View("UnderConstruction");
 
