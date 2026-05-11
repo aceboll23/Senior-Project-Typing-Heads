@@ -154,6 +154,15 @@ public class TradeCompleteSteps
         Assert.That(_webDriverContext.Driver!.PageSource, Does.Contain(_seedContext.PendingGameName));
     }
 
+    [Then("the pending transfers section should no longer show that game")]
+    public void ThenPendingTransfersSectionEmpty()
+    {
+        var pendingSection = _webDriverContext.Driver!.FindElements(By.Id("pending-transfers-section"));
+        if (pendingSection.Count > 0)
+        {
+            Assert.That(pendingSection[0].Text, Does.Not.Contain(_seedContext.PendingGameName));
+        }
+    }
 
     [When("I decline the pending game transfer")]
     public void WhenIDeclineThePendingTransfer()
