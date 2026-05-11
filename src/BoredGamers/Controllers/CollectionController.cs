@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BoredGamers.Services.Collections;
 using BoredGamers.Services.Ai;
+using BoredGamers.Services.Transfers;
 using BoredGamers.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,17 +24,20 @@ namespace BoredGamers.Controllers
     private readonly IUserCollectionService _collections;
     private readonly UserManager<User> _userManager;
     private readonly IAiRecommendationService _aiRecommendations;
+    private readonly IGameTransferService _transfers;
 
     public CollectionController(
         ApplicationDbContext db,
         IUserCollectionService collections,
         UserManager<User> userManager,
-        IAiRecommendationService aiRecommendations)
+        IAiRecommendationService aiRecommendations,
+        IGameTransferService transfers)
     {
       _db = db;
       _collections = collections;
       _userManager = userManager;
       _aiRecommendations = aiRecommendations;
+      _transfers = transfers;
     }
 
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -180,13 +184,112 @@ namespace BoredGamers.Controllers
           .Select(c => c.Game)
           .ToListAsync(ct);
 
+      var pendingTransfers = await _transfers.GetPendingTransfersForUserAsync(userId, ct);
+
       ViewData["Page"] = page;
       ViewData["TotalPages"] = totalPages;
       ViewData["TotalCount"] = totalCount;
       ViewData["WishlistGames"] = wishlistGames;
+      ViewData["PendingTransfers"] = pendingTransfers;
 
       return View(ownedItems);
     }
+
+    // ── Transfer actions ──────────────────────────────────────────────────────
+
+    [HttpGet("transfer/{gameId:int}")]
+    public async Task<IActionResult> Transfer(int gameId, CancellationToken ct)
+    {
+      var userId = GetUserId();
+      var entry = await _db.UserGameCollections
+          .AsNoTracking()
+          .Include(c => c.Game)
+          .FirstOrDefaultAsync(c => c.UserId == userId && c.GameId == gameId && c.Status == CollectionStatus.Owned, ct);
+
+      if (entry == null)
+      {
+        TempData["Error"] = "Game not found in your collection.";
+        return RedirectToAction("Index");
+      }
+      return View(entry.Game);
+    }
+
+    [HttpPost("transfer/{gameId:int}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Transfer(int gameId, string toUsername, CancellationToken ct)
+    {
+      if (string.IsNullOrWhiteSpace(toUsername))
+      {
+        TempData["Error"] = "Please enter a username.";
+        return RedirectToAction("Transfer", new { gameId });
+      }
+      var receiver = await _userManager.FindByNameAsync(toUsername);
+      if (receiver == null)
+      {
+        TempData["Error"] = $"User '{toUsername}' not found.";
+        return RedirectToAction("Transfer", new { gameId });
+      }
+      return RedirectToAction("TransferConfirm", new { gameId, to = toUsername });
+    }
+
+    [HttpGet("transfer/{gameId:int}/confirm")]
+    public async Task<IActionResult> TransferConfirm(int gameId, string to, CancellationToken ct)
+    {
+      var userId = GetUserId();
+      var entry = await _db.UserGameCollections
+          .AsNoTracking()
+          .Include(c => c.Game)
+          .FirstOrDefaultAsync(c => c.UserId == userId && c.GameId == gameId && c.Status == CollectionStatus.Owned, ct);
+
+      if (entry == null)
+      {
+        TempData["Error"] = "Game not found in your collection.";
+        return RedirectToAction("Index");
+      }
+      ViewData["ToUsername"] = to;
+      return View(entry.Game);
+    }
+
+    [HttpPost("transfer/{gameId:int}/confirm")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ExecuteTransfer(int gameId, string toUsername, CancellationToken ct)
+    {
+      var userId = GetUserId();
+      var result = await _transfers.InitiateTransferAsync(userId, gameId, toUsername, ct);
+      if (!result.Success)
+      {
+        TempData["Error"] = result.Error;
+        return RedirectToAction("Index");
+      }
+      TempData["Success"] = $"Transfer initiated. {toUsername} will be notified to confirm they received the game.";
+      return RedirectToAction("Index");
+    }
+
+    [HttpPost("transfer/accept/{transferId:int}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AcceptTransfer(int transferId, CancellationToken ct)
+    {
+      var userId = GetUserId();
+      var result = await _transfers.AcceptTransferAsync(userId, transferId, ct);
+      TempData[result.Success ? "Success" : "Error"] = result.Success
+          ? "Game added to your collection!"
+          : result.Error;
+      return RedirectToAction("Index");
+    }
+
+    [HttpPost("transfer/decline/{transferId:int}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeclineTransfer(int transferId, CancellationToken ct)
+    {
+      var userId = GetUserId();
+      var result = await _transfers.DeclineTransferAsync(userId, transferId, ct);
+      TempData[result.Success ? "Success" : "Error"] = result.Success
+          ? "Transfer declined."
+          : result.Error;
+      return RedirectToAction("Index");
+    }
+
+    // ── End Transfer actions ──────────────────────────────────────────────────
 
     [HttpGet("all-friend-trades")]
     public async Task<IActionResult> AllFriendTrades(int page = 1, CancellationToken ct = default)

@@ -11,12 +11,78 @@
     var totalPages = (int)(ViewData["TotalPages"] ?? 1);
     var totalCount = (int)(ViewData["TotalCount"] ?? 0);
     var wishlistGames = ViewData["WishlistGames"] as List<Game> ?? new List<Game>();
+    var pendingTransfers = ViewData["PendingTransfers"] as List<PendingTransferViewModel> ?? new List<PendingTransferViewModel>();
 
     var canUseAi = AiAccessPolicy.IsAllowed(User?.Identity?.Name);
 }
 
 <section class="py-4">
     <div class="container">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (pendingTransfers.Count > 0)
+        {
+            <div class="mb-5" id="pending-transfers-section">
+                <h2 class="mb-1">Pending Transfers</h2>
+                <div class="text-muted mb-3">@pendingTransfers.Count incoming game(s) waiting for your confirmation</div>
+                <div class="row g-3">
+                    @foreach (var pt in pendingTransfers)
+                    {
+                        var ptImage = !string.IsNullOrWhiteSpace(pt.Game.ImageUrl)
+                            ? pt.Game.ImageUrl
+                            : !string.IsNullOrWhiteSpace(pt.Game.ThumbnailUrl)
+                                ? pt.Game.ThumbnailUrl
+                                : Url.Content("~/images/game-placeholder.png");
+
+                        <div class="col-12 col-md-6 col-lg-4" id="pending-transfer-@pt.TransferId">
+                            <div class="card bg-dark text-light border border-warning shadow-sm">
+                                <div class="row g-0">
+                                    <div class="col-4">
+                                        <img src="@ptImage" alt="@pt.Game.Name" class="img-fluid rounded-start h-100" style="object-fit: cover;" />
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="card-body d-flex flex-column h-100">
+                                            <h6 class="card-title mb-1">@pt.Game.Name</h6>
+                                            <div class="text-muted small mb-2">
+                                                <i class="bi bi-person me-1"></i>From <strong>@pt.FromUsername</strong>
+                                            </div>
+                                            <div class="mt-auto d-flex gap-2">
+                                                <form asp-controller="Collection" asp-action="AcceptTransfer" asp-route-transferId="@pt.TransferId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-success btn-sm" id="accept-transfer-btn-@pt.TransferId">
+                                                        <i class="bi bi-check-lg me-1"></i>Accept
+                                                    </button>
+                                                </form>
+                                                <form asp-controller="Collection" asp-action="DeclineTransfer" asp-route-transferId="@pt.TransferId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" id="decline-transfer-btn-@pt.TransferId">
+                                                        Decline
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <h1 class="mb-1">My Collection</h1>
@@ -100,6 +166,15 @@
                                     </button>
                                 }
                             </form>
+
+                            @if (item.IsAvailableForTrade)
+                            {
+                                <a asp-controller="Collection" asp-action="Transfer" asp-route-gameId="@g.Id"
+                                   class="btn btn-outline-info btn-sm w-100 mt-1"
+                                   id="transfer-btn-@g.Id">
+                                    <i class="bi bi-box-arrow-right me-1"></i>Transfer Game
+                                </a>
+                            }
 
                             <form asp-controller="Collection" asp-action="RemoveFromCollection" method="post" class="mt-1"
                                   onsubmit="return confirm('Are you sure you want to remove this game from your collection?');">
