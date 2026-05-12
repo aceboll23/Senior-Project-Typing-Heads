@@ -18,6 +18,7 @@ using BoredGamers.Services.Bdd;
 using BoredGamers.Hubs;
 using BoredGamers.Services.ContentModeration;
 using BoredGamers.Services.Transfers;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 //
@@ -145,6 +146,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
+});
 app.UseRouting();
 
 // Authentication MUST come before Authorization
