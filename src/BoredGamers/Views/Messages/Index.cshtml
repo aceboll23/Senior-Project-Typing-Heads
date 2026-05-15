@@ -31,36 +31,47 @@
                     var otherAvatar = otherProfile?.AvatarUrl;
                     var isUnread = msg.RecipientProfileId == currentProfileId && msg.Status != MessageStatus.Read;
 
-                    <a href="/Messages/Conversation/@otherUsername"
-                       class="list-group-item list-group-item-action bg-dark d-flex align-items-center gap-3 @(isUnread ? "border-primary" : "")">
-                        @if (!string.IsNullOrEmpty(otherAvatar))
-                        {
-                            <img src="@otherAvatar" class="rounded-circle"
-                                 style="width:48px;height:48px;object-fit:cover;">
-                        }
-                        else
-                        {
-                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
-                                 style="width:48px;height:48px;font-size:1.2rem;">
-                                @otherUsername.Substring(0, 1).ToUpper()
+                    <div class="list-group-item bg-dark d-flex align-items-center gap-3 @(isUnread ? "border-primary" : "")">
+                        <a href="/Messages/Conversation/@otherUsername"
+                           class="d-flex align-items-center gap-3 flex-grow-1 text-decoration-none overflow-hidden">
+                            @if (!string.IsNullOrEmpty(otherAvatar))
+                            {
+                                <img src="@otherAvatar" class="rounded-circle"
+                                     style="width:48px;height:48px;object-fit:cover;">
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                                     style="width:48px;height:48px;font-size:1.2rem;">
+                                    @otherUsername.Substring(0, 1).ToUpper()
+                                </div>
+                            }
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold @(isUnread ? "text-white" : "text-muted")">
+                                        @otherUsername
+                                    </span>
+                                    <small class="text-muted">@msg.SentAt.ToString("MMM dd")</small>
+                                </div>
+                                <div class="text-muted text-truncate small">
+                                    @(msg.SenderProfileId == currentProfileId ? "You: " : "")@msg.Content
+                                </div>
                             </div>
-                        }
-                        <div class="flex-grow-1 overflow-hidden">
-                            <div class="d-flex justify-content-between">
-                                <span class="fw-bold @(isUnread ? "text-white" : "text-muted")">
-                                    @otherUsername
-                                </span>
-                                <small class="text-muted">@msg.SentAt.ToString("MMM dd")</small>
-                            </div>
-                            <div class="text-muted text-truncate small">
-                                @(msg.SenderProfileId == currentProfileId ? "You: " : "")@msg.Content
-                            </div>
-                        </div>
+                        </a>
                         @if (isUnread)
                         {
                             <span class="badge bg-primary rounded-pill">New</span>
                         }
-                    </a>
+                        <form asp-controller="Messages" asp-action="DeleteConversation" method="post" class="m-0">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="otherUsername" value="@otherUsername" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Delete this conversation? The other person will still see your messages, and the conversation will reappear if they message you again.');"
+                                    title="Delete conversation">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </form>
+                    </div>
                 }
             </div>
         }
@@ -83,19 +94,30 @@
                     var otherUsername = otherProfile?.User?.UserName ?? "Unknown";
                     var isUnread = msg.RecipientProfileId == currentProfileId && msg.Status != MessageStatus.Read;
 
-                    <a href="/Messages/Conversation/@otherUsername"
-                       class="list-group-item list-group-item-action bg-dark d-flex align-items-center gap-3">
-                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
-                             style="width:48px;height:48px;font-size:1.2rem;">
-                            @otherUsername.Substring(0, 1).ToUpper()
-                        </div>
-                        <div class="flex-grow-1 overflow-hidden">
-                            <span class="fw-bold @(isUnread ? "text-white" : "text-muted")">
-                                @otherUsername
-                            </span>
-                            <div class="text-muted text-truncate small">@msg.Content</div>
-                        </div>
-                    </a>
+                    <div class="list-group-item bg-dark d-flex align-items-center gap-3">
+                        <a href="/Messages/Conversation/@otherUsername"
+                           class="d-flex align-items-center gap-3 flex-grow-1 text-decoration-none overflow-hidden">
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width:48px;height:48px;font-size:1.2rem;">
+                                @otherUsername.Substring(0, 1).ToUpper()
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <span class="fw-bold @(isUnread ? "text-white" : "text-muted")">
+                                    @otherUsername
+                                </span>
+                                <div class="text-muted text-truncate small">@msg.Content</div>
+                            </div>
+                        </a>
+                        <form asp-controller="Messages" asp-action="DeleteConversation" method="post" class="m-0">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="otherUsername" value="@otherUsername" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Delete this conversation? The other person will still see your messages.');"
+                                    title="Delete conversation">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </form>
+                    </div>
                 }
             </div>
         }
