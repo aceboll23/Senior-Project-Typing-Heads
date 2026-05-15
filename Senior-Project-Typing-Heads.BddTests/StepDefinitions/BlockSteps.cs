@@ -100,7 +100,7 @@ public class BlockSteps
     [When("I click the Block User button")]
     public void WhenIClickTheBlockUserButton()
     {
-        var btn = new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(5))
+        var btn = new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(5))
             .Until(d => d.FindElement(By.Id("block-user-btn")));
         btn.Click();
 
@@ -169,7 +169,7 @@ public class BlockSteps
     [When("I click the Unblock button for the target user")]
     public void WhenIClickTheUnblockButtonForTheTargetUser()
     {
-        var btn = new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(5))
+        var btn = new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(5))
             .Until(d => d.FindElement(By.Id($"unblock-btn-{_seedContext.TargetUsername}")));
         btn.Click();
 

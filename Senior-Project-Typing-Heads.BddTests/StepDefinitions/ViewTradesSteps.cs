@@ -77,7 +77,7 @@ public class ViewTradesSteps
     [When("I click the View Available Trades button")]
     public void WhenIClickTheViewAvailableTradesButton()
     {
-        var btn = new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(5))
+        var btn = new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(5))
             .Until(d => d.FindElement(By.Id("view-available-trades-btn")));
         btn.Click();
     }
@@ -85,7 +85,7 @@ public class ViewTradesSteps
     [Then("I should be on my trade friend's available trades page")]
     public void ThenIShouldBeOnMyTradeFriendsAvailableTradesPage()
     {
-        new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(5))
+        new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(5))
             .Until(d => d.Url.Contains($"/collection/trades/{_seedContext.FriendWithTradesUsername}", StringComparison.OrdinalIgnoreCase));
         Assert.That(_webDriverContext.Driver!.Url, Does.Contain($"/collection/trades/{_seedContext.FriendWithTradesUsername}").IgnoreCase);
     }
@@ -119,7 +119,7 @@ public class ViewTradesSteps
     [Then("I should see a message that no games are available for trade")]
     public void ThenIShouldSeeAMessageThatNoGamesAreAvailableForTrade()
     {
-        var emptyMsg = new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(5))
+        var emptyMsg = new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(5))
             .Until(d => d.FindElements(By.Id("trades-empty-msg")).Count > 0);
         Assert.That(emptyMsg, Is.True);
     }

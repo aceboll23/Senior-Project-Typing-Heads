@@ -88,7 +88,7 @@ public class TradeSteps
     [When("I click the Mark as Trade button for my game")]
     public void WhenIClickTheMarkAsTradeButtonForMyGame()
     {
-        var btn = new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(5))
+        var btn = new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(5))
             .Until(d => d.FindElement(By.Id($"mark-trade-btn-{_seedContext.GameId}")));
         btn.Click();
 
@@ -99,7 +99,7 @@ public class TradeSteps
     [When("I click the Remove from Trade button for my game")]
     public void WhenIClickTheRemoveFromTradeButtonForMyGame()
     {
-        var btn = new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(5))
+        var btn = new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(5))
             .Until(d => d.FindElement(By.Id($"remove-trade-btn-{_seedContext.GameId}")));
         btn.Click();
 
@@ -117,7 +117,7 @@ public class TradeSteps
     [Then("I should see the Available for Trade badge for my game")]
     public void ThenIShouldSeeTheAvailableForTradeBadgeForMyGame()
     {
-        var badge = new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(5))
+        var badge = new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(5))
             .Until(d => d.FindElements(By.Id($"trade-badge-{_seedContext.GameId}")).Count > 0);
         Assert.That(badge, Is.True);
     }
