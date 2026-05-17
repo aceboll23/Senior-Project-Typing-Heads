@@ -260,6 +260,28 @@ light theme colors will be if the toggle is switched on.
   opacity: 0.85;
 }
 
+/* Bootstrap-native list groups don't follow our custom theme (they key off
+   data-bs-theme, which stays "dark"). Re-skin them for light mode so rows
+   blend with their white card instead of rendering dark. */
+[data-theme="light"] .list-group-item {
+  background-color: #ffffff;
+  border-color: #b0b5be;
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .list-group-item-action:hover,
+[data-theme="light"] .list-group-item-action:focus {
+  background-color: #e3e5e8;
+  color: #1a1a1d;
+}
+
+/* The file-input "Browse…" button is also Bootstrap/browser-themed. */
+[data-theme="light"] .form-control::file-selector-button,
+[data-theme="light"] input[type="file"]::file-selector-button {
+  background-color: #e3e5e8;
+  color: #1a1a1d;
+}
+
 /* ============================================================================
    Bootstrap Overrides
    Forces Bootstrap utility classes to use our custom CSS variables instead of
