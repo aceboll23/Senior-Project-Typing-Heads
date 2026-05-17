@@ -14,19 +14,22 @@
         </div>
 
         <!-- Search Form -->
-        <form method="get" asp-controller="UserSearch" asp-action="Index" class="mb-4">
+        <form method="get" asp-controller="UserSearch" asp-action="Index" class="mb-4 position-relative">
             <div class="input-group input-group-lg">
                 <input type="text"
-                       name="q"
-                       id="userSearchInput"
-                       class="form-control"
-                       placeholder="Search by username..."
-                       value="@query"
-                       autocomplete="off"
-                       autofocus />
+                    name="q"
+                    id="userSearchInput"
+                    class="form-control"
+                    placeholder="Search by username..."
+                    value="@query"
+                    autocomplete="off"
+                    autofocus />
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-search me-1"></i>Search
                 </button>
+            </div>
+            <div id="userSearchPageResults" class="dropdown-menu w-100 shadow"
+                style="display:none; position:absolute; top:100%; left:0; z-index:1000;">
             </div>
             @if (!string.IsNullOrEmpty(query) && query.Length < 2)
             {
@@ -116,3 +119,68 @@
         }
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let searchTimeout = null;
+            const $input = $('#userSearchInput');
+            const $container = $('#userSearchPageResults');
+
+            function escapeHtml(str) {
+                return $('<div>').text(str).html();
+            }
+
+            function clearResults() {
+                $container.hide().empty();
+            }
+
+            function renderResults(users) {
+                $container.empty();
+
+                if (users.length === 0) {
+                    $container.append('<span class="dropdown-item text-muted">No users found</span>');
+                } else {
+                    users.forEach(function (user) {
+                        const avatar = user.avatarUrl
+                            ? `<img src="${user.avatarUrl}" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover;">`
+                            : `<div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;font-size:1rem;">${user.username.charAt(0).toUpperCase()}</div>`;
+
+                        const $item = $(`
+                            <a class="dropdown-item d-flex align-items-center py-2" href="/Profile/${encodeURIComponent(user.username)}">
+                                ${avatar}
+                                <span>${escapeHtml(user.username)}</span>
+                            </a>
+                        `);
+
+                        $container.append($item);
+                    });
+                }
+                $container.show();
+            }
+
+            $input.on('input', function () {
+                const q = $(this).val().trim();
+                clearTimeout(searchTimeout);
+
+                if (q.length < 2) {
+                    clearResults();
+                    return;
+                }
+
+                searchTimeout = setTimeout(function () {
+                    $.getJSON('/UserSearch/Search', { q: q }, function (data) {
+                        renderResults(data, q);
+                    });
+                }, 250);
+            });
+
+            // Hide dropdown when clicking outside
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#userSearchInput, #userSearchPageResults').length) {
+                    clearResults();
+                }
+            });
+        });
+    </script>
+}

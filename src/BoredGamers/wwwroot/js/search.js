@@ -37,7 +37,7 @@ $(document).ready(function () {
             if (searchMode === 'users') {
                 $('#searchInput').attr('placeholder', 'Search users...');
                 $('#gameSearchForm').attr('action', '#'); // prevent form submit for user search
-                $('#searchBtn').hide(); // hide submit button
+                $('#searchBtn').show();
             } else {
                 $('#searchInput').attr('placeholder', 'Search games...');
                 $('#gameSearchForm').attr('action', '/Games/SearchResults');
@@ -71,9 +71,7 @@ $(document).ready(function () {
             if (searchMode === 'users') {
                 e.preventDefault();
                 const q = $('#searchInput').val().trim();
-                if (q.length >= 2) {
                     window.location.href = '/UserSearch?q=' + encodeURIComponent(q);
-                }
             }
         });
 
@@ -81,9 +79,7 @@ $(document).ready(function () {
             if (e.key === 'Enter' && searchMode === 'users') {
                 e.preventDefault();
                 const q = $(this).val().trim();
-                if (q.length >= 2) {
-                    window.location.href = '/UserSearch?q=' + encodeURIComponent(q);
-                }
+                window.location.href = '/UserSearch?q=' + encodeURIComponent(q);
             }
         });
 
@@ -91,9 +87,7 @@ $(document).ready(function () {
             if (searchMode === 'users') {
                 e.preventDefault();
                 const q = $('#searchInput').val().trim();
-                if (q.length >= 2) {
                     window.location.href = '/UserSearch?q=' + encodeURIComponent(q);
-                }
             }
         });
 
