@@ -105,7 +105,7 @@ public class BlockSteps
         btn.Click();
 
         // Handle the confirm dialog
-        new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(5))
+        new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(5))
             .Until(d => {
                 try { d.SwitchTo().Alert(); return true; }
                 catch { return false; }
@@ -174,7 +174,7 @@ public class BlockSteps
         btn.Click();
 
         // Wait until the unblock button is gone (redirect completed and user removed from list)
-        new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(10))
+        new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(10))
             .Until(d => d.FindElements(By.Id($"unblock-btn-{_seedContext.TargetUsername}")).Count == 0);
     }
 

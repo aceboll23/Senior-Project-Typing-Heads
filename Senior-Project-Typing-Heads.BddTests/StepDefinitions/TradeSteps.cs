@@ -92,7 +92,7 @@ public class TradeSteps
             .Until(d => d.FindElement(By.Id($"mark-trade-btn-{_seedContext.GameId}")));
         btn.Click();
 
-        new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(10))
+        new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(10))
             .Until(d => d.FindElements(By.Id($"mark-trade-btn-{_seedContext.GameId}")).Count == 0);
     }
 
@@ -103,7 +103,7 @@ public class TradeSteps
             .Until(d => d.FindElement(By.Id($"remove-trade-btn-{_seedContext.GameId}")));
         btn.Click();
 
-        new WebDriverWait(_webDriverContext.Driver, TimeSpan.FromSeconds(10))
+        new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(10))
             .Until(d => d.FindElements(By.Id($"remove-trade-btn-{_seedContext.GameId}")).Count == 0);
     }
 
