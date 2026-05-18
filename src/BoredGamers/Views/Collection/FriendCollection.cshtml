@@ -35,10 +35,10 @@
             <div class="row g-4">
                 @foreach (var g in Model)
                 {
-                    var image = !string.IsNullOrWhiteSpace(g.ImageUrl)
-                        ? g.ImageUrl
-                        : !string.IsNullOrWhiteSpace(g.ThumbnailUrl)
-                            ? g.ThumbnailUrl
+                    var image = !string.IsNullOrWhiteSpace(g.ThumbnailUrl)
+                        ? g.ThumbnailUrl
+                        : !string.IsNullOrWhiteSpace(g.ImageUrl)
+                            ? g.ImageUrl
                             : Url.Content("~/images/game-placeholder.png");
 
                     <div class="col-12 col-sm-6 col-lg-3">
