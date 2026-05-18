@@ -7,6 +7,7 @@
         : !string.IsNullOrWhiteSpace(Model.ThumbnailUrl)
             ? Model.ThumbnailUrl
             : Url.Content("~/images/game-placeholder.png");
+    var friends = ViewData["Friends"] as List<string> ?? new List<string>();
 }
 
 <section class="py-4">
@@ -41,12 +42,26 @@
         <form asp-controller="Collection" asp-action="Transfer" asp-route-gameId="@Model.Id" method="post">
             @Html.AntiForgeryToken()
             <div class="mb-3">
-                <label for="toUsername" class="form-label">Transfer to (username)</label>
-                <input type="text" class="form-control" id="toUsername" name="toUsername"
-                       placeholder="Enter username" autocomplete="off" required />
+                <label for="toUsername" class="form-label">Transfer to</label>
+                @if (friends.Count == 0)
+                {
+                    <div class="alert alert-secondary">
+                        You have no friends to transfer to. <a asp-controller="Friends" asp-action="Index">Add friends</a> first.
+                    </div>
+                }
+                else
+                {
+                    <select class="form-select" id="toUsername" name="toUsername" required>
+                        <option value="" disabled selected>Select a friend...</option>
+                        @foreach (var username in friends)
+                        {
+                            <option value="@username">@username</option>
+                        }
+                    </select>
+                }
             </div>
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-warning" id="transfer-preview-btn">
+                <button type="submit" class="btn btn-warning" id="transfer-preview-btn" @(friends.Count == 0 ? "disabled" : "")>
                     <i class="bi bi-arrow-right me-1"></i>Next: Review Transfer
                 </button>
                 <a asp-controller="Collection" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
