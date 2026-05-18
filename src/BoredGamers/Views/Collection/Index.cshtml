@@ -41,10 +41,10 @@
                 <div class="row g-3">
                     @foreach (var pt in pendingTransfers)
                     {
-                        var ptImage = !string.IsNullOrWhiteSpace(pt.Game.ImageUrl)
-                            ? pt.Game.ImageUrl
-                            : !string.IsNullOrWhiteSpace(pt.Game.ThumbnailUrl)
-                                ? pt.Game.ThumbnailUrl
+                        var ptImage = !string.IsNullOrWhiteSpace(pt.Game.ThumbnailUrl)
+                            ? pt.Game.ThumbnailUrl
+                            : !string.IsNullOrWhiteSpace(pt.Game.ImageUrl)
+                                ? pt.Game.ImageUrl
                                 : Url.Content("~/images/game-placeholder.png");
 
                         <div class="col-12 col-md-6 col-lg-4" id="pending-transfer-@pt.TransferId">
@@ -102,10 +102,10 @@
                 @foreach (var item in Model)
                 {
                     var g = item.Game;
-                    var image = !string.IsNullOrWhiteSpace(g.ImageUrl)
-                        ? g.ImageUrl
-                        : !string.IsNullOrWhiteSpace(g.ThumbnailUrl)
-                            ? g.ThumbnailUrl
+                    var image = !string.IsNullOrWhiteSpace(g.ThumbnailUrl)
+                        ? g.ThumbnailUrl
+                        : !string.IsNullOrWhiteSpace(g.ImageUrl)
+                            ? g.ImageUrl
                             : Url.Content("~/images/game-placeholder.png");
 
                     <div class="col-12 col-sm-6 col-lg-3">
@@ -391,7 +391,7 @@
                         var cards = container.querySelectorAll('.card-title');
                         games.forEach(function (g, i) {
                             if (imgs[i]) {
-                                imgs[i].src = g.imageUrl || g.thumbnailUrl || '/images/game-placeholder.png';
+                                imgs[i].src = g.thumbnailUrl || g.imageUrl || '/images/game-placeholder.png';
                                 imgs[i].alt = g.name || '';
                             }
                             if (cards[i]) cards[i].textContent = g.name || '';
