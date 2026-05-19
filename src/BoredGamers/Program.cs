@@ -153,6 +153,7 @@ app.UseRouting();
 
 // Authentication MUST come before Authorization
 app.UseAuthentication();
+app.UseMiddleware<BoredGamers.Middleware.BannedUserMiddleware>();
 app.UseAuthorization();
 
 app.UseStaticFiles();
