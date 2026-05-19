@@ -91,10 +91,9 @@ public class TradeCompleteSteps
         Assert.That(transferBtn, Is.Not.Null, "Transfer Game button not found");
         transferBtn!.Click();
 
-        // Enter receiver username
+        // Select receiver from friends dropdown
         wait.Until(d => d.FindElement(By.Id("toUsername")));
-        var input = driver.FindElement(By.Id("toUsername"));
-        input.SendKeys(_seedContext.ReceiverUsername);
+        new SelectElement(driver.FindElement(By.Id("toUsername"))).SelectByValue(_seedContext.ReceiverUsername);
         driver.FindElement(By.Id("transfer-preview-btn")).Click();
 
         // On confirm page — click confirm
@@ -184,7 +183,7 @@ public class TradeCompleteSteps
         transferLink!.Click();
 
         wait.Until(d => d.FindElement(By.Id("toUsername")));
-        driver.FindElement(By.Id("toUsername")).SendKeys(_seedContext.ReceiverUsername);
+        new SelectElement(driver.FindElement(By.Id("toUsername"))).SelectByValue(_seedContext.ReceiverUsername);
         driver.FindElement(By.Id("transfer-preview-btn")).Click();
 
         wait.Until(d => d.FindElement(By.Id("transfer-confirm-btn")));
@@ -220,7 +219,7 @@ public class TradeCompleteSteps
         transferLink!.Click();
 
         wait.Until(d => d.FindElement(By.Id("toUsername")));
-        driver.FindElement(By.Id("toUsername")).SendKeys(_seedContext.HasGameUsername);
+        new SelectElement(driver.FindElement(By.Id("toUsername"))).SelectByValue(_seedContext.HasGameUsername);
         driver.FindElement(By.Id("transfer-preview-btn")).Click();
 
         wait.Until(d => d.FindElement(By.Id("transfer-confirm-btn")));

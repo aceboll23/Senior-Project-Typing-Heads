@@ -41,6 +41,19 @@ public class BddTradeCompleteTestDataService
         var receiver = await CreateUserAsync(ReceiverUserName, ReceiverEmail, ReceiverPassword);
         var hasGame = await CreateUserAsync(HasGameUserName, HasGameEmail, HasGamePassword);
 
+        // Create profiles so friendships can be established
+        var senderProfile = new UserProfile { UserId = sender.Id };
+        var receiverProfile = new UserProfile { UserId = receiver.Id };
+        var hasGameProfile = new UserProfile { UserId = hasGame.Id };
+        _db.Set<UserProfile>().AddRange(senderProfile, receiverProfile, hasGameProfile);
+        await _db.SaveChangesAsync();
+
+        // Sender must be friends with receiver and hasGame for the transfer dropdown to show them
+        _db.Set<Friendship>().AddRange(
+            new Friendship { RequesterProfileId = senderProfile.Id, ReceiverProfileId = receiverProfile.Id, Status = FriendshipStatus.Accepted },
+            new Friendship { RequesterProfileId = senderProfile.Id, ReceiverProfileId = hasGameProfile.Id, Status = FriendshipStatus.Accepted }
+        );
+
         // Sender owns Game A (tradeable) — used for initiating transfer tests
         _db.UserGameCollections.AddRange(
             new UserGameCollection { UserId = sender.Id, GameId = transferGame.Id, DateAdded = DateTime.UtcNow, Status = CollectionStatus.Owned, IsAvailableForTrade = true },
@@ -88,8 +101,18 @@ public class BddTradeCompleteTestDataService
 
             var collections = await _db.UserGameCollections.Where(c => c.UserId == existing.Id).ToListAsync();
             _db.UserGameCollections.RemoveRange(collections);
-            await _db.SaveChangesAsync();
 
+            var profile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == existing.Id);
+            if (profile != null)
+            {
+                var friendships = await _db.Set<Friendship>()
+                    .Where(f => f.RequesterProfileId == profile.Id || f.ReceiverProfileId == profile.Id)
+                    .ToListAsync();
+                _db.Set<Friendship>().RemoveRange(friendships);
+                _db.Set<UserProfile>().Remove(profile);
+            }
+
+            await _db.SaveChangesAsync();
             await _userManager.DeleteAsync(existing);
         }
     }
