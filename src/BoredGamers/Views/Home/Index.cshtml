@@ -60,7 +60,7 @@
         @if (User.Identity?.IsAuthenticated != true)
         {
         <div class="d-flex justify-content-center">
-            <button class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</button>
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Sign Up</a>
         </div>
         }
     </div>
