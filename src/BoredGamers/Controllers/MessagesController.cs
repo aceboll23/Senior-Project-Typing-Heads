@@ -240,7 +240,7 @@ public class MessagesController : Controller
             messageId = message.Id,
             senderProfileId = message.SenderProfileId,
             content = message.Content,
-            sentAt = message.SentAt.ToString("MMM dd, h:mm tt"),
+            sentAt = message.SentAt.ToString("o"),
             status = message.Status.ToString(),
             avatarUrl = currentProfile.AvatarUrl ?? ""
         });
@@ -252,7 +252,7 @@ public class MessagesController : Controller
         {
             success = true,
             messageId = message.Id,
-            sentAt = message.SentAt.ToString("MMM dd, h:mm tt"),
+            sentAt = message.SentAt.ToString("o"),
             content = message.Content,
             status = message.Status.ToString()
         });

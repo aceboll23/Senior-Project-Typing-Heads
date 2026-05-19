@@ -51,7 +51,7 @@
                                     <span class="fw-bold @(isUnread ? "text-white" : "text-muted")">
                                         @otherUsername
                                     </span>
-                                    <small class="text-muted">@msg.SentAt.ToString("MMM dd")</small>
+                                    <small class="text-muted msg-time-short" data-utc="@msg.SentAt.ToString("o")">@msg.SentAt.ToString("MMM dd")</small>
                                 </div>
                                 <div class="text-muted text-truncate small">
                                     @(msg.SenderProfileId == currentProfileId ? "You: " : "")@msg.Content
@@ -123,3 +123,17 @@
         }
     </div>
 </section>
+@section Scripts {
+<script>
+    document.querySelectorAll('.msg-time-short').forEach(el => {
+        const utc = el.dataset.utc;
+        if (!utc) return;
+        const d = new Date(utc);
+        el.textContent = d.toLocaleString('en-US', {
+            timeZone: 'America/Los_Angeles',
+            month: 'short',
+            day: 'numeric'
+        });
+    });
+</script>
+}
