@@ -59,7 +59,7 @@
                              style="max-width:70%;">
                             <div>@msg.Content</div>
                             <div class="d-flex justify-content-end align-items-center gap-1 mt-1">
-                                <small class="text-white-50">
+                                <small class="text-white-50 msg-time" data-utc="@msg.SentAt.ToString("o")">
                                     @msg.SentAt.ToString("MMM dd, h:mm tt")
                                 </small>
                                 @if (isMine)
@@ -133,17 +133,30 @@ $(document).ready(function () {
         return $('<div>').text(str).html();
     }
 
-    function appendMessage(content, sentAt, isMine) {
+    function formatLocalTime(utcString) {
+        const d = new Date(utcString);
+        return d.toLocaleString('en-US', {
+            timeZone: 'America/Los_Angeles',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
+
+    function appendMessage(content, sentAtUtc, isMine) {
         const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
         const bubble = isMine ? 'bg-primary' : 'bg-secondary';
         const icon = isMine ? '<i class="bi bi-check2 text-white-50 small" title="Sent"></i>' : '';
+        const display = formatLocalTime(sentAtUtc);
 
         const msgHtml = `
             <div class="d-flex ${alignment} mb-2">
                 <div class="${bubble} text-white rounded p-2" style="max-width:70%;">
                     <div>${escapeHtml(content)}</div>
                     <div class="d-flex justify-content-end align-items-center gap-1 mt-1">
-                        <small class="text-white-50">${escapeHtml(sentAt)}</small>
+                        <small class="text-white-50">${escapeHtml(display)}</small>
                         ${icon}
                     </div>
                 </div>
@@ -151,6 +164,11 @@ $(document).ready(function () {
 
         $history.append(msgHtml);
         $history.scrollTop($history[0].scrollHeight);
+        // Convert all server-rendered message times to Pacific time
+        document.querySelectorAll('.msg-time').forEach(el => {
+            const utc = el.dataset.utc;
+            if (utc) el.textContent = formatLocalTime(utc);
+        });
     }
     // Mark this conversation as actively viewed so the global notification sound
     // doesn't play when messages from this user arrive
