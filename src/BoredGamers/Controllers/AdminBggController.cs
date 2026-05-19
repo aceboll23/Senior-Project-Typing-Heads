@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using BoredGamers.Services.Games;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Linq;
 
 namespace BoredGamers.Controllers
 {
-  //Dev-only endpoint to sync Top games from BGG into the local DB.
+  [Authorize]
   [ApiController]
   [Route("api/admin/bgg")]
   [IgnoreAntiforgeryToken]
