@@ -346,7 +346,7 @@ namespace BoredGamers.Services.Bgg
         ids = doc.Descendants("item")
           .Select(x => x.Attribute("id")?.Value)
           .Where(x => int.TryParse(x, out _))
-          .Select(int.Parse)
+          .Select(x => int.Parse(x!))
           .Distinct()
           .Take(limit)
           .ToList();

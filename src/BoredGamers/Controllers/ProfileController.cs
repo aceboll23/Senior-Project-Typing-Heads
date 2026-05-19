@@ -29,7 +29,7 @@ public class ProfileController : Controller
     }
 
     // GET /Profile/{username}
-    public async Task<IActionResult> Index(string username)
+    public async Task<IActionResult> Index(string? username)
     {
         if (string.IsNullOrWhiteSpace(username))
         {

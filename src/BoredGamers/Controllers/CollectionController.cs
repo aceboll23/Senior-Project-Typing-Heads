@@ -211,6 +211,29 @@ namespace BoredGamers.Controllers
         TempData["Error"] = "Game not found in your collection.";
         return RedirectToAction("Index");
       }
+
+      var currentProfile = await _db.Set<UserProfile>().FirstOrDefaultAsync(p => p.UserId == userId, ct);
+      if (currentProfile != null)
+      {
+        var friendships = await _db.Set<Friendship>()
+            .Where(f => (f.RequesterProfileId == currentProfile.Id || f.ReceiverProfileId == currentProfile.Id)
+                        && f.Status == FriendshipStatus.Accepted)
+            .ToListAsync(ct);
+        var friendProfileIds = friendships
+            .Select(f => f.RequesterProfileId == currentProfile.Id ? f.ReceiverProfileId : f.RequesterProfileId)
+            .ToList();
+        var friends = await _userManager.Users
+            .Include(u => u.Profile)
+            .Where(u => u.Profile != null && friendProfileIds.Contains(u.Profile.Id) && !u.IsBanned && !u.IsDeactivated)
+            .OrderBy(u => u.UserName)
+            .ToListAsync(ct);
+        ViewData["Friends"] = friends.Select(u => u.UserName).ToList();
+      }
+      else
+      {
+        ViewData["Friends"] = new List<string>();
+      }
+
       return View(entry.Game);
     }
 

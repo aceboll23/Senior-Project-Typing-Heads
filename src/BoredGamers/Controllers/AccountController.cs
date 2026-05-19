@@ -248,6 +248,7 @@ public class AccountController : Controller
 
             if (user != null)
             {
+                if (string.IsNullOrEmpty(user.UserName)) return BadRequest();
                 var result = await _signInManager.PasswordSignInAsync(
                     user.UserName,
                     model.Password,

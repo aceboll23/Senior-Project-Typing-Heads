@@ -23,7 +23,8 @@ public static class AiAccessPolicy
         "Beast",
         "PersonFour",
         "TODO_IAN",
-        "TODO_ADLER"
+        "TODO_ADLER",
+        "LMonty"
     };
 
     public static bool IsAllowed(string? username)

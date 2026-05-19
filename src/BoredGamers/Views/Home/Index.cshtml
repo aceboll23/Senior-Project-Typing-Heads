@@ -13,7 +13,7 @@
 
         <!-- Search Bar -->
         <div class="row justify-content-center mb-4">
-    <div class="col-md-6">
+    <div class="col-md-6 position-relative">
         <!-- Game Search Form (shown by default) -->
         <form id="gameSearchForm" action="/Games/SearchResults" method="get" data-authenticated="@Json.Serialize(SignInManager.IsSignedIn(User))">
             <div class="input-group input-group-lg">
@@ -60,7 +60,7 @@
         @if (User.Identity?.IsAuthenticated != true)
         {
         <div class="d-flex justify-content-center">
-            <button class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</button>
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Sign Up</a>
         </div>
         }
     </div>

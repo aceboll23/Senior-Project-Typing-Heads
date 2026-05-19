@@ -347,9 +347,14 @@
                 {
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100">
-                            @if (!string.IsNullOrWhiteSpace(eventGame.Game?.ThumbnailUrl))
+                            @{
+                                var eventGameImg = !string.IsNullOrWhiteSpace(eventGame.Game?.ImageUrl)
+                                    ? eventGame.Game.ImageUrl
+                                    : eventGame.Game?.ThumbnailUrl;
+                            }
+                            @if (!string.IsNullOrWhiteSpace(eventGameImg))
                             {
-                                <img src="@eventGame.Game.ThumbnailUrl" class="card-img-top" alt="@eventGame.Game.Name" />
+                                <img src="@eventGameImg" class="card-img-top" alt="@eventGame.Game!.Name" style="height: 200px; object-fit: cover;" />
                             }
 
                             <div class="card-body">

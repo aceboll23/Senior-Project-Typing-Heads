@@ -214,6 +214,74 @@ light theme colors will be if the toggle is switched on.
   color: #4f5660 !important;
 }
 
+/* Solid colored buttons keep white text in light mode.
+   Without this, .btn-primary inherits var(--text-primary) which is dark in light mode. */
+[data-theme="light"] .btn-primary,
+[data-theme="light"] .btn-primary:hover,
+[data-theme="light"] .btn-primary:focus,
+[data-theme="light"] .btn-primary:active {
+  color: #ffffff !important;
+}
+
+/* Readable placeholder text in light mode */
+[data-theme="light"] .form-control::placeholder,
+[data-theme="light"] .form-select::placeholder {
+  color: #6c757d !important;
+  opacity: 1 !important;
+}
+
+/* Form selects */
+[data-theme="light"] .form-select {
+  background-color: #ffffff;
+  border-color: #b0b5be;
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .form-select:focus {
+  background-color: #ffffff;
+  border-color: #4752c4;
+  color: #1a1a1d;
+}
+
+/* Sent message bubbles (and similar bg-primary surfaces) keep white text in light mode.
+   Without this override, .text-white inverts to dark and disappears against the blue background. */
+[data-theme="light"] .bg-primary.text-white {
+  color: #ffffff !important;
+}
+
+/* Notifications "Read" section opacity.
+   Dark mode keeps the original 0.6 fade. Light mode uses 0.85 because at 0.6 the dark
+   text on a near-white card washes out into illegible gray-on-gray. */
+.notification-read-section {
+  opacity: 0.6;
+}
+
+[data-theme="light"] .notification-read-section {
+  opacity: 0.85;
+}
+
+/* Bootstrap-native list groups don't follow our custom theme (they key off
+   data-bs-theme, which stays "dark"). Re-skin them for light mode so rows
+   blend with their white card instead of rendering dark. */
+[data-theme="light"] .list-group-item {
+  background-color: #ffffff;
+  border-color: #b0b5be;
+  color: #1a1a1d;
+}
+
+[data-theme="light"] .list-group-item-action:hover,
+[data-theme="light"] .list-group-item-action:focus {
+  background-color: #e3e5e8;
+  color: #1a1a1d;
+}
+
+/* The file-input "Browse…" button is also Bootstrap/browser-themed. */
+[data-theme="light"] .form-control::file-selector-button,
+[data-theme="light"] input[type="file"]::file-selector-button {
+  background-color: #e3e5e8;
+  color: #1a1a1d;
+}
+
 /* ============================================================================
    Bootstrap Overrides
    Forces Bootstrap utility classes to use our custom CSS variables instead of

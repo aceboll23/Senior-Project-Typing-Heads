@@ -293,4 +293,53 @@ public class MessagesController : Controller
 
         return Json(new { success = true });
     }
+    //Deletes conversation.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConversation(string otherUsername)
+    {
+        if (string.IsNullOrWhiteSpace(otherUsername))
+            return BadRequest();
+
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null)
+            return Unauthorized();
+
+        var currentProfile = await _db.Set<UserProfile>()
+            .FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+        if (currentProfile == null)
+            return BadRequest();
+
+        var otherUser = await _userManager.Users
+            .Include(u => u.Profile)
+            .FirstOrDefaultAsync(u => u.UserName == otherUsername);
+        if (otherUser?.Profile == null)
+            return NotFound();
+
+        var otherProfileId = otherUser.Profile.Id;
+
+        // Mark every message in this conversation as deleted from current user's side
+        var messages = await _db.DirectMessages
+            .Where(m =>
+                (m.SenderProfileId == currentProfile.Id && m.RecipientProfileId == otherProfileId) ||
+                (m.SenderProfileId == otherProfileId && m.RecipientProfileId == currentProfile.Id))
+            .ToListAsync();
+
+        foreach (var msg in messages)
+        {
+            if (msg.SenderProfileId == currentProfile.Id)
+                msg.DeletedBySender = true;
+            else
+                msg.DeletedByRecipient = true;
+        }
+
+        if (messages.Count > 0)
+        {
+            await _db.SaveChangesAsync();
+            // Update the unread badge since deleted messages no longer count
+            await BroadcastUnreadMessageCountAsync(currentProfile.Id, currentUser.Id);
+        }
+
+        return RedirectToAction("Index");
+    }
 }

@@ -454,7 +454,8 @@ public class PlaygroupModelTests
         await db.SaveChangesAsync();
 
         var saved = await db.PlaygroupInvites.FirstOrDefaultAsync();
-        Assert.That(saved.Status, Is.EqualTo(InviteStatus.Accepted));
+        Assert.That(saved, Is.Not.Null);
+        Assert.That(saved!.Status, Is.EqualTo(InviteStatus.Accepted));
         Assert.That(saved.RespondedAt, Is.Not.Null);
     }
 
@@ -489,7 +490,8 @@ public class PlaygroupModelTests
         await db.SaveChangesAsync();
 
         var saved = await db.PlaygroupInvites.FirstOrDefaultAsync();
-        Assert.That(saved.Status, Is.EqualTo(InviteStatus.Declined));
+        Assert.That(saved, Is.Not.Null);
+        Assert.That(saved!.Status, Is.EqualTo(InviteStatus.Declined));
     }
 
     [Test]
