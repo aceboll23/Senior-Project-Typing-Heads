@@ -115,7 +115,8 @@ public class PlaygroupController : Controller
         if (playgroup == null)
             return NotFound();
 
-        if (!playgroup.IsMember(userId))
+        //private group still returns not found
+        if (playgroup.IsPrivate && !playgroup.IsMember(userId))
             return NotFound();
 
         ViewData["UserId"] = userId;
@@ -166,9 +167,6 @@ public class PlaygroupController : Controller
             .FirstOrDefaultAsync(g => g.Id == id);
 
         if (playgroup == null)
-            return NotFound();
-
-        if (!playgroup.IsMember(userId))
             return NotFound();
 
         if (!playgroup.IsOwner(userId))
@@ -377,9 +375,6 @@ public class PlaygroupController : Controller
             .FirstOrDefaultAsync(g => g.Id == id);
 
         if (playgroup == null)
-            return NotFound();
-
-        if (!playgroup.IsMember(userId))
             return NotFound();
 
         if (!playgroup.IsOwner(userId))

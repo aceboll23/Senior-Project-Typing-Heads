@@ -228,10 +228,8 @@ public class AccountController : Controller
 
     //GET and POST for /Account/Login
     [HttpGet]
-    public IActionResult Login(bool banned = false)
+    public IActionResult Login()
     {
-        if (banned)
-            ModelState.AddModelError(string.Empty, "Your account has been banned. Please contact support.");
         return View();
     }
 
@@ -250,12 +248,6 @@ public class AccountController : Controller
 
             if (user != null)
             {
-                if (user.IsBanned)
-                {
-                    ModelState.AddModelError(string.Empty, "Your account has been banned. Please contact support.");
-                    return View(model);
-                }
-
                 if (string.IsNullOrEmpty(user.UserName)) return BadRequest();
                 var result = await _signInManager.PasswordSignInAsync(
                     user.UserName,
