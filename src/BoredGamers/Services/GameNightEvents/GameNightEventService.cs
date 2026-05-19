@@ -264,12 +264,22 @@ namespace BoredGamers.Services.GameNightEvents
 
       if (gameNightEvent.EventGames.Any())
       {
-        _db.GameNightEventGames.RemoveRange(gameNightEvent.EventGames);
+          var eventGameIds = gameNightEvent.EventGames.Select(eg => eg.Id).ToList();
+
+          // Delete votes first (they reference EventGames)
+          var votes = await _db.GameVotes
+              .Where(v => eventGameIds.Contains(v.GameNightEventGameId))
+              .ToListAsync();
+          if (votes.Any())
+          {
+              _db.GameVotes.RemoveRange(votes);
+          }
+
+          _db.GameNightEventGames.RemoveRange(gameNightEvent.EventGames);
       }
 
       _db.GameNightEvents.Remove(gameNightEvent);
       var rowsChanged = await _db.SaveChangesAsync();
-
       return rowsChanged > 0;
     }
     public async Task<bool> RespondToEventAsync(int eventId, string userId, ResponseStatus status)
