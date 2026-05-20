@@ -143,6 +143,8 @@ public class ReviewSteps
     [Then("I should see the message {string}")]
     public void ThenIShouldSeeTheMessage(string expectedMessage)
     {
+        var wait = new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(10));
+        wait.Until(d => d.PageSource.Contains(expectedMessage));
         Assert.That(_webDriverContext.Driver!.PageSource, Does.Contain(expectedMessage));
     }
 
