@@ -167,6 +167,8 @@ public class TradeCompleteSteps
     [Then("the pending game should not appear in my collection")]
     public void ThenPendingGameNotInCollection()
     {
+        var wait = new WebDriverWait(_webDriverContext.Driver!, TimeSpan.FromSeconds(10));
+        wait.Until(d => !d.PageSource.Contains(_seedContext.PendingGameName));
         Assert.That(_webDriverContext.Driver!.PageSource, Does.Not.Contain(_seedContext.PendingGameName));
     }
 
