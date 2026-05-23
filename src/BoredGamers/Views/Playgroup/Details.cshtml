@@ -7,6 +7,7 @@
     var isMember = Model.IsMember(userId);
     var memberNames = (Dictionary<string, string>)ViewData["MemberNames"]!;
     var status = ViewData["Status"] as string;
+    var imageUrl = !string.IsNullOrEmpty(Model.ImageUrl) ? Model.ImageUrl : "/images/default-playgroup.jpg";
 }
 
 <section class="py-4">
@@ -33,16 +34,7 @@
             <!-- Group Info -->
             <div class="col-md-4">
                 <div class="card shadow-sm">
-                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                    {
-                        <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name">
-                    }
-                    else
-                    {
-                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center text-white" style="height: 180px;">
-                            <i class="bi bi-people" style="font-size: 4rem;"></i>
-                        </div>
-                    }
+                    <img src="@imageUrl" class="card-img-top" alt="@Model.Name">
                     <div class="card-body">
                         <h3 class="card-title">@Model.Name</h3>
                         @if (!string.IsNullOrEmpty(Model.Description))
