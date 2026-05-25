@@ -11,4 +11,6 @@ public class SocialFeedPostViewModel
     public string AuthorUsername { get; set; } = string.Empty;
     public string? AuthorAvatarUrl { get; set; }
     public List<PostReplyViewModel> Replies { get; set; } = new();
+    public int LikeCount { get; set; }
+    public bool IsLikedByCurrentUser { get; set; }
 }

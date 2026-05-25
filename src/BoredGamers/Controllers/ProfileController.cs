@@ -18,14 +18,16 @@ public class ProfileController : Controller
     private readonly IProfilePostService _postService;
     private readonly IBlockService _blockService;
     private readonly IProfilePictureService _profilePictureService;
+    private readonly IPostLikeService _likeService;
 
-    public ProfileController(ApplicationDbContext db, UserManager<User> userManager, IProfilePostService postService, IBlockService blockService, IProfilePictureService profilePictureService)
+    public ProfileController(ApplicationDbContext db, UserManager<User> userManager, IProfilePostService postService, IBlockService blockService, IProfilePictureService profilePictureService, IPostLikeService likeService)
     {
         _db = db;
         _userManager = userManager;
         _postService = postService;
         _blockService = blockService;
         _profilePictureService = profilePictureService;
+        _likeService = likeService;
     }
 
     // GET /Profile/{username}
@@ -150,6 +152,13 @@ public class ProfileController : Controller
 
         var posts = await _postService.GetPostsByUserIdAsync(profileUser.Id);
         ViewData["ProfilePosts"] = posts;
+
+        var postIds = posts.Select(p => p.Id).ToList();
+        var currentUserId = _userManager.GetUserId(User);
+        ViewData["LikeCounts"] = await _likeService.GetLikeCountsAsync(postIds);
+        ViewData["LikedPostIds"] = currentUserId != null
+            ? await _likeService.GetLikedPostIdsAsync(currentUserId, postIds)
+            : new HashSet<int>();
 
         var games = await _db.Games
             .AsNoTracking()

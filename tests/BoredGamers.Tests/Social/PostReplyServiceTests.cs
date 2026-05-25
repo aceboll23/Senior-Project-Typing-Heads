@@ -122,6 +122,69 @@ public class PostReplyServiceTests
     }
 
     [Test]
+    public async Task EditReplyAsync_ByAuthor_UpdatesContent()
+    {
+        await _service.CreateReplyAsync(_post.Id, _replier.Id, "original");
+        var reply = await _db.PostReplies.FirstAsync();
+        var result = await _service.EditReplyAsync(reply.Id, _replier.Id, "updated");
+        Assert.That(result.Success, Is.True);
+        await _db.Entry(reply).ReloadAsync();
+        Assert.That(reply.Content, Is.EqualTo("updated"));
+    }
+
+    [Test]
+    public async Task EditReplyAsync_ByNonAuthor_ReturnsFail()
+    {
+        await _service.CreateReplyAsync(_post.Id, _replier.Id, "original");
+        var reply = await _db.PostReplies.FirstAsync();
+        var result = await _service.EditReplyAsync(reply.Id, _author.Id, "hack");
+        Assert.That(result.Success, Is.False);
+    }
+
+    [Test]
+    public async Task EditReplyAsync_WithEmptyContent_ReturnsFail()
+    {
+        await _service.CreateReplyAsync(_post.Id, _replier.Id, "original");
+        var reply = await _db.PostReplies.FirstAsync();
+        var result = await _service.EditReplyAsync(reply.Id, _replier.Id, "");
+        Assert.That(result.Success, Is.False);
+    }
+
+    [Test]
+    public async Task DeleteReplyAsync_ByAuthor_RemovesReply()
+    {
+        await _service.CreateReplyAsync(_post.Id, _replier.Id, "to delete");
+        var reply = await _db.PostReplies.FirstAsync();
+        var result = await _service.DeleteReplyAsync(reply.Id, _replier.Id);
+        Assert.That(result.Success, Is.True);
+        Assert.That(await _db.PostReplies.CountAsync(), Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task DeleteReplyAsync_ByPostOwner_RemovesReply()
+    {
+        await _service.CreateReplyAsync(_post.Id, _replier.Id, "offensive reply");
+        var reply = await _db.PostReplies.FirstAsync();
+        var result = await _service.DeleteReplyAsync(reply.Id, _author.Id);
+        Assert.That(result.Success, Is.True);
+        Assert.That(await _db.PostReplies.CountAsync(), Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task DeleteReplyAsync_ByUnrelatedUser_ReturnsFail()
+    {
+        var stranger = new User { Id = "stranger-1", UserName = "stranger", Email = "s@test.com", EmailConfirmed = true, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        _db.Users.Add(stranger);
+        await _db.SaveChangesAsync();
+
+        await _service.CreateReplyAsync(_post.Id, _replier.Id, "a reply");
+        var reply = await _db.PostReplies.FirstAsync();
+        var result = await _service.DeleteReplyAsync(reply.Id, stranger.Id);
+        Assert.That(result.Success, Is.False);
+        Assert.That(await _db.PostReplies.CountAsync(), Is.EqualTo(1));
+    }
+
+    [Test]
     public async Task GetRepliesForPostAsync_WithNoReplies_ReturnsEmptyList()
     {
         var replies = await _service.GetRepliesForPostAsync(_post.Id);

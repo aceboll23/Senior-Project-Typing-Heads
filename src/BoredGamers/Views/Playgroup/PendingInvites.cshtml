@@ -25,7 +25,7 @@
                                 <br />
                                 <small class="text-muted">
                                     Invited by @inviterNames[invite.InvitedByUserId]
-                                    · @invite.CreatedAt.ToString("MMM d, yyyy")
+                                    · <span data-utc="@invite.CreatedAt.ToString("o")" data-format="date">@invite.CreatedAt.ToString("MMM d, yyyy")</span>
                                 </small>
                             </div>
                             <div>

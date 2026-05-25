@@ -443,6 +443,28 @@
             })();
         </script>
     }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[data-utc]').forEach(function (el) {
+                var utc = el.dataset.utc;
+                if (!utc) return;
+                var d = new Date(utc);
+                if (isNaN(d)) return;
+                var fmt = el.dataset.format || 'datetime';
+                var opts;
+                if (fmt === 'date') {
+                    opts = { month: 'short', day: 'numeric', year: 'numeric' };
+                } else if (fmt === 'short') {
+                    opts = { month: 'short', day: 'numeric' };
+                } else if (fmt === 'full') {
+                    opts = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
+                } else {
+                    opts = { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
+                }
+                el.textContent = d.toLocaleString('en-US', opts);
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

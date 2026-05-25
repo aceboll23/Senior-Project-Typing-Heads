@@ -14,12 +14,14 @@ public class ProfilePostController : Controller
     private readonly IProfilePostService _postService;
     private readonly IPostFlagService _flagService;
     private readonly IPostReplyService _replyService;
+    private readonly IPostLikeService _likeService;
 
-    public ProfilePostController(IProfilePostService postService, IPostFlagService flagService, IPostReplyService replyService)
+    public ProfilePostController(IProfilePostService postService, IPostFlagService flagService, IPostReplyService replyService, IPostLikeService likeService)
     {
         _postService = postService;
         _flagService = flagService;
         _replyService = replyService;
+        _likeService = likeService;
     }
 
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -70,6 +72,43 @@ public class ProfilePostController : Controller
     public async Task<IActionResult> Reply(int postId, string content, string? returnUsername, string? returnFeed, CancellationToken ct)
     {
         var result = await _replyService.CreateReplyAsync(postId, GetUserId(), content, ct);
+
+        if (!result.Success)
+            TempData["ReplyError"] = result.ErrorMessage;
+
+        if (!string.IsNullOrEmpty(returnUsername))
+            return RedirectToAction("Index", "Profile", new { username = returnUsername });
+
+        return RedirectToAction("Index", "SocialFeed");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Like(int postId, CancellationToken ct)
+    {
+        var (isLiked, likeCount) = await _likeService.ToggleLikeAsync(postId, GetUserId(), ct);
+        return Json(new { isLiked, likeCount });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditReply(int replyId, string content, string? returnUsername, CancellationToken ct)
+    {
+        var result = await _replyService.EditReplyAsync(replyId, GetUserId(), content, ct);
+
+        if (!result.Success)
+            TempData["ReplyError"] = result.ErrorMessage;
+
+        if (!string.IsNullOrEmpty(returnUsername))
+            return RedirectToAction("Index", "Profile", new { username = returnUsername });
+
+        return RedirectToAction("Index", "SocialFeed");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteReply(int replyId, string? returnUsername, CancellationToken ct)
+    {
+        var result = await _replyService.DeleteReplyAsync(replyId, GetUserId(), ct);
 
         if (!result.Success)
             TempData["ReplyError"] = result.ErrorMessage;

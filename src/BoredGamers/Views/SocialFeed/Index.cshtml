@@ -1,6 +1,7 @@
 @model IReadOnlyList<BoredGamers.Models.ViewModels.SocialFeedPostViewModel>
 @{
     ViewData["Title"] = "Social Feed";
+    var currentUsername = User.Identity?.Name ?? "";
 }
 
 <form id="antiForgeryForm" style="display:none;">@Html.AntiForgeryToken()</form>
@@ -44,7 +45,7 @@
                                         @post.AuthorUsername
                                     </a>
                                     <div class="text-muted small">
-                                        @post.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy 'at' h:mm tt")
+                                        <span data-utc="@post.CreatedAt.ToString("o")">@post.CreatedAt.ToString("MMM dd, yyyy")</span>
                                     </div>
                                 </div>
                             </div>
@@ -82,9 +83,18 @@
                                 <img src="@post.ImageUrl" alt="Post image" class="img-fluid rounded mb-2"
                                      style="max-height:400px;object-fit:contain;" />
                             }
+
+                            @* Action row: like + report *@
                             @if (User.Identity != null && User.Identity.IsAuthenticated)
                             {
-                                <div class="d-flex justify-content-end mt-1">
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <button type="button"
+                                            class="btn btn-sm @(post.IsLikedByCurrentUser ? "btn-danger" : "btn-outline-secondary") like-btn"
+                                            data-post-id="@post.PostId"
+                                            data-liked="@post.IsLikedByCurrentUser.ToString().ToLower()">
+                                        <i class="bi @(post.IsLikedByCurrentUser ? "bi-heart-fill" : "bi-heart") me-1"></i>
+                                        <span class="like-count">@post.LikeCount</span>
+                                    </button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary report-post-btn"
                                             data-post-id="@post.PostId"
                                             title="Report this post">
@@ -120,11 +130,42 @@
                                                        class="fw-semibold text-white text-decoration-none small">
                                                         @reply.AuthorUsername
                                                     </a>
-                                                    <span class="text-muted" style="font-size:0.75rem;">
-                                                        @reply.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy 'at' h:mm tt")
-                                                    </span>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="text-muted" style="font-size:0.75rem;" data-utc="@reply.CreatedAt.ToString("o")">@reply.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                                        @if (reply.AuthorUsername == currentUsername)
+                                                        {
+                                                            <button type="button" class="btn btn-link btn-sm p-0 text-muted edit-reply-btn" style="font-size:0.75rem;"
+                                                                    data-reply-id="@reply.Id">Edit</button>
+                                                        }
+                                                        @if (reply.AuthorUsername == currentUsername || post.AuthorUsername == currentUsername)
+                                                        {
+                                                            <form asp-controller="ProfilePost" asp-action="DeleteReply" method="post" class="d-inline">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="replyId" value="@reply.Id" />
+                                                                <button type="submit" class="btn btn-link btn-sm p-0 text-danger" style="font-size:0.75rem;"
+                                                                        onclick="return confirm('Delete this reply?')">Delete</button>
+                                                            </form>
+                                                        }
+                                                    </div>
                                                 </div>
-                                                <p class="mb-0 small">@reply.Content</p>
+                                                <div id="reply-text-@reply.Id">
+                                                    <p class="mb-0 small">@reply.Content</p>
+                                                </div>
+                                                @if (reply.AuthorUsername == currentUsername)
+                                                {
+                                                    <form id="edit-form-@reply.Id" class="d-none mt-1"
+                                                          asp-controller="ProfilePost" asp-action="EditReply" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="replyId" value="@reply.Id" />
+                                                        <div class="d-flex gap-2">
+                                                            <textarea name="content" class="form-control form-control-sm bg-dark text-light border-secondary"
+                                                                      rows="1" maxlength="500">@reply.Content</textarea>
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary flex-shrink-0">Save</button>
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0 cancel-edit-btn"
+                                                                    data-reply-id="@reply.Id">Cancel</button>
+                                                        </div>
+                                                    </form>
+                                                }
                                             </div>
                                         </div>
                                     }
@@ -154,3 +195,52 @@
         }
     </div>
 </section>
+
+@section Scripts {
+<script>
+    const token = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]')?.value;
+
+    // Like toggle
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const postId = this.dataset.postId;
+            try {
+                const res = await fetch(`/ProfilePost/Like?postId=${postId}`, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': token }
+                });
+                const data = await res.json();
+                const icon = this.querySelector('i');
+                const count = this.querySelector('.like-count');
+                count.textContent = data.likeCount;
+                if (data.isLiked) {
+                    this.classList.replace('btn-outline-secondary', 'btn-danger');
+                    icon.classList.replace('bi-heart', 'bi-heart-fill');
+                } else {
+                    this.classList.replace('btn-danger', 'btn-outline-secondary');
+                    icon.classList.replace('bi-heart-fill', 'bi-heart');
+                }
+            } catch (e) {
+                console.error('Like failed:', e);
+            }
+        });
+    });
+
+    // Edit reply toggle
+    document.querySelectorAll('.edit-reply-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id = this.dataset.replyId;
+            document.getElementById(`reply-text-${id}`).classList.add('d-none');
+            document.getElementById(`edit-form-${id}`).classList.remove('d-none');
+        });
+    });
+
+    document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id = this.dataset.replyId;
+            document.getElementById(`reply-text-${id}`).classList.remove('d-none');
+            document.getElementById(`edit-form-${id}`).classList.add('d-none');
+        });
+    });
+</script>
+}

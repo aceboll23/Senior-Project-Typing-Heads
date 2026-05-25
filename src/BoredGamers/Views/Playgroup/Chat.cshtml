@@ -52,7 +52,7 @@
                             <div>
                                 <div>
                                     <strong class="me-2">@msg.SenderProfile?.User?.UserName</strong>
-                                    <small class="text-muted">@msg.SentAt.ToString("MMM d, yyyy · h:mm tt")</small>
+                                    <small class="text-muted" data-utc="@msg.SentAt.ToString("o")">@msg.SentAt.ToString("MMM d, yyyy")</small>
                                 </div>
                                 <div>@msg.Content</div>
                             </div>

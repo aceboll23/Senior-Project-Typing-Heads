@@ -336,7 +336,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="text-muted small mb-2">@r.CreatedAt.ToLocalTime().ToString("g")</div>
+                                                <div class="text-muted small mb-2" data-utc="@r.CreatedAt.ToString("o")">@r.CreatedAt.ToString("MMM d, yyyy")</div>
                                                 <div style="white-space: pre-line;">@r.Text</div>
                                             </div>
                                         }

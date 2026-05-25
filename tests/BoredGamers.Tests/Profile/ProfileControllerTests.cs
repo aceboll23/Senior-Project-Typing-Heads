@@ -66,7 +66,7 @@ public class ProfileControllerTests
 
         _mockBlockService = new Mock<IBlockService>();
 
-        _controller = new ProfileController(_db, _mockUserManager.Object, _mockPostService.Object, _mockBlockService.Object, new Mock<IProfilePictureService>().Object);
+        _controller = new ProfileController(_db, _mockUserManager.Object, _mockPostService.Object, _mockBlockService.Object, new Mock<IProfilePictureService>().Object, new Mock<IPostLikeService>().Object);
 
         // Create two fake users
         // User model now includes IsBanned, IsDeactivated, and Profile navigation
