@@ -61,6 +61,46 @@ public class PostReplyService : IPostReplyService
         return ServiceResult.Ok();
     }
 
+    public async Task<ServiceResult> EditReplyAsync(int replyId, string userId, string content, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return ServiceResult.Fail("Reply cannot be empty.");
+
+        if (content.Length > 500)
+            return ServiceResult.Fail("Reply cannot exceed 500 characters.");
+
+        var reply = await _db.PostReplies.FindAsync(new object[] { replyId }, ct);
+        if (reply == null)
+            return ServiceResult.Fail("Reply not found.");
+
+        if (reply.AuthorId != userId)
+            return ServiceResult.Fail("Not authorized.");
+
+        reply.Content = content.Trim();
+        await _db.SaveChangesAsync(ct);
+        return ServiceResult.Ok();
+    }
+
+    public async Task<ServiceResult> DeleteReplyAsync(int replyId, string userId, CancellationToken ct = default)
+    {
+        var reply = await _db.PostReplies
+            .Include(r => r.Post).ThenInclude(p => p.UserProfile)
+            .FirstOrDefaultAsync(r => r.Id == replyId, ct);
+
+        if (reply == null)
+            return ServiceResult.Fail("Reply not found.");
+
+        var isAuthor = reply.AuthorId == userId;
+        var isPostOwner = reply.Post.UserProfile.UserId == userId;
+
+        if (!isAuthor && !isPostOwner)
+            return ServiceResult.Fail("Not authorized.");
+
+        _db.PostReplies.Remove(reply);
+        await _db.SaveChangesAsync(ct);
+        return ServiceResult.Ok();
+    }
+
     public async Task<IReadOnlyList<PostReplyViewModel>> GetRepliesForPostAsync(int postId, CancellationToken ct = default)
     {
         return await _db.PostReplies

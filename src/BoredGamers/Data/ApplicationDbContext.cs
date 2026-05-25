@@ -35,6 +35,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<ProfilePost> ProfilePosts { get; set; }
     public DbSet<ProfilePostFlag> ProfilePostFlags { get; set; }
     public DbSet<PostReply> PostReplies { get; set; }
+    public DbSet<PostLike> PostLikes { get; set; }
     public DbSet<PlaygroupMessage> PlaygroupMessages { get; set; }
     public DbSet<GameTransfer> GameTransfers { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -334,6 +335,25 @@ public class ApplicationDbContext : IdentityDbContext
             entity.HasIndex(r => r.PostId);
 
             entity.Property(r => r.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure PostLike
+        modelBuilder.Entity<PostLike>(entity =>
+        {
+            entity.HasOne(l => l.Post)
+                .WithMany(p => p.Likes)
+                .HasForeignKey(l => l.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(l => l.User)
+                .WithMany()
+                .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(l => new { l.PostId, l.UserId }).IsUnique();
+
+            entity.Property(l => l.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 

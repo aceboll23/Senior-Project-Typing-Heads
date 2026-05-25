@@ -105,6 +105,7 @@ builder.Services.AddScoped<IGameSyncService, GameSyncService>();
 //Profile post service
 builder.Services.AddScoped<IProfilePostService, ProfilePostService>();
 builder.Services.AddScoped<IPostReplyService, PostReplyService>();
+builder.Services.AddScoped<IPostLikeService, PostLikeService>();
 //Social feed service
 builder.Services.AddScoped<ISocialFeedService, SocialFeedService>();
 //Block service

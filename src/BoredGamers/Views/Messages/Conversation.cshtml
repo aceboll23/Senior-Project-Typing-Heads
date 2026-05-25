@@ -136,7 +136,6 @@ $(document).ready(function () {
     function formatLocalTime(utcString) {
         const d = new Date(utcString);
         return d.toLocaleString('en-US', {
-            timeZone: 'America/Los_Angeles',
             month: 'short',
             day: 'numeric',
             hour: 'numeric',
