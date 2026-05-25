@@ -2,6 +2,7 @@ using BoredGamers.Data;
 using BoredGamers.Models;
 using BoredGamers.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace BoredGamers.Services.SocialFeed;
 
@@ -45,23 +46,38 @@ public class SocialFeedService : ISocialFeedService
         if (friendProfileIds.Count == 0)
             return Array.Empty<SocialFeedPostViewModel>();
 
-        return await _db.ProfilePosts
+        var posts = await _db.ProfilePosts
             .Where(p => friendProfileIds.Contains(p.UserProfileId))
             .Include(p => p.UserProfile)
                 .ThenInclude(up => up.User)
             .Include(p => p.Game)
+            .Include(p => p.Replies)
+                .ThenInclude(r => r.Author)
+                    .ThenInclude(u => u.Profile)
             .OrderByDescending(p => p.CreatedAt)
-            .Select(p => new SocialFeedPostViewModel
-            {
-                PostId = p.Id,
-                Content = p.Content,
-                ImageUrl = p.ImageUrl,
-                Category = p.Category,
-                GameName = p.Game != null ? p.Game.Name : null,
-                CreatedAt = p.CreatedAt,
-                AuthorUsername = p.UserProfile.User.UserName ?? "Unknown",
-                AuthorAvatarUrl = p.UserProfile.AvatarUrl
-            })
             .ToListAsync();
+
+        return posts.Select(p => new SocialFeedPostViewModel
+        {
+            PostId = p.Id,
+            Content = p.Content,
+            ImageUrl = p.ImageUrl,
+            Category = p.Category,
+            GameName = p.Game?.Name,
+            CreatedAt = p.CreatedAt,
+            AuthorUsername = p.UserProfile.User.UserName ?? "Unknown",
+            AuthorAvatarUrl = p.UserProfile.AvatarUrl,
+            Replies = p.Replies
+                .OrderBy(r => r.CreatedAt)
+                .Select(r => new PostReplyViewModel
+                {
+                    Id = r.Id,
+                    Content = r.Content,
+                    CreatedAt = r.CreatedAt,
+                    AuthorUsername = r.Author.UserName ?? "Unknown",
+                    AuthorAvatarUrl = r.Author.Profile?.AvatarUrl
+                })
+                .ToList()
+        }).ToList();
     }
 }

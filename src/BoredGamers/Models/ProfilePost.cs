@@ -29,4 +29,6 @@ public class ProfilePost
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+
+    public ICollection<PostReply> Replies { get; set; } = new List<PostReply>();
 }
