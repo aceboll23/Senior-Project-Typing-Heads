@@ -10,4 +10,5 @@ public class SocialFeedPostViewModel
     public DateTime CreatedAt { get; set; }
     public string AuthorUsername { get; set; } = string.Empty;
     public string? AuthorAvatarUrl { get; set; }
+    public List<PostReplyViewModel> Replies { get; set; } = new();
 }

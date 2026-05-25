@@ -13,11 +13,13 @@ public class ProfilePostController : Controller
 {
     private readonly IProfilePostService _postService;
     private readonly IPostFlagService _flagService;
+    private readonly IPostReplyService _replyService;
 
-    public ProfilePostController(IProfilePostService postService, IPostFlagService flagService)
+    public ProfilePostController(IProfilePostService postService, IPostFlagService flagService, IPostReplyService replyService)
     {
         _postService = postService;
         _flagService = flagService;
+        _replyService = replyService;
     }
 
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -61,6 +63,21 @@ public class ProfilePostController : Controller
             TempData["PostError"] = result.ErrorMessage;
 
         return RedirectToAction("Index", "Profile", new { username = returnUsername });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Reply(int postId, string content, string? returnUsername, string? returnFeed, CancellationToken ct)
+    {
+        var result = await _replyService.CreateReplyAsync(postId, GetUserId(), content, ct);
+
+        if (!result.Success)
+            TempData["ReplyError"] = result.ErrorMessage;
+
+        if (!string.IsNullOrEmpty(returnUsername))
+            return RedirectToAction("Index", "Profile", new { username = returnUsername });
+
+        return RedirectToAction("Index", "SocialFeed");
     }
 
     [HttpPost("profile-post/{id}/flag")]

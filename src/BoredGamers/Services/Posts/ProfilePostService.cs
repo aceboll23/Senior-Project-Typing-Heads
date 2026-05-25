@@ -107,6 +107,9 @@ public class ProfilePostService : IProfilePostService
         return await _db.ProfilePosts
             .Where(p => p.UserProfileId == profile.Id)
             .Include(p => p.Game)
+            .Include(p => p.Replies)
+                .ThenInclude(r => r.Author)
+                    .ThenInclude(u => u.Profile)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
     }

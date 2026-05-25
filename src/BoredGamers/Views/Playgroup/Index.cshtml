@@ -1,9 +1,7 @@
 @model List<BoredGamers.Models.Playgroup>
-
 @{
     ViewData["Title"] = "My Playgroups";
 }
-
 <section class="py-4">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -22,7 +20,6 @@
                 </a>
             </div>
         </div>
-
         @if (Model.Count == 0)
         {
             <div class="text-center py-5">
@@ -36,19 +33,11 @@
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 @foreach (var group in Model)
                 {
+                    var imageUrl = !string.IsNullOrEmpty(group.ImageUrl) ? group.ImageUrl : "/images/default-playgroup.jpg";
                     <div class="col">
                         <a href="/Playgroup/Details/@group.Id" class="text-decoration-none">
                             <div class="card bg-dark text-white h-100">
-                                @if (!string.IsNullOrEmpty(group.ImageUrl))
-                                {
-                                    <img src="@group.ImageUrl" class="card-img-top" alt="@group.Name">
-                                }
-                                else
-                                {
-                                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 120px;">
-                                        <i class="bi bi-people" style="font-size: 2.5rem;"></i>
-                                    </div>
-                                }
+                                <img src="@imageUrl" class="card-img-top" alt="@group.Name">
                                 <div class="card-body">
                                     <h5 class="card-title">@group.Name</h5>
                                     @if (!string.IsNullOrEmpty(group.Description))
