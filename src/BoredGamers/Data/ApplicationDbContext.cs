@@ -34,6 +34,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<EventResponse> EventResponses { get; set; }
     public DbSet<ProfilePost> ProfilePosts { get; set; }
     public DbSet<ProfilePostFlag> ProfilePostFlags { get; set; }
+    public DbSet<PostReply> PostReplies { get; set; }
     public DbSet<PlaygroupMessage> PlaygroupMessages { get; set; }
     public DbSet<GameTransfer> GameTransfers { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -314,6 +315,25 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(p => p.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
             entity.Property(p => p.UpdatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // Configure PostReply
+        modelBuilder.Entity<PostReply>(entity =>
+        {
+            entity.HasOne(r => r.Post)
+                .WithMany(p => p.Replies)
+                .HasForeignKey(r => r.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(r => r.Author)
+                .WithMany()
+                .HasForeignKey(r => r.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(r => r.PostId);
+
+            entity.Property(r => r.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
         });
 
