@@ -46,9 +46,9 @@ public class HomeController : Controller
 
     public IActionResult About() => View();
 
-    public IActionResult Contact() => View("UnderConstruction");
+    public IActionResult Contact() => View();
 
-    public IActionResult Terms() => View("UnderConstruction");
+    public IActionResult Terms() => View();
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
