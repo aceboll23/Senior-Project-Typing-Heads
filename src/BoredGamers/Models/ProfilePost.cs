@@ -31,4 +31,5 @@ public class ProfilePost
     public DateTime UpdatedAt { get; set; }
 
     public ICollection<PostReply> Replies { get; set; } = new List<PostReply>();
+    public ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
 }

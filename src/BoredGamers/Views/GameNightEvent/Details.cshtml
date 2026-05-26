@@ -49,7 +49,7 @@
     <div class="mb-4">
         <h1 class="mb-2">@Model.Title</h1>
         <p class="text-muted mb-1">
-            <strong>Date & Time:</strong> @Model.EventDateTime.ToString("f")
+            <strong>Date & Time:</strong> <span data-utc="@Model.EventDateTime.ToString("o")" data-format="full">@Model.EventDateTime.ToString("f")</span>
         </p>
         <p class="text-muted mb-1">
             <strong>Playgroup:</strong> @Model.Playgroup?.Name

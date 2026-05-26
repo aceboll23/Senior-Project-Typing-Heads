@@ -42,7 +42,7 @@
                                 }
                                 <div>
                                     <div class="fw-bold">@blocked.Username</div>
-                                    <div class="text-muted small">Blocked @blocked.BlockedAt.ToLocalTime().ToString("MMM dd, yyyy")</div>
+                                    <div class="text-muted small">Blocked <span data-utc="@blocked.BlockedAt.ToString("o")" data-format="date">@blocked.BlockedAt.ToString("MMM dd, yyyy")</span></div>
                                 </div>
                             </div>
                             <form asp-controller="Block" asp-action="Unblock" method="post">

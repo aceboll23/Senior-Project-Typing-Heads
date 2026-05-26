@@ -154,7 +154,7 @@
                                             <div>
                                                 <strong>@evt.Title</strong>
                                                 <br />
-                                                <small class="text-muted">@evt.EventDateTime.ToString("ddd, MMM d yyyy · h:mm tt")</small>
+                                                <small class="text-muted" data-utc="@evt.EventDateTime.ToString("o")" data-format="full">@evt.EventDateTime.ToString("ddd, MMM d yyyy")</small>
                                                 @if (!string.IsNullOrEmpty(evt.Description))
                                                 {
                                                     <br />

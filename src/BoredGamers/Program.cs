@@ -81,6 +81,13 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromHours(2);
+    options.SlidingExpiration = true;
+    options.LoginPath = "/Identity/Account/Login";
+});
+
 //
 //HTTP Clients
 //
@@ -104,6 +111,7 @@ builder.Services.AddScoped<IGameSyncService, GameSyncService>();
 //Profile post service
 builder.Services.AddScoped<IProfilePostService, ProfilePostService>();
 builder.Services.AddScoped<IPostReplyService, PostReplyService>();
+builder.Services.AddScoped<IPostLikeService, PostLikeService>();
 //Social feed service
 builder.Services.AddScoped<ISocialFeedService, SocialFeedService>();
 //Block service

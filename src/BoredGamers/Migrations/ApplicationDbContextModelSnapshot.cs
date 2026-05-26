@@ -614,6 +614,36 @@ namespace BoredGamers.Migrations
                     b.ToTable("PlaygroupMessages");
                 });
 
+            modelBuilder.Entity("BoredGamers.Models.PostLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("PostId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("PostLikes");
+                });
+
             modelBuilder.Entity("BoredGamers.Models.PostReply", b =>
                 {
                     b.Property<int>("Id")
@@ -1322,6 +1352,25 @@ namespace BoredGamers.Migrations
                     b.Navigation("SenderProfile");
                 });
 
+            modelBuilder.Entity("BoredGamers.Models.PostLike", b =>
+                {
+                    b.HasOne("BoredGamers.Models.ProfilePost", "Post")
+                        .WithMany("Likes")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoredGamers.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BoredGamers.Models.PostReply", b =>
                 {
                     b.HasOne("BoredGamers.Models.User", "Author")
@@ -1482,6 +1531,8 @@ namespace BoredGamers.Migrations
 
             modelBuilder.Entity("BoredGamers.Models.ProfilePost", b =>
                 {
+                    b.Navigation("Likes");
+
                     b.Navigation("Replies");
                 });
 

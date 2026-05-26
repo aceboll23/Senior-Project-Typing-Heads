@@ -54,6 +54,7 @@ public class SocialFeedService : ISocialFeedService
             .Include(p => p.Replies)
                 .ThenInclude(r => r.Author)
                     .ThenInclude(u => u.Profile)
+            .Include(p => p.Likes)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 
@@ -67,6 +68,8 @@ public class SocialFeedService : ISocialFeedService
             CreatedAt = p.CreatedAt,
             AuthorUsername = p.UserProfile.User.UserName ?? "Unknown",
             AuthorAvatarUrl = p.UserProfile.AvatarUrl,
+            LikeCount = p.Likes.Count,
+            IsLikedByCurrentUser = p.Likes.Any(l => l.UserId == userId),
             Replies = p.Replies
                 .OrderBy(r => r.CreatedAt)
                 .Select(r => new PostReplyViewModel

@@ -130,7 +130,6 @@
         if (!utc) return;
         const d = new Date(utc);
         el.textContent = d.toLocaleString('en-US', {
-            timeZone: 'America/Los_Angeles',
             month: 'short',
             day: 'numeric'
         });
